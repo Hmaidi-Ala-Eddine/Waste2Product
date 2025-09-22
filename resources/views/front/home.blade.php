@@ -15,7 +15,7 @@
                                     <h4>Meet Consulting</h4>
                                     <h2><strong>Financial Analysis</strong> Developing Meeting.</h2>
                                     <div class="button">
-                                        <a class="btn circle btn-gradient btn-md radius animation" href="{{ url('/contact-us') }}">Get Consultant</a>
+                                        <a class="btn circle btn-gradient btn-md radius animation" href="{{ url('/login') }}">Get Consultant</a>
                                     </div>
                                     <div class="shape-circle"></div>
                                 </div>
@@ -35,7 +35,7 @@
                                     <h4>Coaching & Consulting</h4>
                                     <h2><strong>Proper solution</strong> for business growth</h2>
                                     <div class="button">
-                                        <a class="btn circle btn-gradient btn-md radius animation" href="{{ url('/contact-us') }}">Get Consultant</a>
+                                        <a class="btn circle btn-gradient btn-md radius animation" href="{{ url('/login') }}">Get Consultant</a>
                                     </div>
                                     <div class="shape-circle"></div>
                                 </div>

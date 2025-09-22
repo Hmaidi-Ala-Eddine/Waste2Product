@@ -52,6 +52,11 @@ Route::view('/faq', 'front.pages.faq')->name('front.faq');
 Route::view('/pricing', 'front.pages.pricing')->name('front.pricing');
 Route::view('/404', 'front.pages.404')->name('front.404');
 
+// Login page
+Route::get('/login', function () {
+    return view('front.login');
+})->name('front.login');
+
 // Fallback 404 for unknown routes
 Route::fallback(function () {
     return response()->view('front.pages.404', [], 404);
