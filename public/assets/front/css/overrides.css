@@ -1,0 +1,46 @@
+.html, body { height: 100%; }
+
+.banner-area .banner-thumb {
+    min-height: 100vh;
+}
+
+.banner-area.banner-style-two .swiper-wrapper,
+.banner-area.banner-style-two .swiper-slide {
+    height: 100vh;
+}
+
+.banner-area.banner-style-two .banner-fade {
+    height: 100vh;
+}
+
+/* Navbar visibility fix for non-hero pages */
+.navbar.navbar-fixed{
+    background: rgba(255,255,255,0.98);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.navbar.navbar-fixed.white.no-background{
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Preloader visibility toggle; hide after JS sets loaded */
+/* Fade-out for preloader matching template feel */
+body.loaded #preloader{
+    animation: preloaderFadeOut 500ms ease forwards;
+}
+@keyframes preloaderFadeOut{
+    to{ opacity:0; visibility:hidden; }
+}
+
+/* Optional: prevent scroll jump while preloader visible */
+/* Allow scroll immediately to keep pages snappy */
+/* body:not(.loaded){ overflow: hidden; } */
+
+/* Ensure navbar overlays correctly without affecting banner height */
+.navbar.mobile-sidenav.navbar-sticky.navbar-default.validnavs.navbar-fixed.white.no-background {
+    width: 100%;
+    left: 0;
+    right: 0;
+}
+
+
