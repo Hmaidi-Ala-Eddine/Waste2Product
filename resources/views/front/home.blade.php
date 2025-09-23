@@ -51,19 +51,45 @@
         </div>
     </div>
 
-    <div id="about" class="about-style-three-area default-padding">
+    <div class="about-style-three-area default-padding">
         <div class="container">
             <div class="row align-center">
                 <div class="col-lg-6">
                     <div class="about-style-three-info">
                         <h4 class="sub-title">About Us</h4>
                         <h2 class="title split-text">Providing technology for smart it solutions</h2>
-                        <p class="split-text">Numerous ladyship so raillery humoured goodness received an. So narrow formal length my highly longer afford oh.</p>
+                        <p class="split-text">
+                            Numerous ladyship so raillery humoured goodness received an. So narrow formal length my highly longer afford oh. Tall neat he make or at dull ye. Lorem ipsum dolor, sit amet consectetur adipisicing, elit. Iure, laudantium, tempore.
+                        </p>
+                        <div class="info-grid mt-50">
+                            <div class="left-info wow fadeInLeft" data-wow-delay="200ms">
+                                <div class="fun-fact-card-two">
+                                    <h4 class="sub-title">Our Expertise</h4>
+                                    <div class="counter-title">
+                                        <div class="counter">
+                                            <div class="timer" data-to="26" data-speed="2000">26</div>
+                                            <div class="operator">+</div>
+                                        </div>
+                                    </div>
+                                    <span class="medium">Years of experience</span>
+                                </div>
+                            </div>
+                            <div class="right-info bg-gradient text-light wow fadeInLeft" data-wow-delay="400ms">
+                                <ul class="list-style-three">
+                                    <li>Network security</li>
+                                    <li>Mobile networking</li>
+                                    <li>Cloud computing</li>
+                                    <li>Information technology consulting</li>
+                                    <li>Backup solutions</li>
+                                    <li>Hardware support</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-5 offset-lg-1">
                     <div class="thumb-style-two wow fadeInUp">
-                        <img src="{{ asset('assets/front/img/about/4.jpg') }}" alt="About">
+                        <img src="{{ asset('assets/front/img/about/4.jpg') }}" alt="Image Not Found">
                     </div>
                 </div>
             </div>
@@ -90,17 +116,19 @@
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/13.png') }}" alt="Icon Not Found">
-                                    <h4><a href="#">Manage it service</a></h4>
+                                    <h4><a href="{{ route('front.services.details') }}">Manage it service</a></h4>
                                 </div>
-                                <a href="#"><i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.services.details') }}"><i class="fas fa-long-arrow-right"></i></a>
                             </div>
                             <div class="overlay text-center">
                                 <div class="content">
                                     <div class="icon">
                                         <img src="{{ asset('assets/front/img/icon/13.png') }}" alt="Icon Not Found">
                                     </div>
-                                    <h4><a href="#">Manage it service</a></h4>
-                                    <p>Prevailed mr tolerably discourse assurance estimable everything melancholy uncommonly solicitude.</p>
+                                    <h4><a href="{{ route('front.services.details') }}">Manage it service</a></h4>
+                                    <p>
+                                        Prevailed mr tolerably discourse assurance estimable everything melancholy uncommonly solicitude inhabiting projection.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -113,17 +141,19 @@
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
-                                    <h4><a href="#">Cyber Security</a></h4>
+                                    <h4><a href="{{ route('front.services.details') }}">Cyber Security</a></h4>
                                 </div>
-                                <a href="#"><i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.services.details') }}"><i class="fas fa-long-arrow-right"></i></a>
                             </div>
                             <div class="overlay text-center">
                                 <div class="content">
                                     <div class="icon">
                                         <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
                                     </div>
-                                    <h4><a href="#">Cyber Security</a></h4>
-                                    <p>Prevailed mr tolerably discourse assurance estimable everything melancholy uncommonly solicitude.</p>
+                                    <h4><a href="{{ route('front.services.details') }}">Cyber Security</a></h4>
+                                    <p>
+                                        Prevailed mr tolerably discourse assurance estimable everything melancholy uncommonly solicitude inhabiting projection.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -136,17 +166,19 @@
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/15.png') }}" alt="Icon Not Found">
-                                    <h4><a href="#">Digital Experience</a></h4>
+                                    <h4><a href="{{ route('front.services.details') }}">Digital Experience</a></h4>
                                 </div>
-                                <a href="#"><i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.services.details') }}"><i class="fas fa-long-arrow-right"></i></a>
                             </div>
                             <div class="overlay text-center">
                                 <div class="content">
                                     <div class="icon">
                                         <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
                                     </div>
-                                    <h4><a href="#">Digital Experience</a></h4>
-                                    <p>Prevailed mr tolerably discourse assurance estimable everything melancholy uncommonly solicitude.</p>
+                                    <h4><a href="{{ route('front.services.details') }}">Digital Experience</a></h4>
+                                    <p>
+                                        Prevailed mr tolerably discourse assurance estimable everything melancholy uncommonly solicitude inhabiting projection.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -184,8 +216,10 @@
                 <div class="col-xl-6 order-xl-last pl-80 pl-md-15 pl-xs-15 choose-us-style-two-content">
                     <div class="info-style-one">
                         <h4 class="sub-title">Why Choose Us</h4>
-                        <h2 class="title split-text">Empowering success in technology since 1968</h2>
-                        <p class="split-text">Continue indulged speaking the was out horrible for domestic position. Seeing rather her you not esteem men settle genius excuse.</p>
+                        <h2 class="title split-text">Empowering success in technology since 1968 </h2>
+                        <p class="split-text">
+                            Continue indulged speaking the was out horrible for domestic position. Seeing rather her you not esteem men settle genius excuse. Deal say over you age from. Comparison new ham melancholy son themselves.
+                        </p>
                         <ul class="list-sytle-four mt-30">
                             <li class="wow fadeInUp">
                                 <h4>Tech Solution</h4>
@@ -232,7 +266,9 @@
                         <div class="item-title">
                             <img src="{{ asset('assets/front/img/icon/16.png') }}" alt="">
                             <h4><a href="#">Analytic Solutions</a></h4>
-                            <p>Seeing rather her you not esteem men settle genius excuse. Comparison new ham melancholy son themselves.</p>
+                            <p>
+                                Seeing rather her you not esteem men settle genius excuse. Deal say over you age from. Comparison new ham melancholy son themselves the perfect connections.
+                            </p>
                             <div class="d-flex mt-30">
                                 <a href="#"><i class="fas fa-long-arrow-right"></i></a>
                                 <div class="service-tags">
@@ -248,7 +284,9 @@
                         <div class="item-title">
                             <img src="{{ asset('assets/front/img/icon/17.png') }}" alt="">
                             <h4><a href="#">Risk Management</a></h4>
-                            <p>Regular rather her you not esteem men settle genius excuse. Comparison new ham melancholy son themselves.</p>
+                            <p>
+                                Regular rather her you not esteem men settle genius excuse. Deal say over you age from. Comparison new ham melancholy son themselves the perfect connections.
+                            </p>
                             <div class="d-flex mt-30">
                                 <a href="#"><i class="fas fa-long-arrow-right"></i></a>
                                 <div class="service-tags">
@@ -264,7 +302,9 @@
                         <div class="item-title">
                             <img src="{{ asset('assets/front/img/icon/18.png') }}" alt="">
                             <h4><a href="#">Firewall Advance</a></h4>
-                            <p>Patient rather her you not esteem men settle genius excuse. Comparison new ham melancholy son themselves.</p>
+                            <p>
+                                Patient rather her you not esteem men settle genius excuse. Deal say over you age from. Comparison new ham melancholy son themselves the perfect connections.
+                            </p>
                             <div class="d-flex mt-30">
                                 <a href="#"><i class="fas fa-long-arrow-right"></i></a>
                                 <div class="service-tags">
@@ -310,7 +350,7 @@
                         <h2 class="title">Our commitment <br> is client satisfaction </h2>
                         <div class="d-grid mt-40">
                             <ul class="list-style-two">
-                                <li>Organizational structure model</li>
+                                <li>Organizational structure model </li>
                                 <li>Satisfaction guarantee</li>
                                 <li>Ontime delivery</li>
                             </ul>
@@ -368,9 +408,11 @@
                                 <img src="{{ asset('assets/front/img/projects/5.jpg') }}" alt="">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="#">Cyber Security</a></h4>
+                                        <h4><a href="{{ route('front.project.details') }}">Cyber Security</a></h4>
                                         <span>Technology, IT</span>
-                                        <p>Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.</p>
+                                        <p>
+                                            Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.
+                                        </p>
                                     </div>
                                     <a href="#">Explore <i class="fas fa-long-arrow-right"></i></a>
                                 </div>
@@ -381,9 +423,11 @@
                                 <img src="{{ asset('assets/front/img/projects/6.jpg') }}" alt="">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="#">IT Counsultancy</a></h4>
+                                        <h4><a href="{{ route('front.project.details') }}">IT Counsultancy</a></h4>
                                         <span>Security, Firewall</span>
-                                        <p>Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.</p>
+                                        <p>
+                                            Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.
+                                        </p>
                                     </div>
                                     <a href="#">Explore <i class="fas fa-long-arrow-right"></i></a>
                                 </div>
@@ -394,9 +438,11 @@
                                 <img src="{{ asset('assets/front/img/projects/7.jpg') }}" alt="">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="#">Analysis of Security</a></h4>
+                                        <h4><a href="{{ route('front.project.details') }}">Analysis of Security</a></h4>
                                         <span>Support, Tech</span>
-                                        <p>Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.</p>
+                                        <p>
+                                            Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.
+                                        </p>
                                     </div>
                                     <a href="#">Explore <i class="fas fa-long-arrow-right"></i></a>
                                 </div>
@@ -407,9 +453,11 @@
                                 <img src="{{ asset('assets/front/img/projects/8.jpg') }}" alt="">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="#">Business Analysis</a></h4>
+                                        <h4><a href="{{ route('front.project.details') }}">Business Analysis</a></h4>
                                         <span>Network, Error</span>
-                                        <p>Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.</p>
+                                        <p>
+                                            Continued at up to zealously necessary breakfast. Surrounded sir motionless she end literature.
+                                        </p>
                                     </div>
                                     <a href="#">Explore <i class="fas fa-long-arrow-right"></i></a>
                                 </div>
@@ -441,7 +489,7 @@
                             <a href="#"><i class="fas fa-envelope"></i></a>
                         </div>
                         <div class="info">
-                            <h4><a href="#">Aleesha Brown</a></h4>
+                            <h4><a href="{{ route('front.team.details') }}">Aleesha Brown</a></h4>
                             <span>CEO & Founder</span>
                         </div>
                     </div>
@@ -453,7 +501,7 @@
                             <a href="#"><i class="fas fa-envelope"></i></a>
                         </div>
                         <div class="info">
-                            <h4><a href="#">Kevin Martin</a></h4>
+                            <h4><a href="{{ route('front.team.details') }}">Kevin Martin</a></h4>
                             <span>Product Manager</span>
                         </div>
                     </div>
@@ -465,7 +513,7 @@
                             <a href="#"><i class="fas fa-envelope"></i></a>
                         </div>
                         <div class="info">
-                            <h4><a href="#">Sarah Albert</a></h4>
+                            <h4><a href="{{ route('front.team.details') }}">Sarah Albert</a></h4>
                             <span>Financial Consultant</span>
                         </div>
                     </div>
@@ -505,7 +553,9 @@
                                 <div class="testimonial-style-two">
                                     <div class="item">
                                         <div class="text-info">
-                                            <p>“Targeting consultation apartments. indulgence creative under folly death wrote cause her way spite.”</p>
+                                            <p>
+                                                "Targeting consultation apartments. ndulgence creative under folly death wrote cause her way spite. Plan upon yet way get cold spot its week.
+                                            </p>
                                         </div>
                                         <div class="content">
                                             <div class="thumb">
@@ -523,7 +573,9 @@
                                 <div class="testimonial-style-two">
                                     <div class="item">
                                         <div class="text-info">
-                                            <p>“Consultation discover apartments. indulgence off under folly death wrote cause her way spite.”</p>
+                                            <p>
+                                                "Consultation discover apartments. ndulgence off under folly death wrote cause her way spite. Plan upon yet way get cold spot its week.
+                                            </p>
                                         </div>
                                         <div class="content">
                                             <div class="thumb">
@@ -569,9 +621,9 @@
                         <div class="content">
                             <div class="info">
                                 <h2 class="blog-title">
-                                    <a href="#">This prefabric passive house is memorable highly sustainable</a>
+                                    <a href="{{ route('front.blog.single_with_sidebar') }}">This prefabrice passive house is memorable highly sustainable</a>
                                 </h2>
-                                <a href="#" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.blog.single_with_sidebar') }}" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -588,9 +640,9 @@
                         <div class="content">
                             <div class="info">
                                 <h2 class="blog-title">
-                                    <a href="#">Announcing if attachment resolution performing the regular sentiment.</a>
+                                    <a href="{{ route('front.blog.single_with_sidebar') }}">Announcing if attachment resolution performing the regular sentim.</a>
                                 </h2>
-                                <a href="#" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.blog.single_with_sidebar') }}" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
