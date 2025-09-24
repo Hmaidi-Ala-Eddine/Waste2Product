@@ -24,6 +24,54 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
         return view('back.dashboard');
     })->name('dashboard');
+    
+    Route::get('/tables', function () {
+        return view('back.pages.tables');
+    })->name('tables');
+    
+    Route::get('/billing', function () {
+        return view('back.pages.billing');
+    })->name('billing');
+    
+    Route::get('/virtual-reality', function () {
+        return view('back.pages.virtual-reality');
+    })->name('virtual-reality');
+    
+    Route::get('/rtl', function () {
+        return view('back.pages.rtl');
+    })->name('rtl');
+    
+    Route::get('/notifications', function () {
+        return view('back.pages.notifications');
+    })->name('notifications');
+    
+    Route::get('/profile', function () {
+        return view('back.pages.profile');
+    })->name('profile');
+    
+    Route::get('/sign-in', function () {
+        return view('back.pages.sign-in');
+    })->name('sign-in');
+    
+    Route::get('/sign-up', function () {
+        return view('back.pages.sign-up');
+    })->name('sign-up');
+    
+    Route::get('/icons', function () {
+        return view('back.pages.icons');
+    })->name('icons');
+    
+    Route::get('/typography', function () {
+        return view('back.pages.typography');
+    })->name('typography');
+    
+    Route::get('/map', function () {
+        return view('back.pages.map');
+    })->name('map');
+    
+    Route::get('/landing', function () {
+        return view('back.pages.landing');
+    })->name('landing');
 });
 
 // Front pages
