@@ -144,6 +144,24 @@
             <div class="attr-right">
                 <div class="attr-nav">
                     <ul>
+                        @auth
+                            <li class="logout-item">
+                                <form method="POST" action="{{ route('front.logout') }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="logout-btn">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </li>
+                        @else
+                            <li class="login-item">
+                                <a href="{{ url('/login') }}" class="login-link">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    <span>Login</span>
+                                </a>
+                            </li>
+                        @endauth
                         <li class="contact">
                             <div class="call">
                                 <div class="icon">

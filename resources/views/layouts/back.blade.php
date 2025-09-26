@@ -18,6 +18,46 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <!-- CSS Files -->
   <link id="pagestyle" href="{{ asset('assets/back/css/material-dashboard.css?v=3.2.0') }}" rel="stylesheet" />
+  
+  <!-- Custom CSS for dropdown logout button -->
+  <style>
+    .logout-btn {
+      background: transparent !important;
+      border: none !important;
+      width: 100% !important;
+      text-align: left !important;
+      color: #67748e !important;
+      font-family: inherit !important;
+      cursor: pointer !important;
+      font-size: inherit !important;
+      line-height: inherit !important;
+      display: block !important;
+      padding: 0.5rem 1rem !important;
+      clear: both !important;
+      font-weight: 400 !important;
+      text-decoration: none !important;
+      white-space: nowrap !important;
+      border-radius: 0.5rem !important;
+      transition: all 0.15s ease-in !important;
+    }
+    
+    .logout-btn:hover,
+    .logout-btn:focus {
+      color: #344767 !important;
+      background-color: #f0f2f5 !important;
+      text-decoration: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      transform: translateY(-1px) !important;
+    }
+    
+    .logout-btn:active {
+      color: #344767 !important;
+      background-color: #e3e6ea !important;
+      transform: translateY(0px) !important;
+    }
+  </style>
+  
   @stack('styles')
 </head>
 
@@ -25,6 +65,19 @@
   @include('back.partials.sidebar')
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     @include('back.partials.navbar')
+    
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show mx-3 mt-2" role="alert">
+            <strong>Error!</strong>
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    
     <div class="container-fluid py-2">
       @yield('content')
       @include('back.partials.footer')
@@ -44,6 +97,18 @@
       }
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
+
+    // Auto-dismiss success alerts after 4 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+      const autoDismissAlerts = document.querySelectorAll('.auto-dismiss-alert');
+      autoDismissAlerts.forEach(function(alert) {
+        setTimeout(function() {
+          // Use Bootstrap's alert dismiss method
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 4000); // 4 seconds
+      });
+    });
   </script>
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>

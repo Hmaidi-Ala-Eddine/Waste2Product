@@ -105,10 +105,39 @@
             </li>
           </ul>
         </li>
-        <li class="nav-item d-flex align-items-center">
-          <a href="{{ route('admin.sign-in') }}" class="nav-link text-body font-weight-bold px-0">
+        <li class="nav-item dropdown d-flex align-items-center">
+          <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="material-symbols-rounded">account_circle</i>
           </a>
+          <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4" aria-labelledby="profileDropdown">
+            <li>
+              <a class="dropdown-item border-radius-md" href="{{ route('admin.profile') }}">
+                <div class="d-flex py-1">
+                  <div class="my-auto">
+                    <i class="material-symbols-rounded opacity-5 me-3">person</i>
+                  </div>
+                  <div class="d-flex flex-column justify-content-center">
+                    <h6 class="text-sm font-weight-normal mb-1">Profile</h6>
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <form method="POST" action="{{ route('admin.logout') }}" class="mb-0">
+                @csrf
+                <button type="submit" class="dropdown-item border-radius-md logout-btn">
+                  <div class="d-flex py-1">
+                    <div class="my-auto">
+                      <i class="material-symbols-rounded opacity-5 me-3">logout</i>
+                    </div>
+                    <div class="d-flex flex-column justify-content-center">
+                      <h6 class="text-sm font-weight-normal mb-1">Logout</h6>
+                    </div>
+                  </div>
+                </button>
+              </form>
+            </li>
+          </ul>
         </li>
       </ul>
     </div>

@@ -22,6 +22,12 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('admin.users') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.users') }}">
+            <i class="material-symbols-rounded opacity-5">group</i>
+            <span class="nav-link-text ms-1">Users</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link {{ request()->routeIs('admin.billing') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.billing') }}">
             <i class="material-symbols-rounded opacity-5">receipt_long</i>
             <span class="nav-link-text ms-1">Billing</span>
@@ -78,18 +84,7 @@
             <span class="nav-link-text ms-1">Profile</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link {{ request()->routeIs('admin.sign-in') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.sign-in') }}">
-            <i class="material-symbols-rounded opacity-5">login</i>
-            <span class="nav-link-text ms-1">Sign In</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ request()->routeIs('admin.sign-up') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.sign-up') }}">
-            <i class="material-symbols-rounded opacity-5">assignment</i>
-            <span class="nav-link-text ms-1">Sign Up</span>
-          </a>
-        </li>
+        <!-- Sign In removed from sidebar - users are already logged in -->
       </ul>
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0">

@@ -75,32 +75,50 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
-    <div id="container" class="container">
+    <div id="container" class="container {{ session('show') === 'signup' ? 'sign-up' : (session('show') === 'signin' ? 'sign-in' : '') }}">
         <!-- FORM SECTION -->
         <div class="row">
             <!-- SIGN UP -->
             <div class="col align-items-center flex-col sign-up">
                 <div class="form-wrapper align-items-center">
                     <div class="form sign-up">
-                        <div class="input-group">
-                            <i class='bx bxs-user'></i>
-                            <input type="text" placeholder="Username">
-                        </div>
-                        <div class="input-group">
-                            <i class='bx bx-mail-send'></i>
-                            <input type="email" placeholder="Email">
-                        </div>
-                        <div class="input-group">
-                            <i class='bx bxs-lock-alt'></i>
-                            <input type="password" placeholder="Password">
-                        </div>
-                        <div class="input-group">
-                            <i class='bx bxs-lock-alt'></i>
-                            <input type="password" placeholder="Confirm password">
-                        </div>
-                        <button>
-                            Sign up
-                        </button>
+                        @if(session('success'))
+                            <div style="color:green;margin-bottom:8px">{{ session('success') }}</div>
+                        @endif
+                        @if($errors->any())
+                            <div style="color:red;margin-bottom:8px">
+                                <ul style="margin:0;padding-left:18px;text-align:left;">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('front.signup.post') }}">
+                            @csrf
+                            <input type="hidden" name="from" value="front">
+                            <div class="input-group">
+                                <i class='bx bxs-user'></i>
+                                <input name="name" type="text" placeholder="Full name" required value="{{ old('name') }}">
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bx-mail-send'></i>
+                                <input name="email" type="email" placeholder="Email" required value="{{ old('email') }}">
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-lock-alt'></i>
+                                <input name="password" type="password" placeholder="Password" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-lock-alt'></i>
+                                <input name="password_confirmation" type="password" placeholder="Confirm password" required>
+                            </div>
+                            <button type="submit">
+                                Sign up
+                            </button>
+                        </form>
+
                         <p>
                             <span>
                                 Already have an account?
@@ -117,30 +135,47 @@
             <div class="col align-items-center flex-col sign-in">
                 <div class="form-wrapper align-items-center">
                     <div class="form sign-in">
-                        <div class="input-group">
-                            <i class='bx bxs-user'></i>
-                            <input type="text" id="login-username" placeholder="Username">
-                        </div>
-                        <div class="input-group">
-                            <i class='bx bxs-lock-alt'></i>
-                            <input type="password" id="login-password" placeholder="Password">
-                        </div>
-                        <button onclick="loginCheck(event)">
-                            Sign in
-                        </button>
-                        <p>
-                            <b>
-                                Forgot password?
-                            </b>
-                        </p>
-                        <p>
-                            <span>
-                                Don't have an account?
-                            </span>
-                            <b onclick="toggle()" class="pointer">
-                                Sign up here
-                            </b>
-                        </p>
+                        @if(session('success'))
+                            <div style="color:green;margin-bottom:8px">{{ session('success') }}</div>
+                        @endif
+                        @if($errors->any())
+                            <div style="color:red;margin-bottom:8px">
+                                <ul style="margin:0;padding-left:18px;text-align:left;">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('front.sign-in.post') }}">
+                            @csrf
+                            <input type="hidden" name="from" value="front">
+                            <div class="input-group">
+                                <i class='bx bxs-user'></i>
+                                <input name="email" type="email" id="login-email" placeholder="Email" required value="{{ old('email') }}">
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-lock-alt'></i>
+                                <input name="password" type="password" id="login-password" placeholder="Password" required>
+                            </div>
+                            <button type="submit">
+                                Sign in
+                            </button>
+                            <p>
+                                <b>
+                                    Forgot password?
+                                </b>
+                            </p>
+                            <p>
+                                <span>
+                                    Don't have an account?
+                                </span>
+                                <b onclick="toggle()" class="pointer">
+                                    Sign up here
+                                </b>
+                            </p>
+                        </form>
                     </div>
                 </div>
                 <div class="form-wrapper">
@@ -186,16 +221,7 @@
             container.classList.add('sign-in');
         }, 200);
 
-        function loginCheck(e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-            if (username === 'admin' && password === 'admin') {
-                window.location.href = "{{ url('/') }}";
-            } else {
-                alert('Invalid credentials');
-            }
-        }
+        // forms submit to server; no client-side stub needed
     </script>
 </body>
 </html>

@@ -18,6 +18,33 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <!-- CSS Files -->
   <link id="pagestyle" href="{{ asset('assets/back/css/material-dashboard.css?v=3.2.0') }}" rel="stylesheet" />
+  
+  <!-- Clean input styling -->
+  <style>
+    .input-group-outline .form-control {
+      border: 1px solid #d0d7de;
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      background: #fff;
+      transition: all 0.2s ease;
+    }
+    
+    .input-group-outline .form-control:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+      outline: none;
+    }
+    
+    .input-group-outline .form-control::placeholder {
+      color: #6c757d;
+      opacity: 0.7;
+    }
+    
+    .input-group-outline .form-control:focus::placeholder {
+      opacity: 0.4;
+    }
+  </style>
 </head>
 
 <body class="bg-gray-200">
@@ -51,12 +78,7 @@
                     Profile
                   </a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link me-2" href="{{ route('admin.sign-up') }}">
-                    <i class="fas fa-user-circle opacity-6 text-dark me-1"></i>
-                    Sign Up
-                  </a>
-                </li>
+                <!-- Sign Up removed -->
                 <li class="nav-item">
                   <a class="nav-link me-2 active" aria-current="page" href="{{ route('admin.sign-in') }}">
                     <i class="fas fa-key opacity-6 text-dark me-1"></i>
@@ -109,25 +131,38 @@
                 </div>
               </div>
               <div class="card-body">
-                <form role="form" class="text-start">
+                @if(session('success'))
+                  <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                @if($errors->any())
+                  <div class="alert alert-danger">
+                    <ul class="mb-0">
+                      @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                      @endforeach
+                    </ul>
+                  </div>
+                @endif
+
+                <form role="form" class="text-start" method="POST" action="{{ route('admin.sign-in.post') }}">
+                  @csrf
                   <div class="input-group input-group-outline my-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control">
+                    <input name="email" type="email" class="form-control" placeholder="Email" value="{{ old('email') }}" required>
                   </div>
                   <div class="input-group input-group-outline mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control">
+                    <input name="password" type="password" class="form-control" placeholder="Password" required>
                   </div>
                   <div class="form-check form-switch d-flex align-items-center mb-3">
-                    <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+                    <input class="form-check-input" type="checkbox" name="remember" id="rememberMe" {{ old('remember') ? 'checked' : '' }}>
                     <label class="form-check-label mb-0 ms-3" for="rememberMe">Remember me</label>
                   </div>
                   <div class="text-center">
-                    <button type="button" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign in</button>
+                    <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign in</button>
                   </div>
                   <p class="mt-4 text-sm text-center">
                     Don't have an account?
-                    <a href="{{ route('admin.sign-up') }}" class="text-primary text-gradient font-weight-bold">Sign up</a>
+                    <span class="text-primary text-gradient font-weight-bold">Sign up (disabled)</span>
                   </p>
                 </form>
               </div>
