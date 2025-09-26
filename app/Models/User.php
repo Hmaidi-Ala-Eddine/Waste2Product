@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_banned',
+        'banned_at',
+        'ban_reason',
+        'banned_by',
     ];
 
     /**
@@ -43,6 +47,58 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_banned' => 'boolean',
+            'banned_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the user who banned this user.
+     */
+    public function bannedBy()
+    {
+        return $this->belongsTo(User::class, 'banned_by');
+    }
+
+    /**
+     * Get all users banned by this user.
+     */
+    public function bannedUsers()
+    {
+        return $this->hasMany(User::class, 'banned_by');
+    }
+
+    /**
+     * Check if user is banned.
+     */
+    public function isBanned(): bool
+    {
+        return $this->is_banned;
+    }
+
+    /**
+     * Ban a user.
+     */
+    public function ban(string $reason = null, User $bannedBy = null): void
+    {
+        $this->update([
+            'is_banned' => true,
+            'banned_at' => now(),
+            'ban_reason' => $reason,
+            'banned_by' => $bannedBy?->id,
+        ]);
+    }
+
+    /**
+     * Unban a user.
+     */
+    public function unban(): void
+    {
+        $this->update([
+            'is_banned' => false,
+            'banned_at' => null,
+            'ban_reason' => null,
+            'banned_by' => null,
+        ]);
     }
 }

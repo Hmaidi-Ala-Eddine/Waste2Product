@@ -10,6 +10,42 @@
     <p class="mb-4">
       Check the sales, value and bounce rate by country.
     </p>
+    <div class="d-flex gap-2">
+      <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn btn-danger btn-sm">
+          <i class="fa fa-sign-out me-2"></i>
+          Se déconnecter
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="col-12 mb-4">
+    <div class="card">
+      <div class="card-header pb-0">
+        <h6>Gestion des Utilisateurs</h6>
+        <p class="text-sm mb-0">
+          <i class="fa fa-users text-info" aria-hidden="true"></i>
+          <span class="font-weight-bold ms-1">Gérez vos utilisateurs</span>
+        </p>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <a href="{{ route('admin.users.index') }}" class="btn bg-gradient-primary">
+              <i class="fa fa-users me-2"></i>
+              Gérer les Utilisateurs
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a href="{{ route('admin.users.create') }}" class="btn bg-gradient-success">
+              <i class="fa fa-plus me-2"></i>
+              Créer un Utilisateur
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
     <div class="card">

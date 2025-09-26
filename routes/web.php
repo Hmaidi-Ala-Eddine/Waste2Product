@@ -20,10 +20,15 @@ Route::view('/home-5-op', 'front.home-5-onepage')->name('front.home5.onepage');
 Route::view('/home-6', 'front.home-6')->name('front.home6');
 Route::view('/home-6-op', 'front.home-6-onepage')->name('front.home6.onepage');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::get('/', function () {
         return view('back.dashboard');
     })->name('dashboard');
+    
+    // User Management Routes
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::post('users/{user}/ban', [App\Http\Controllers\Admin\UserController::class, 'ban'])->name('users.ban');
+    Route::post('users/{user}/unban', [App\Http\Controllers\Admin\UserController::class, 'unban'])->name('users.unban');
     
     Route::get('/tables', function () {
         return view('back.pages.tables');
