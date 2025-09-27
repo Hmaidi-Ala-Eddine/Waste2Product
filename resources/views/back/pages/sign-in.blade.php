@@ -65,33 +65,15 @@
               </span>
             </button>
             <div class="collapse navbar-collapse" id="navigation">
-              <ul class="navbar-nav mx-auto">
-                <li class="nav-item">
-                  <a class="nav-link d-flex align-items-center me-2" href="{{ route('admin.dashboard') }}">
-                    <i class="fa fa-chart-pie opacity-6 text-dark me-1"></i>
-                    Dashboard
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link me-2" href="{{ route('admin.profile') }}">
-                    <i class="fa fa-user opacity-6 text-dark me-1"></i>
-                    Profile
-                  </a>
-                </li>
-                <!-- Sign Up removed -->
-                <li class="nav-item">
-                  <a class="nav-link me-2 active" aria-current="page" href="{{ route('admin.sign-in') }}">
-                    <i class="fas fa-key opacity-6 text-dark me-1"></i>
-                    Sign In
-                  </a>
-                </li>
-              </ul>
-              <ul class="navbar-nav d-lg-flex d-none">
+              <!-- Keep left side minimal -->
+              <ul class="navbar-nav me-auto d-none"></ul>
+              <!-- Right side action buttons -->
+              <ul class="navbar-nav ms-auto d-none d-lg-flex">
                 <li class="nav-item d-flex align-items-center">
-                  <a class="btn btn-outline-primary btn-sm mb-0 me-2" target="_blank" href="{{ url('/') }}">Online Builder</a>
+                  <a class="btn btn-outline-primary btn-sm mb-0 me-2" href="{{ route('front.contact') }}">Support</a>
                 </li>
                 <li class="nav-item">
-                  <a href="https://www.creative-tim.com/product/material-dashboard" class="btn btn-sm mb-0 me-1 bg-gradient-dark">Free download</a>
+                  <a href="{{ route('front.home') }}" class="btn btn-sm mb-0 me-1 bg-gradient-dark">Home</a>
                 </li>
               </ul>
             </div>
@@ -102,7 +84,7 @@
     </div>
   </div>
   <main class="main-content mt-0">
-    <div class="page-header align-items-start min-vh-100" style="background-image: url('https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80');">
+    <div class="page-header align-items-start min-vh-100" style="background-image: url('{{ asset('assets/back/img/noah-buscher-x8ZStukS2PM-unsplash.jpg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
       <span class="mask bg-gradient-dark opacity-6"></span>
       <div class="container my-auto">
         <div class="row">
@@ -160,9 +142,9 @@
                   <div class="text-center">
                     <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign in</button>
                   </div>
-                  <p class="mt-4 text-sm text-center">
-                    Don't have an account?
-                    <span class="text-primary text-gradient font-weight-bold">Sign up (disabled)</span>
+                  <p class="mt-4 text-sm text-center text-muted">
+                    Admin access only. If you need an account, please contact your supervisor or system administrator to request an
+                    approved admin role.
                   </p>
                 </form>
               </div>
