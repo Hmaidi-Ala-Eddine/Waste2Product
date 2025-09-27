@@ -19,8 +19,20 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
+        'address',
+        'role',
+        'profile_photo_path',
         'password',
+        'is_active',
+        'faceid_enabled',
+        'forgot_password_token',
+        'jwt_token',
+        'jwt_expires_at',
     ];
 
     /**
@@ -31,6 +43,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'forgot_password_token',
+        'jwt_token',
     ];
 
     /**
@@ -42,7 +56,28 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'jwt_expires_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'is_active' => 'boolean',
+            'faceid_enabled' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the waste requests made by this user (as customer)
+     */
+    public function wasteRequests()
+    {
+        return $this->hasMany(WasteRequest::class, 'user_id');
+    }
+
+    /**
+     * Get the waste requests assigned to this user (as collector)
+     */
+    public function assignedWasteRequests()
+    {
+        return $this->hasMany(WasteRequest::class, 'collector_id');
     }
 }

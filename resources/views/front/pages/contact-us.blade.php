@@ -3,7 +3,8 @@
 @section('title', 'Contact Us')
 
 @section('content')
-    <div class="contact-style-one-area overflow-hidden default-padding">
+    <!-- Full Screen Contact Section -->
+    <div class="contact-style-one-area overflow-hidden min-vh-100 d-flex align-items-center">
         <div class="contact-shape">
             <img src="{{ asset('assets/front/img/illustration/14.png') }}" alt="Image Not Found">
         </div>
@@ -82,6 +83,13 @@
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Down Indicator -->
+        <div class="scroll-down-indicator">
+            <div class="scroll-down-arrow">
+                <i class="fas fa-chevron-down"></i>
             </div>
         </div>
     </div>

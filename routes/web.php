@@ -20,7 +20,52 @@ Route::view('/home-5-op', 'front.home-5-onepage')->name('front.home5.onepage');
 Route::view('/home-6', 'front.home-6')->name('front.home6');
 Route::view('/home-6-op', 'front.home-6-onepage')->name('front.home6.onepage');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+use App\Http\Middleware\EnsureUserIsAdmin;
+
+// Admin auth routes (publicly accessible)
+Route::get('admin/sign-in', function () {
+    return view('back.pages.sign-in');
+})->name('admin.sign-in');
+
+// handle sign-in form submission (public)
+Route::post('admin/sign-in', [\App\controller\UserController::class, 'login'])->name('admin.sign-in.post');
+
+// front sign-in (public) - users and admins can sign in via the front page
+Route::post('/login', [\App\controller\UserController::class, 'login'])->name('front.sign-in.post');
+
+// front signup for public users (used by front login page)
+Route::post('/signup', [\App\controller\UserController::class, 'store'])->name('front.signup.post');
+
+// front logout route (for logged in users)
+Route::post('/logout', [\App\controller\UserController::class, 'logout'])->name('front.logout');
+
+// Email verification link
+Route::get('/verify-email', [\App\controller\UserController::class, 'verifyEmail'])->name('front.verify-email');
+
+// DEBUG route: send a test verification email to TEST_MAIL_TO (REMOVE in production)
+Route::get('/debug-send-mail', function () {
+    $to = env('TEST_MAIL_TO');
+    if (! $to) {
+        return response()->json(['ok' => false, 'error' => 'TEST_MAIL_TO not set in .env'], 400);
+    }
+
+    $user = App\Models\User::first();
+    if (! $user) {
+        return response()->json(['ok' => false, 'error' => 'No users found to use in test'], 400);
+    }
+
+    $verifyUrl = url('/verify-email?token=testtoken&email=' . urlencode($user->email));
+
+    try {
+        \Illuminate\Support\Facades\Mail::to($to)->send(new App\Mail\VerifyEmail($user, $verifyUrl));
+        return response()->json(['ok' => true, 'message' => 'Email sent to ' . $to]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+// Protected admin pages (require authentication + admin role)
+Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->group(function () {
     Route::get('/', function () {
         return view('back.dashboard');
     })->name('dashboard');
@@ -28,6 +73,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/tables', function () {
         return view('back.pages.tables');
     })->name('tables');
+    Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
+    Route::post('/users', [\App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store');
+    Route::post('/users/check-email', [\App\Http\Controllers\AdminController::class, 'checkEmail'])->name('users.check-email');
+    Route::get('/users/{id}/data', [\App\Http\Controllers\AdminController::class, 'getUserData'])->name('users.data');
+    Route::put('/users/{id}', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{id}', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete');
+    
+    // Waste Collection & Requests routes
+    Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'index'])->name('waste-requests');
+    Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'store'])->name('waste-requests.store');
+    Route::get('/waste-requests/customers', [\App\Http\Controllers\WasteRequestController::class, 'getCustomers'])->name('waste-requests.customers');
+    Route::get('/waste-requests/collectors', [\App\Http\Controllers\WasteRequestController::class, 'getCollectors'])->name('waste-requests.collectors');
+    Route::get('/waste-requests/{id}/data', [\App\Http\Controllers\WasteRequestController::class, 'getData'])->name('waste-requests.data');
+    Route::put('/waste-requests/{id}', [\App\Http\Controllers\WasteRequestController::class, 'update'])->name('waste-requests.update');
+    Route::delete('/waste-requests/{id}', [\App\Http\Controllers\WasteRequestController::class, 'destroy'])->name('waste-requests.delete');
+    Route::post('/waste-requests/{id}/assign-collector', [\App\Http\Controllers\WasteRequestController::class, 'assignCollector'])->name('waste-requests.assign-collector');
+    Route::post('/waste-requests/{id}/update-status', [\App\Http\Controllers\WasteRequestController::class, 'updateStatus'])->name('waste-requests.update-status');
     
     Route::get('/billing', function () {
         return view('back.pages.billing');
@@ -49,14 +111,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         return view('back.pages.profile');
     })->name('profile');
     
-    Route::get('/sign-in', function () {
-        return view('back.pages.sign-in');
-    })->name('sign-in');
-    
-    Route::get('/sign-up', function () {
-        return view('back.pages.sign-up');
-    })->name('sign-up');
-    
     Route::get('/icons', function () {
         return view('back.pages.icons');
     })->name('icons');
@@ -70,8 +124,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     })->name('map');
     
     Route::get('/landing', function () {
-        return view('back.pages.landing');
+        return redirect('/');
     })->name('landing');
+    
+    // Logout route
+    Route::post('/logout', [\App\controller\UserController::class, 'logout'])->name('logout');
 });
 
 // Front pages

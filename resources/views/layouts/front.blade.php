@@ -17,6 +17,61 @@
     <link href="{{ asset('assets/front/css/unit-test.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/front/css/style.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/front/css/overrides.css') }}" rel="stylesheet">
+    
+    <!-- Clean logout/login button styling -->
+    <style>
+        .logout-btn, .login-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+        
+        .logout-btn:hover, .login-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .logout-btn:active {
+            transform: translateY(0);
+        }
+        
+        .logout-item, .login-item {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Navbar Green Hover Effects Only */
+        .navbar-nav > li > a:hover,
+        .navbar-nav > li > a:focus {
+            color: #4CAF50 !important;
+        }
+
+        .navbar-nav > li.dropdown:hover > a,
+        .navbar-nav > li.dropdown.open > a {
+            color: #4CAF50 !important;
+        }
+
+        /* Dropdown Menu Green Hover */
+        .dropdown-menu > li > a:hover,
+        .dropdown-menu > li > a:focus {
+            background-color: #E8F5E8 !important;
+            color: #2E7D32 !important;
+        }
+    </style>
+    
     @stack('styles')
 </head>
 
@@ -45,6 +100,39 @@
     </div>
 
     @include('front.partials.header')
+
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show auto-dismiss-alert" role="alert" style="margin: 0; border-radius: 0; z-index: 1050; background-color: #4CAF50; border-color: #4CAF50; color: white;">
+            <div class="container">
+                <strong>Success!</strong> {{ session('success') }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin: 0; border-radius: 0; z-index: 1050;">
+            <div class="container">
+                <strong>Error!</strong> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin: 0; border-radius: 0; z-index: 1050;">
+            <div class="container">
+                <strong>Error!</strong>
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
 
     <main>
         @yield('content')
@@ -86,6 +174,18 @@
                 }, remaining);
             });
         })();
+
+        // Auto-dismiss success alerts after 4 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoDismissAlerts = document.querySelectorAll('.auto-dismiss-alert');
+            autoDismissAlerts.forEach(function(alert) {
+                setTimeout(function() {
+                    // Use Bootstrap's alert dismiss method
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 4000); // 4 seconds
+            });
+        });
     </script>
     @stack('scripts')
 </body>

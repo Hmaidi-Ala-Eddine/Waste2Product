@@ -2,7 +2,7 @@
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand px-4 py-3 m-0" href="{{ route('admin.dashboard') }}">
-        <img src="{{ asset('assets/back/img/logo-ct-dark.png') }}" class="navbar-brand-img" width="26" height="26" alt="main_logo">
+        <img src="{{ asset('assets/back/img/recycle.png') }}" class="navbar-brand-img" width="26" height="26" alt="main_logo">
         <span class="ms-1 text-sm text-dark">Waste2Product</span>
       </a>
     </div>
@@ -19,6 +19,18 @@
           <a class="nav-link {{ request()->routeIs('admin.tables') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.tables') }}">
             <i class="material-symbols-rounded opacity-5">table_view</i>
             <span class="nav-link-text ms-1">Tables</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('admin.users') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.users') }}">
+            <i class="material-symbols-rounded opacity-5">group</i>
+            <span class="nav-link-text ms-1">Users</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('admin.waste-requests') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.waste-requests') }}">
+            <i class="material-symbols-rounded opacity-5">recycling</i>
+            <span class="nav-link-text ms-1">Waste Requests</span>
           </a>
         </li>
         <li class="nav-item">
@@ -78,18 +90,7 @@
             <span class="nav-link-text ms-1">Profile</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link {{ request()->routeIs('admin.sign-in') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.sign-in') }}">
-            <i class="material-symbols-rounded opacity-5">login</i>
-            <span class="nav-link-text ms-1">Sign In</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ request()->routeIs('admin.sign-up') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.sign-up') }}">
-            <i class="material-symbols-rounded opacity-5">assignment</i>
-            <span class="nav-link-text ms-1">Sign Up</span>
-          </a>
-        </li>
+        <!-- Sign In removed from sidebar - users are already logged in -->
       </ul>
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0">

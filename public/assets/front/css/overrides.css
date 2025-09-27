@@ -43,4 +43,318 @@ body.loaded #preloader{
     right: 0;
 }
 
+/* Equal height service cards fix */
+.services-style-three-area .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.services-style-three-area .services-style-three-item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 350px; /* Minimum height to ensure consistency */
+}
+
+.services-style-three-area .item-title {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: flex-start;
+}
+
+.services-style-three-area .item-title img {
+    flex-shrink: 0; /* Prevent icon from shrinking */
+    width: auto;
+    height: auto;
+    max-width: 80px; /* Maintain reasonable icon size */
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.services-style-three-area .item-title h4 {
+    flex-shrink: 0; /* Prevent title from shrinking */
+    margin: 20px 0 15px 0;
+}
+
+.services-style-three-area .item-title p {
+    flex-grow: 1;
+    margin-bottom: 20px;
+}
+
+.services-style-three-area .d-flex.mt-30 {
+    margin-top: auto !important;
+}
+
+/* Ensure equal height for the parent columns */
+.services-style-three-area [class*="col-"] {
+    display: flex;
+    margin-bottom: 30px;
+}
+
+/* Moving Services Banner */
+.moving-services-banner {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    padding: 20px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    border-top: 3px solid #66BB6A;
+    border-bottom: 3px solid #66BB6A;
+}
+
+.moving-text-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.moving-text {
+    display: inline-block;
+    animation: moveLeft 45s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+}
+
+.service-item {
+    display: inline-block;
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin-right: 60px;
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    backdrop-filter: none;
+    border: none;
+    transition: all 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.service-item:hover {
+    color: #C8E6C9;
+    transform: translateY(-3px);
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+.service-item i {
+    margin-right: 15px;
+    font-size: 28px;
+    color: #C8E6C9;
+}
+
+@keyframes moveLeft {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* Pause animation on hover */
+.moving-services-banner:hover .moving-text {
+    animation-play-state: paused;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .service-item {
+        font-size: 28px;
+        margin-right: 50px;
+    }
+    
+    .service-item i {
+        font-size: 24px;
+    }
+    
+    .moving-text {
+        animation-duration: 35s;
+    }
+}
+
+@media (max-width: 480px) {
+    .service-item {
+        font-size: 24px;
+        margin-right: 40px;
+    }
+    
+    .service-item i {
+        font-size: 20px;
+    }
+    
+    .moving-text {
+        animation-duration: 25s;
+    }
+}
+
+/* Contact Page Full Screen Layout */
+.contact-style-one-area {
+    position: relative;
+}
+
+/* Scroll Down Indicator */
+.scroll-down-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.scroll-down-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: bounce 2s infinite;
+}
+
+.scroll-down-arrow:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+    transform: translateY(-5px);
+}
+
+.scroll-down-arrow i {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.scroll-down-arrow:hover i {
+    color: #fff;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Responsive scroll indicator */
+@media (max-width: 768px) {
+    .scroll-down-indicator {
+        bottom: 20px;
+    }
+    
+    .scroll-down-arrow {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .scroll-down-arrow i {
+        font-size: 16px;
+    }
+}
+
+/* Fix Login Button Hover State Across All Pages */
+.navbar .login-item .login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0; /* no pill */
+    border: none;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: inherit !important; /* follow navbar theme */
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.navbar .login-item .login-link:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    color: inherit !important;
+    text-decoration: none !important; /* remove underline */
+}
+
+.navbar .login-item .login-link i {
+    color: inherit !important;
+    transition: color 0.2s ease;
+}
+
+.navbar .login-item .login-link:hover i {
+    color: inherit !important;
+}
+
+.navbar .login-item .login-link span {
+    color: inherit !important;
+    font-weight: 500;
+}
+
+.navbar .login-item .login-link:hover span {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+/* Ensure consistent styling on different navbar states */
+.navbar.navbar-fixed .login-item .login-link,
+.navbar.white .login-item .login-link,
+.navbar.no-background .login-item .login-link {
+    background: transparent !important;
+    border: none !important;
+    color: inherit !important;
+}
+
+.navbar.navbar-fixed .login-item .login-link:hover,
+.navbar.white .login-item .login-link:hover,
+.navbar.no-background .login-item .login-link:hover {
+    background: transparent !important;
+    border: none !important;
+    color: inherit !important;
+}
+
+/* Force override any conflicting styles */
+.navbar .login-item .login-link:hover,
+.navbar .login-item .login-link:focus,
+.navbar .login-item .login-link:active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+}
+
+/* Force white theme on home/onepage transparent navbar */
+.navbar.white.no-background .login-item .login-link,
+.navbar.white.no-background .login-item .login-link i,
+.navbar.white.no-background .login-item .login-link span {
+    color: #ffffff !important;
+}
+
+/* Subtle hover on transparent (home) navbar */
+.navbar.white.no-background .login-item .login-link:hover,
+.navbar.white.no-background .login-item .login-link:hover i,
+.navbar.white.no-background .login-item .login-link:hover span {
+    color: #66BB6A !important; /* eco accent green for visibility */
+}
+
+/* Keep dark theme on solid/light navbars (other pages) */
+.navbar.navbar-fixed:not(.white):not(.no-background) .login-item .login-link,
+.navbar.navbar-default:not(.white):not(.no-background) .login-item .login-link {
+    color: #000000 !important; /* solid black on standard pages */
+}
+
+.navbar.navbar-fixed:not(.white):not(.no-background) .login-item .login-link:hover,
+.navbar.navbar-default:not(.white):not(.no-background) .login-item .login-link:hover,
+.navbar.navbar-fixed:not(.white):not(.no-background) .login-item .login-link:focus,
+.navbar.navbar-default:not(.white):not(.no-background) .login-item .login-link:focus {
+    color: #2E7D32 !important; /* darker green on light navbars */
+}
+
 

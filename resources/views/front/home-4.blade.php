@@ -14,7 +14,7 @@
                             <div class="video-card wow fadeInDown" data-wow-delay="500ms">
                                 <div class="thumb">
                                     <img src="{{ asset('assets/front/img/thumb/6.jpg') }}" alt="Image Not Found">
-                                    <a href="https://www.youtube.com/watch?v=aTC_RNYtEb0" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
+                                    <a href="{{ config('site.intro_video_url') }}" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
                                 </div>
                                 <h4>Watch Intro Video</h4>
                             </div>

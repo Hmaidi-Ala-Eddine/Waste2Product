@@ -88,7 +88,7 @@
                                 </div>
                                 <div class="megamenu-banner">
                                     <img src="{{ asset('assets/front/img/thumb/7.jpg') }}" alt="Image Not Found">
-                                    <a href="https://www.youtube.com/watch?v=aTC_RNYtEb0" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
+                                    <a href="{{ config('site.intro_video_url') }}" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
                                     <h6 class="title"><a href="#">Watch Intro Video</a></h6>
                                 </div>
                             </li>
@@ -144,6 +144,24 @@
             <div class="attr-right">
                 <div class="attr-nav">
                     <ul>
+                        @auth
+                            <li class="logout-item">
+                                <form method="POST" action="{{ route('front.logout') }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="logout-btn">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </li>
+                        @else
+                            <li class="login-item">
+                                <a href="{{ url('/login') }}" class="login-link">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    <span>Login</span>
+                                </a>
+                            </li>
+                        @endauth
                         <li class="contact">
                             <div class="call">
                                 <div class="icon">

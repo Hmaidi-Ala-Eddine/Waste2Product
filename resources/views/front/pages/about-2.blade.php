@@ -23,7 +23,7 @@
                     <div class="card-style-two mt-40">
                         <div class="thumb">
                             <img src="{{ asset('assets/front/img/thumb/2.jpg') }}" alt="Image Not Found">
-                            <a href="https://www.youtube.com/watch?v=HAnw168huqA" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
+                            <a href="https://www.youtube.com/watch?v=cNPEH0GOhRw" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
                         </div>
                         <div class="info">
                             <h2>3.8 X</h2>
