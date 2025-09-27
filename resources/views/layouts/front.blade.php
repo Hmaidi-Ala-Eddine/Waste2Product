@@ -52,6 +52,24 @@
             display: flex;
             align-items: center;
         }
+
+        /* Navbar Green Hover Effects Only */
+        .navbar-nav > li > a:hover,
+        .navbar-nav > li > a:focus {
+            color: #4CAF50 !important;
+        }
+
+        .navbar-nav > li.dropdown:hover > a,
+        .navbar-nav > li.dropdown.open > a {
+            color: #4CAF50 !important;
+        }
+
+        /* Dropdown Menu Green Hover */
+        .dropdown-menu > li > a:hover,
+        .dropdown-menu > li > a:focus {
+            background-color: #E8F5E8 !important;
+            color: #2E7D32 !important;
+        }
     </style>
     
     @stack('styles')

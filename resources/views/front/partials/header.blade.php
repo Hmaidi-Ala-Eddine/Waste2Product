@@ -88,7 +88,7 @@
                                 </div>
                                 <div class="megamenu-banner">
                                     <img src="{{ asset('assets/front/img/thumb/7.jpg') }}" alt="Image Not Found">
-                                    <a href="https://www.youtube.com/watch?v=aTC_RNYtEb0" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
+                                    <a href="{{ config('site.intro_video_url') }}" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
                                     <h6 class="title"><a href="#">Watch Intro Video</a></h6>
                                 </div>
                             </li>

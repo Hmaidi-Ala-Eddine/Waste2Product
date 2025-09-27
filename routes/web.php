@@ -74,6 +74,8 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
         return view('back.pages.tables');
     })->name('tables');
     Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
+    Route::post('/users', [\App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store');
+    Route::post('/users/check-email', [\App\Http\Controllers\AdminController::class, 'checkEmail'])->name('users.check-email');
     Route::get('/users/{id}/data', [\App\Http\Controllers\AdminController::class, 'getUserData'])->name('users.data');
     Route::put('/users/{id}', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('users.update');
     Route::delete('/users/{id}', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete');

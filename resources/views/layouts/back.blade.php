@@ -63,7 +63,7 @@
 
 <body class="g-sidenav-show bg-gray-100">
   @include('back.partials.sidebar')
-  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg d-flex flex-column">
     @include('back.partials.navbar')
     
     @if($errors->any())
@@ -78,8 +78,11 @@
         </div>
     @endif
     
-    <div class="container-fluid py-2">
+    <div class="container-fluid py-2 flex-grow-1">
       @yield('content')
+    </div>
+    
+    <div class="container-fluid">
       @include('back.partials.footer')
     </div>
   </main>

@@ -10,7 +10,7 @@
                     <div class="col-xl-7 col-lg-6">
                         <div class="thumb-style-one">
                             <img src="{{ asset('assets/front/img/about/1.jpg') }}" alt="Image Not Found">
-                            <a href="https://www.youtube.com/watch?v=aTC_RNYtEb0" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
+                            <a href="{{ config('site.intro_video_url') }}" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
                         </div>
                     </div>
                     <div class="col-xl-5 col-lg-6 pl-50 pl-md-15 pl-xs-15">

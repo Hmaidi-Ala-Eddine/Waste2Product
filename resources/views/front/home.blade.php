@@ -7,7 +7,7 @@
         <div class="banner-fade">
             <div class="swiper-wrapper">
                 <div class="swiper-slide banner-style-two">
-                    <div class="banner-thumb bg-cover shadow dark" style="background: url({{ asset('assets/front/img/banner/1.jpg') }});"></div>
+                    <div class="banner-thumb bg-cover shadow dark" style="background: url({{ asset('assets/front/img/banner/banner1.png') }});"></div>
                     <div class="container">
                         <div class="row align-center">
                             <div class="col-xl-7 offset-xl-5 col-lg-10 offset-lg-1">
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="swiper-slide banner-style-two">
-                    <div class="banner-thumb bg-cover shadow dark" style="background: url({{ asset('assets/front/img/banner/4.jpg') }});"></div>
+                    <div class="banner-thumb bg-cover shadow dark" style="background: url({{ asset('assets/front/img/banner/banner2.png') }});"></div>
                     <div class="container">
                         <div class="row align-center">
                             <div class="col-xl-7 offset-xl-5 col-lg-10 offset-lg-1">
@@ -178,7 +178,7 @@
                 </div>
                 <div class="col-lg-5 offset-lg-1">
                     <div class="thumb-style-two wow fadeInUp">
-                        <img src="{{ asset('assets/front/img/about/4.jpg') }}" alt="Image Not Found">
+                        <img src="{{ asset('assets/front/img/banner/imgs/13.png') }}" alt="Waste Management Solutions">
                     </div>
                 </div>
             </div>
@@ -201,7 +201,7 @@
                 <div class="col-xl-4 col-md-6 feature-style-two-item">
                     <div class="feature-style-two wow fadeInRight">
                         <div class="thumb">
-                            <img src="{{ asset('assets/front/img/features/1.jpg') }}" alt="Thumb">
+                            <img src="{{ asset('assets/front/img/banner/imgs/1.png') }}" alt="Waste Collection Service">
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/13.png') }}" alt="Icon Not Found">
@@ -226,7 +226,7 @@
                 <div class="col-xl-4 col-md-6 feature-style-two-item">
                     <div class="feature-style-two wow fadeInRight" data-wow-delay="200ms">
                         <div class="thumb">
-                            <img src="{{ asset('assets/front/img/features/2.jpg') }}" alt="Thumb">
+                            <img src="{{ asset('assets/front/img/banner/imgs/2.png') }}" alt="Material Recovery Process">
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
@@ -251,7 +251,7 @@
                 <div class="col-xl-4 col-md-6 feature-style-two-item">
                     <div class="feature-style-two wow fadeInRight" data-wow-delay="400ms">
                         <div class="thumb">
-                            <img src="{{ asset('assets/front/img/features/3.jpg') }}" alt="Thumb">
+                            <img src="{{ asset('assets/front/img/banner/imgs/4.png') }}" alt="Product Transformation">
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/15.png') }}" alt="Icon Not Found">
@@ -324,13 +324,7 @@
                 </div>
                 <div class="col-xl-6">
                     <div class="thumb-style-three">
-                        <img src="{{ asset('assets/front/img/illustration/7.png') }}" alt="Illustration">
-                        <div class="circle-text" style="background-image: url({{ asset('assets/front/img/shape/26.png') }});">
-                            <div class="circle-text-item" data-circle-text-options='{"radius": 81, "forceWidth": true, "forceHeight": true }'>
-                                .  Certified Green Company   .  Waste Transformation Solutions
-                            </div>
-                            <a href="#"><i class="fas fa-long-arrow-right"></i></a>
-                        </div>
+                        <img src="{{ asset('assets/front/img/banner/imgs/2 (2).png') }}" alt="Environmental Solutions">
                     </div>
                 </div>
             </div>
@@ -412,7 +406,7 @@
         <div class="container">
             <div class="row align-center">
                 <div class="col-lg-4">
-                    <div class="fun-fact-style-two text-light" style="background-image: url({{ asset('assets/front/img/shape/1.jpg') }});">
+                    <div class="fun-fact-style-two text-light" style="background-image: url({{ asset('assets/front/img/banner/imgs/3 (2) (1).png') }});">
                         <div class="fun-fact">
                             <div class="counter-title">
                                 <div class="counter">
@@ -494,7 +488,7 @@
                     <div class="swiper-wrapper">
                         <div class="swiper-slide">
                             <div class="gallery-style-one">
-                                <img src="{{ asset('assets/front/img/projects/5.jpg') }}" alt="">
+                                <img src="{{ asset('assets/front/img/banner/imgs/1(1).png') }}" alt="Plastic Upcycling">
                                 <div class="overlay">
                                     <div class="info">
                                         <h4><a href="{{ route('front.project.details') }}">Plastic Upcycling Initiative</a></h4>
@@ -509,7 +503,7 @@
                         </div>
                         <div class="swiper-slide">
                             <div class="gallery-style-one">
-                                <img src="{{ asset('assets/front/img/projects/6.jpg') }}" alt="">
+                                <img src="{{ asset('assets/front/img/banner/imgs/2 (1).png') }}" alt="Organic Waste Composting">
                                 <div class="overlay">
                                     <div class="info">
                                         <h4><a href="{{ route('front.project.details') }}">Organic Waste Composting</a></h4>
@@ -524,7 +518,7 @@
                         </div>
                         <div class="swiper-slide">
                             <div class="gallery-style-one">
-                                <img src="{{ asset('assets/front/img/projects/7.jpg') }}" alt="">
+                                <img src="{{ asset('assets/front/img/banner/imgs/3 (1).png') }}" alt="E-Waste Recovery">
                                 <div class="overlay">
                                     <div class="info">
                                         <h4><a href="{{ route('front.project.details') }}">E-Waste Recovery Program</a></h4>
@@ -539,7 +533,7 @@
                         </div>
                         <div class="swiper-slide">
                             <div class="gallery-style-one">
-                                <img src="{{ asset('assets/front/img/projects/8.jpg') }}" alt="">
+                                <img src="{{ asset('assets/front/img/banner/imgs/4 (2).png') }}" alt="Textile Regeneration">
                                 <div class="overlay">
                                     <div class="info">
                                         <h4><a href="{{ route('front.project.details') }}">Textile Regeneration Project</a></h4>
@@ -790,7 +784,7 @@
                 <div class="col-xl-6 col-md-6 col-lg-6 mb-30">
                     <div class="home-blog-style-one-item wow fadeInUp">
                         <div class="home-blog-thumb">
-                            <img src="{{ asset('assets/front/img/blog/2.jpg') }}" alt="">
+                            <img src="{{ asset('assets/front/img/banner/imgs/4 (3).png') }}" alt="Waste-to-Energy Solutions">
                             <ul class="home-blog-meta">
                                 <li><a href="#">sustainability</a></li>
                                 <li>October 18, 2024</li>
@@ -809,7 +803,7 @@
                 <div class="col-xl-6 col-md-6 col-lg-6 mb-30">
                     <div class="home-blog-style-one-item wow fadeInUp" data-wow-delay="200ms">
                         <div class="home-blog-thumb">
-                            <img src="{{ asset('assets/front/img/blog/3.jpg') }}" alt="">
+                            <img src="{{ asset('assets/front/img/banner/imgs/3 (2) (1).png') }}" alt="Circular Economy Business Models">
                             <ul class="home-blog-meta">
                                 <li><a href="#">circular economy</a></li>
                                 <li>August 26, 2024</li>
