@@ -4,44 +4,6 @@
 @section('page-title', 'Users')
 
 @section('content')
-@if(session('success'))
-  <div class="alert custom-alert alert-success alert-dismissible fade show auto-dismiss-alert" role="alert">
-    <div class="alert-content">
-      <i class="material-symbols-rounded alert-icon">check_circle</i>
-      <div class="alert-text">
-        <strong>Success!</strong>
-        <span>{{ session('success') }}</span>
-      </div>
-    </div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-@endif
-
-@if(session('delete_success'))
-  <div class="alert custom-alert alert-danger alert-dismissible fade show auto-dismiss-alert" role="alert">
-    <div class="alert-content">
-      <i class="material-symbols-rounded alert-icon">delete</i>
-      <div class="alert-text">
-        <strong>Deleted!</strong>
-        <span>{{ session('delete_success') }}</span>
-      </div>
-    </div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-@endif
-
-@if(session('error'))
-  <div class="alert custom-alert alert-danger alert-dismissible fade show auto-dismiss-alert" role="alert">
-    <div class="alert-content">
-      <i class="material-symbols-rounded alert-icon">error</i>
-      <div class="alert-text">
-        <strong>Error!</strong>
-        <span>{{ session('error') }}</span>
-      </div>
-    </div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-@endif
 
 <div class="row">
   <div class="col-12">
@@ -68,29 +30,23 @@
         
         <form method="GET" action="{{ route('admin.users') }}" class="row g-3 mb-3">
           <div class="col-md-4">
-            <div class="input-group input-group-outline">
-              <label class="form-label">Search users...</label>
-              <input type="text" class="form-control" name="search" value="{{ request('search') }}">
-            </div>
+            <input type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="Search users...">
           </div>
           <div class="col-md-2">
-            <div class="input-group input-group-outline">
-              <select class="form-control" name="role">
-                <option value="all" {{ request('role') == 'all' ? 'selected' : '' }}>All Roles</option>
-                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                <option value="moderator" {{ request('role') == 'moderator' ? 'selected' : '' }}>Moderator</option>
-                <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
-              </select>
-            </div>
+            <select class="form-control" name="role">
+              <option value="all" {{ request('role') == 'all' ? 'selected' : '' }}>All Roles</option>
+              <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+              <option value="moderator" {{ request('role') == 'moderator' ? 'selected' : '' }}>Moderator</option>
+              <option value="collector" {{ request('role') == 'collector' ? 'selected' : '' }}>Collector</option>
+              <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
+            </select>
           </div>
           <div class="col-md-2">
-            <div class="input-group input-group-outline">
-              <select class="form-control" name="status">
-                <option value="" {{ request('status') == '' ? 'selected' : '' }}>All Status</option>
-                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-              </select>
-            </div>
+            <select class="form-control" name="status">
+              <option value="" {{ request('status') == '' ? 'selected' : '' }}>All Status</option>
+              <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+              <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+            </select>
           </div>
           <div class="col-md-2">
             <button type="submit" class="btn bg-gradient-dark mb-0 w-100">
@@ -172,6 +128,8 @@
                       <span class="badge badge-sm bg-gradient-success">Admin</span>
                     @elseif($user->role === 'moderator')
                       <span class="badge badge-sm bg-gradient-info">Moderator</span>
+                    @elseif($user->role === 'collector')
+                      <span class="badge badge-sm bg-gradient-warning">Collector</span>
                     @else
                       <span class="badge badge-sm bg-gradient-secondary">User</span>
                     @endif
@@ -298,6 +256,7 @@
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                   <option value="moderator">Moderator</option>
+                  <option value="collector">Collector</option>
                 </select>
                 <div class="invalid-feedback"></div>
               </div>
@@ -458,6 +417,7 @@
                   <option value="user" selected>User</option>
                   <option value="admin">Admin</option>
                   <option value="moderator">Moderator</option>
+                  <option value="collector">Collector</option>
                 </select>
                 <div class="invalid-feedback"></div>
               </div>
@@ -1171,6 +1131,31 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+/* Clean Form Controls Styling - Match Waste Requests */
+.form-control {
+    border: 1px solid #d2d6da;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.15s ease-in-out;
+    background-color: #fff;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+    opacity: 0.7;
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
 /* Hover effects for Edit and Delete buttons */
 .edit-btn {
     transition: all 0.3s ease;
