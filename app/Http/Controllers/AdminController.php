@@ -67,7 +67,7 @@ class AdminController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'role' => 'required|in:user,admin,moderator',
+            'role' => 'required|in:user,admin,moderator,collector',
             'is_active' => 'boolean',
             'faceid_enabled' => 'boolean',
             'send_welcome_email' => 'boolean',
@@ -148,7 +148,7 @@ class AdminController extends Controller
             ],
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'role' => 'required|in:user,admin,moderator',
+            'role' => 'required|in:user,admin,moderator,collector',
             'is_active' => 'boolean',
             'faceid_enabled' => 'boolean',
         ]);

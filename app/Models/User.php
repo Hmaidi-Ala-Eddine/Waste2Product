@@ -64,4 +64,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the waste requests made by this user (as customer)
+     */
+    public function wasteRequests()
+    {
+        return $this->hasMany(WasteRequest::class, 'user_id');
+    }
+
+    /**
+     * Get the waste requests assigned to this user (as collector)
+     */
+    public function assignedWasteRequests()
+    {
+        return $this->hasMany(WasteRequest::class, 'collector_id');
+    }
 }

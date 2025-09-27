@@ -80,6 +80,17 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::put('/users/{id}', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('users.update');
     Route::delete('/users/{id}', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete');
     
+    // Waste Collection & Requests routes
+    Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'index'])->name('waste-requests');
+    Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'store'])->name('waste-requests.store');
+    Route::get('/waste-requests/customers', [\App\Http\Controllers\WasteRequestController::class, 'getCustomers'])->name('waste-requests.customers');
+    Route::get('/waste-requests/collectors', [\App\Http\Controllers\WasteRequestController::class, 'getCollectors'])->name('waste-requests.collectors');
+    Route::get('/waste-requests/{id}/data', [\App\Http\Controllers\WasteRequestController::class, 'getData'])->name('waste-requests.data');
+    Route::put('/waste-requests/{id}', [\App\Http\Controllers\WasteRequestController::class, 'update'])->name('waste-requests.update');
+    Route::delete('/waste-requests/{id}', [\App\Http\Controllers\WasteRequestController::class, 'destroy'])->name('waste-requests.delete');
+    Route::post('/waste-requests/{id}/assign-collector', [\App\Http\Controllers\WasteRequestController::class, 'assignCollector'])->name('waste-requests.assign-collector');
+    Route::post('/waste-requests/{id}/update-status', [\App\Http\Controllers\WasteRequestController::class, 'updateStatus'])->name('waste-requests.update-status');
+    
     Route::get('/billing', function () {
         return view('back.pages.billing');
     })->name('billing');
