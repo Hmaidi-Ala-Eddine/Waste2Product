@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PostController;
 
 Route::get('/', function () {
     return view('front.home');
@@ -97,6 +98,14 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::post('/waste-requests/{id}/assign-collector', [\App\Http\Controllers\WasteRequestController::class, 'assignCollector'])->name('waste-requests.assign-collector');
     Route::post('/waste-requests/{id}/update-status', [\App\Http\Controllers\WasteRequestController::class, 'updateStatus'])->name('waste-requests.update-status');
     
+    // Posts Management routes
+    Route::get('/posts', [\App\Http\Controllers\PostController::class, 'index'])->name('posts');
+    Route::post('/posts', [\App\Http\Controllers\PostController::class, 'store'])->name('posts.store');
+    Route::get('/posts/users', [\App\Http\Controllers\PostController::class, 'getUsers'])->name('posts.users');
+    Route::get('/posts/{post}/data', [\App\Http\Controllers\PostController::class, 'getData'])->name('posts.data');
+    Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
+    Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
+    
     Route::get('/billing', function () {
         return view('back.pages.billing');
     })->name('billing');
@@ -145,7 +154,7 @@ Route::view('/services-2', 'front.pages.services-2')->name('front.services2');
 Route::view('/services-3', 'front.pages.services-3')->name('front.services3');
 Route::view('/services-details', 'front.pages.services-details')->name('front.services.details');
 Route::view('/services-details-2', 'front.pages.services-details-2')->name('front.services.details2');
-Route::view('/team', 'front.pages.team')->name('front.team');
+Route::get('/team', [PostController::class, 'frontendIndex'])->name('front.team');
 Route::view('/team-2', 'front.pages.team-2')->name('front.team2');
 Route::view('/team-details', 'front.pages.team-details')->name('front.team.details');
 Route::view('/project', 'front.pages.project')->name('front.project');
@@ -167,6 +176,12 @@ Route::view('/404', 'front.pages.404')->name('front.404');
 Route::get('/login', function () {
     return view('front.login');
 })->name('front.login');
+
+// Frontend Posts Routes (Public)
+Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
+Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
+Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
+Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
 
 // Fallback 404 for unknown routes
 Route::fallback(function () {
