@@ -81,6 +81,8 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     // Product Management Routes
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::post('products/{product}/change-status', [App\Http\Controllers\Admin\ProductController::class, 'changeStatus'])->name('products.changeStatus');
+    // Orders routes (controller renders Blade index)
+    Route::apiResource('orders', App\Http\Controllers\OrderController::class);
     Route::put('/users/{id}', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('users.update');
     Route::delete('/users/{id}', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('users.delete');
     
