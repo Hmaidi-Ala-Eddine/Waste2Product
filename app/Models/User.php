@@ -80,4 +80,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(WasteRequest::class, 'collector_id');
     }
+
+    /**
+     * Get the posts for this user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get the comments for this user.
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
