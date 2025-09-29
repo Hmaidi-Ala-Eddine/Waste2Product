@@ -23,16 +23,43 @@
       <div class="card-body px-3 pt-3 pb-0">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="mb-0 text-dark">Search & Filter Posts</h6>
-          <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addPostModal">
-            <i class="material-symbols-rounded me-1">add</i>Add New Post
-          </button>
+          <div class="d-flex gap-2">
+            <div class="btn-group me-2" role="group" aria-label="View toggle">
+              <button type="button" class="btn btn-outline-dark btn-sm" id="postsListBtn" title="List view">
+                <i class="material-symbols-rounded align-middle">view_list</i>
+              </button>
+              <button type="button" class="btn btn-outline-dark btn-sm" id="postsGridBtn" title="Grid view">
+                <i class="material-symbols-rounded align-middle">grid_view</i>
+              </button>
+            </div>
+            <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addPostModal">
+              <i class="material-symbols-rounded me-1">add</i>Add New Post
+            </button>
+          </div>
         </div>
         
         <form method="GET" action="{{ route('admin.posts') }}" class="row g-3 mb-3">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <div class="input-group input-group-outline">
               <label class="form-label">Search posts...</label>
               <input type="text" class="form-control" name="search" value="{{ request('search') }}">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="input-group input-group-outline">
+              <select class="form-control" name="status">
+                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
+                <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
+                <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="input-group input-group-outline">
+              <select class="form-control" name="author">
+                <option value="all" {{ request('author') == 'all' ? 'selected' : '' }}>All Authors</option>
+                <!-- Authors will be populated via JavaScript -->
+              </select>
             </div>
           </div>
           <div class="col-md-2">
@@ -47,7 +74,7 @@
           </div>
         </form>
         
-        @if(request()->has('search'))
+        @if(request()->hasAny(['search', 'status', 'author']))
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
               <small class="text-muted">
@@ -64,7 +91,7 @@
         @endif
       </div>
       <div class="card-body px-0 pb-2">
-        <div class="table-responsive p-0">
+        <div id="postsListView" class="table-responsive p-0">
           <table class="table align-items-center mb-0">
             <thead>
               <tr>
@@ -102,13 +129,13 @@
                     </p>
                   </td>
                   <td class="align-middle text-center">
-                    @if($post->image)
-                      <img src="{{ Storage::url($post->image) }}" 
+                    @if($post->image && file_exists(public_path('storage/' . $post->image)))
+                      <img src="{{ asset('storage/' . $post->image) }}" 
                            class="avatar avatar-lg border-radius-lg" 
                            alt="Post image"
-                           onerror="this.src='{{ asset('assets/front/img/demo/home-1.jpg') }}'; this.onerror=null;">
+                           onerror="this.src='{{ asset('assets/back/img/team-2.jpg') }}'; this.onerror=null;">
                     @else
-                      <img src="{{ asset('assets/front/img/demo/home-1.jpg') }}" 
+                      <img src="{{ asset('assets/back/img/team-2.jpg') }}" 
                            class="avatar avatar-lg border-radius-lg opacity-6" 
                            alt="Default image">
                     @endif
@@ -146,6 +173,44 @@
               @endforelse
             </tbody>
           </table>
+        </div>
+
+        <!-- Grid View -->
+        <div id="postsGridView" class="d-none px-3 pb-3">
+          <div class="row g-3">
+            @foreach($posts as $index => $post)
+              @php
+                $avatarImages = ['team-1.jpg','team-2.jpg','team-3.jpg','team-4.jpg','team-5.jpg','team-6.jpg'];
+                $avatarImage = $avatarImages[$index % count($avatarImages)];
+              @endphp
+              <div class="col-12 col-md-6 col-xl-3">
+                <div class="card shadow-sm border-0 h-100 post-card">
+                  <div class="ratio ratio-16x9 card-img-top bg-light overflow-hidden">
+                    @if($post->image && file_exists(public_path('storage/' . $post->image)))
+                      <img src="{{ asset('storage/' . $post->image) }}" class="object-fit-cover w-100 h-100" alt="post">
+                    @else
+                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="object-fit-cover w-100 h-100" alt="post">
+                    @endif
+                  </div>
+                  <div class="card-body">
+                    <small class="text-muted d-block mb-1">By {{ $post->user->name }}</small>
+                    <h6 class="card-title mb-2">{{ Str::limit($post->title, 50) }}</h6>
+                    <p class="card-text text-secondary mb-3">{{ Str::limit($post->description, 90) }}</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-light text-dark">{{ $post->likes }} Likes</span>
+                        <span class="badge bg-light text-dark">{{ $post->comments->count() }} Comments</span>
+                      </div>
+                      <div class="btn-group">
+                        <a href="javascript:;" class="btn btn-sm btn-outline-dark" onclick="editPost({{ $post->id }})">Edit</a>
+                        <a href="javascript:;" class="btn btn-sm btn-outline-danger" onclick="deletePost({{ $post->id }}, '{{ addslashes($post->title) }}')">Delete</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            @endforeach
+          </div>
         </div>
         
         <!-- Pagination Section -->
@@ -202,7 +267,9 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Image</label>
-                <input type="file" class="form-control" name="image" accept="image/*">
+                <div class="input-group input-group-outline">
+                  <input type="file" class="form-control" name="image" accept="image/*" id="imageUpload">
+                </div>
                 <small class="text-muted">Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB</small>
                 <div class="invalid-feedback"></div>
               </div>
@@ -269,7 +336,9 @@
               <div class="mb-3">
                 <label class="form-label text-dark">Current Image</label>
                 <div id="current_image_preview" class="mb-2"></div>
-                <input type="file" class="form-control" name="image" accept="image/*">
+                <div class="input-group input-group-outline">
+                  <input type="file" class="form-control" name="image" accept="image/*" id="editImageUpload">
+                </div>
                 <small class="text-muted">Leave empty to keep current image. Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB</small>
                 <div class="invalid-feedback"></div>
               </div>
@@ -346,7 +415,46 @@
 // Load users when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadUsers();
+    initializeFloatingLabels();
+    // Restore view preference
+    initPostsViewToggle();
 });
+
+// Initialize floating labels
+function initializeFloatingLabels() {
+    const inputs = document.querySelectorAll('.input-group-outline .form-control');
+    
+    inputs.forEach(function(input) {
+        const inputGroup = input.closest('.input-group-outline');
+        
+        function checkInput() {
+            if (input.value.trim() !== '') {
+                inputGroup.classList.add('is-filled');
+            } else {
+                inputGroup.classList.remove('is-filled');
+            }
+        }
+        
+        // Initial check
+        checkInput();
+        
+        // Focus event
+        input.addEventListener('focus', function() {
+            inputGroup.classList.add('is-focused');
+        });
+        
+        // Blur event
+        input.addEventListener('blur', function() {
+            inputGroup.classList.remove('is-focused');
+            checkInput();
+        });
+        
+        // Input event
+        input.addEventListener('input', function() {
+            checkInput();
+        });
+    });
+}
 
 // Load users for dropdowns
 function loadUsers() {
@@ -400,6 +508,36 @@ function deletePost(id, postTitle) {
     document.getElementById('deletePostTitle').textContent = postTitle;
     document.getElementById('deletePostForm').action = `{{ url('admin/posts') }}/${id}`;
     new bootstrap.Modal(document.getElementById('deletePostModal')).show();
+}
+// View toggle
+function initPostsViewToggle(){
+  const listBtn = document.getElementById('postsListBtn');
+  const gridBtn = document.getElementById('postsGridBtn');
+  const listView = document.getElementById('postsListView');
+  const gridView = document.getElementById('postsGridView');
+  if(!listBtn || !gridBtn || !listView || !gridView) return;
+
+  const pref = localStorage.getItem('postsView') || 'list';
+  setPostsView(pref);
+
+  listBtn.addEventListener('click', ()=> setPostsView('list'));
+  gridBtn.addEventListener('click', ()=> setPostsView('grid'));
+
+  function setPostsView(mode){
+    if(mode === 'grid'){
+      listView.classList.add('d-none');
+      gridView.classList.remove('d-none');
+      gridBtn.classList.add('active');
+      listBtn.classList.remove('active');
+      localStorage.setItem('postsView','grid');
+    } else {
+      gridView.classList.add('d-none');
+      listView.classList.remove('d-none');
+      listBtn.classList.add('active');
+      gridBtn.classList.remove('active');
+      localStorage.setItem('postsView','list');
+    }
+  }
 }
 </script>
 @endpush
@@ -674,6 +812,57 @@ function deletePost(id, postTitle) {
     width: 48px;
     height: 48px;
     object-fit: cover;
+}
+
+/* Grid cards */
+.post-card .card-img-top img{ display:block; }
+.object-fit-cover{ object-fit: cover; }
+.btn-group .btn.active{ background:#344767; color:#fff; }
+    transition: all 0.15s ease-in-out;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.input-group-outline input[type="file"]:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    outline: none;
+}
+
+.input-group-outline input[type="file"]::-webkit-file-upload-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.input-group-outline input[type="file"]::-webkit-file-upload-button:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-1px);
+}
+
+.input-group-outline input[type="file"]::file-selector-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.input-group-outline input[type="file"]::file-selector-button:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-1px);
 }
 </style>
 @endpush

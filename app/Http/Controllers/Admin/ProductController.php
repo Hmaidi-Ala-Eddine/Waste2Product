@@ -64,18 +64,23 @@ class ProductController extends Controller
 
         $products = $query->paginate(15)->withQueryString();
         
-        return view('back.pages.admin.products.index', compact('products'));
+        return view('back.pages.products', compact('products'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $users = User::all();
         $wasteRequests = WasteRequest::where('status', 'completed')->get();
         
-        return view('back.pages.admin.products.create', compact('users', 'wasteRequests'));
+        // For AJAX requests, return JSON
+        if ($request->expectsJson()) {
+            return response()->json($users);
+        }
+        
+        return view('back.pages.products', compact('users', 'wasteRequests'));
     }
 
     /**
@@ -85,9 +90,9 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'category' => 'required|string|max:255',
-            'condition' => 'required|in:new,refurbished,used',
+            'description' => 'nullable|string',
+            'category' => 'required|in:furniture,electronics,plastic,textile,metal',
+            'condition' => 'nullable|in:excellent,good,fair,poor',
             'price' => 'nullable|numeric|min:0',
             'status' => 'required|in:available,sold,donated,reserved',
             'user_id' => 'required|exists:users,id',
@@ -95,39 +100,63 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->only([
+            'user_id', 'name', 'description', 'category', 
+            'condition', 'price', 'status'
+        ]);
         
         // Handle image upload
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
             $data['image_path'] = $imagePath;
+            \Log::info('Product image stored at: ' . $imagePath);
         }
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Product created successfully!',
+                'data' => $product->load(['user'])
+            ], 201);
+        }
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Produit créé avec succès.');
+            ->with('success', 'Product created successfully!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
         $product->load(['user', 'wasteRequest', 'orders']);
         
-        return view('back.pages.admin.products.show', compact('product'));
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $product
+            ]);
+        }
+        
+        return view('back.pages.products', compact('product'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Product $product)
+    public function edit(Request $request, Product $product)
     {
         $users = User::all();
         $wasteRequests = WasteRequest::where('status', 'completed')->get();
         
-        return view('back.pages.admin.products.edit', compact('product', 'users', 'wasteRequests'));
+        // For AJAX requests, return JSON
+        if ($request->expectsJson()) {
+            return response()->json($product);
+        }
+        
+        return view('back.pages.products', compact('product', 'users', 'wasteRequests'));
     }
 
     /**
@@ -137,9 +166,9 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'category' => 'required|string|max:255',
-            'condition' => 'required|in:new,refurbished,used',
+            'description' => 'nullable|string',
+            'category' => 'required|in:furniture,electronics,plastic,textile,metal',
+            'condition' => 'nullable|in:excellent,good,fair,poor',
             'price' => 'nullable|numeric|min:0',
             'status' => 'required|in:available,sold,donated,reserved',
             'user_id' => 'required|exists:users,id',
@@ -147,7 +176,10 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->only([
+            'user_id', 'name', 'description', 'category', 
+            'condition', 'price', 'status'
+        ]);
         
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -162,8 +194,16 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Product updated successfully!',
+                'data' => $product->load(['user'])
+            ]);
+        }
+
         return redirect()->route('admin.products.index')
-            ->with('success', 'Produit mis à jour avec succès.');
+            ->with('success', 'Product updated successfully!');
     }
 
     /**
@@ -178,8 +218,15 @@ class ProductController extends Controller
         
         $product->delete();
 
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Product deleted successfully!'
+            ]);
+        }
+
         return redirect()->route('admin.products.index')
-            ->with('success', 'Produit supprimé avec succès.');
+            ->with('success', 'Product deleted successfully!');
     }
 
     /**
@@ -194,6 +241,47 @@ class ProductController extends Controller
         $product->update(['status' => $request->status]);
 
         return redirect()->back()
-            ->with('success', 'Statut du produit mis à jour avec succès.');
+            ->with('success', 'Product status updated successfully.');
+    }
+
+    /**
+     * Get users for admin dropdown (Admin only)
+     */
+    public function getUsers()
+    {
+        try {
+            $users = User::select('id', 'name', 'email')
+                        ->orderBy('name')
+                        ->get();
+
+            return response()->json($users);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load users',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get product data for editing (Admin only)
+     */
+    public function getData(Product $product)
+    {
+        $product->load(['user']);
+
+        return response()->json([
+            'id' => $product->id,
+            'user_id' => $product->user_id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'category' => $product->category,
+            'condition' => $product->condition,
+            'price' => $product->price,
+            'status' => $product->status,
+            'image_path' => $product->image_path,
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
+        ]);
     }
 }
