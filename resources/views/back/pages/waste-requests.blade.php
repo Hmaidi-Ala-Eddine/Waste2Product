@@ -393,11 +393,15 @@
 
 
 @push('scripts')
+<script src="{{ asset('assets/js/waste-request-validator.js') }}"></script>
 <script>
 // Load customers and collectors when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadCustomers();
     loadCollectors();
+    if (window.WasteRequestValidation && typeof window.WasteRequestValidation.init === 'function') {
+        window.WasteRequestValidation.init();
+    }
 });
 
 // Load customers for dropdowns

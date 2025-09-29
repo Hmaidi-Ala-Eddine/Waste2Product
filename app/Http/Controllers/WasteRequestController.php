@@ -6,6 +6,7 @@ use App\Models\WasteRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Validators\WasteRequestValidator;
 
 class WasteRequestController extends Controller
 {
@@ -53,8 +54,8 @@ class WasteRequestController extends Controller
             }
         }
         
-        // Order and paginate results
-        $wasteRequests = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Order and paginate results (fixed 5 per page)
+        $wasteRequests = $query->orderBy('created_at', 'desc')->paginate(5);
         
         // Preserve query parameters in pagination links
         $wasteRequests->appends($request->query());
@@ -70,30 +71,27 @@ class WasteRequestController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'waste_type' => ['required', Rule::in(array_keys(WasteRequest::getWasteTypes()))],
-            'quantity' => 'required|numeric|min:0.1|max:999999.99',
-            'address' => 'required|string|max:1000',
-            'description' => 'nullable|string|max:2000',
-            'collector_id' => 'nullable|exists:users,id',
-        ]);
-
-        // Validate collector role if provided
-        if ($request->filled('collector_id')) {
-            $collector = User::find($request->collector_id);
-            if (!$collector || $collector->role !== 'collector') {
-                return back()->withErrors(['collector_id' => 'Selected user is not a collector.']);
+        // Sanitize and validate via centralized validator
+        $data = WasteRequestValidator::sanitize($request->all());
+        $validator = WasteRequestValidator::validateStore($data);
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $validator->errors(),
+                ], 422);
             }
+            return back()->withErrors($validator)->withInput();
         }
 
         $wasteRequest = WasteRequest::create([
-            'user_id' => $request->user_id,
-            'collector_id' => $request->collector_id,
-            'waste_type' => $request->waste_type,
-            'quantity' => $request->quantity,
-            'address' => $request->address,
-            'description' => $request->description,
+            'user_id' => $data['user_id'],
+            'collector_id' => $data['collector_id'] ?? null,
+            'waste_type' => $data['waste_type'],
+            'quantity' => $data['quantity'],
+            'address' => $data['address'],
+            'description' => $data['description'] ?? null,
             'status' => 'pending',
         ]);
 
@@ -115,41 +113,37 @@ class WasteRequestController extends Controller
     public function update(Request $request, $id)
     {
         $wasteRequest = WasteRequest::findOrFail($id);
-
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'waste_type' => ['required', Rule::in(array_keys(WasteRequest::getWasteTypes()))],
-            'quantity' => 'required|numeric|min:0.1|max:999999.99',
-            'address' => 'required|string|max:1000',
-            'description' => 'nullable|string|max:2000',
-            'collector_id' => 'nullable|exists:users,id',
-            'status' => ['required', Rule::in(array_keys(WasteRequest::getStatuses()))],
-        ]);
-
-        // Validate collector role if provided
-        if ($request->filled('collector_id')) {
-            $collector = User::find($request->collector_id);
-            if (!$collector || $collector->role !== 'collector') {
-                return back()->withErrors(['collector_id' => 'Selected user is not a collector.']);
+        
+        // Sanitize and validate via centralized validator
+        $data = WasteRequestValidator::sanitize($request->all(), true);
+        $validator = WasteRequestValidator::validateUpdate($data, $wasteRequest);
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $validator->errors(),
+                ], 422);
             }
+            return back()->withErrors($validator)->withInput();
         }
 
         // Set collected_at timestamp when status changes to collected
         $collectedAt = $wasteRequest->collected_at;
-        if ($request->status === 'collected' && $wasteRequest->status !== 'collected') {
+        if ($data['status'] === 'collected' && $wasteRequest->status !== 'collected') {
             $collectedAt = now();
-        } elseif ($request->status !== 'collected') {
+        } elseif ($data['status'] !== 'collected') {
             $collectedAt = null;
         }
 
         $wasteRequest->update([
-            'user_id' => $request->user_id,
-            'collector_id' => $request->collector_id,
-            'waste_type' => $request->waste_type,
-            'quantity' => $request->quantity,
-            'address' => $request->address,
-            'description' => $request->description,
-            'status' => $request->status,
+            'user_id' => $data['user_id'],
+            'collector_id' => $data['collector_id'] ?? null,
+            'waste_type' => $data['waste_type'],
+            'quantity' => $data['quantity'],
+            'address' => $data['address'],
+            'description' => $data['description'] ?? null,
+            'status' => $data['status'],
             'collected_at' => $collectedAt,
         ]);
 
@@ -174,13 +168,14 @@ class WasteRequestController extends Controller
     {
         $wasteRequest = WasteRequest::findOrFail($id);
         
-        $request->validate([
-            'collector_id' => 'required|exists:users,id',
-        ]);
-
-        $collector = User::find($request->collector_id);
-        if ($collector->role !== 'collector') {
-            return response()->json(['error' => 'Selected user is not a collector.'], 400);
+        // Validate through central validator
+        $validator = WasteRequestValidator::validateAssign($request->all());
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
         $wasteRequest->update([
@@ -198,9 +193,15 @@ class WasteRequestController extends Controller
     {
         $wasteRequest = WasteRequest::findOrFail($id);
         
-        $request->validate([
-            'status' => ['required', Rule::in(array_keys(WasteRequest::getStatuses()))],
-        ]);
+        // Validate through central validator
+        $validator = WasteRequestValidator::validateStatus($request->all(), $wasteRequest);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $collectedAt = $wasteRequest->collected_at;
         if ($request->status === 'collected' && $wasteRequest->status !== 'collected') {
