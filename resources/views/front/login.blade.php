@@ -95,9 +95,10 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('front.signup.post') }}">
+                        <form id="signupForm" method="POST" action="{{ route('front.signup.post') }}">
                             @csrf
                             <input type="hidden" name="from" value="front">
+                            <input type="hidden" name="g-recaptcha-response" id="signup-g-recaptcha-response">
                             <div class="input-group">
                                 <i class='bx bxs-user'></i>
                                 <input name="name" type="text" placeholder="Full name" required value="{{ old('name') }}">
@@ -114,9 +115,7 @@
                                 <i class='bx bxs-lock-alt'></i>
                                 <input name="password_confirmation" type="password" placeholder="Confirm password" required>
                             </div>
-                            <button type="submit">
-                                Sign up
-                            </button>
+                            <button type="button" onclick="showSignupRecaptcha()">Sign up</button>
                         </form>
 
                         <p>
@@ -148,9 +147,10 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('front.sign-in.post') }}">
+                        <form id="signinForm" method="POST" action="{{ route('front.sign-in.post') }}">
                             @csrf
                             <input type="hidden" name="from" value="front">
+                            <input type="hidden" name="g-recaptcha-response" id="signin-g-recaptcha-response">
                             <div class="input-group">
                                 <i class='bx bxs-user'></i>
                                 <input name="email" type="email" id="login-email" placeholder="Email" required value="{{ old('email') }}">
@@ -159,9 +159,7 @@
                                 <i class='bx bxs-lock-alt'></i>
                                 <input name="password" type="password" id="login-password" placeholder="Password" required>
                             </div>
-                            <button type="submit">
-                                Sign in
-                            </button>
+                            <button type="button" onclick="showSigninRecaptcha()">Sign in</button>
                             <p>
                                 <b>
                                     Forgot password?
@@ -211,6 +209,20 @@
         </div>
         <!-- END CONTENT SECTION -->
     </div>
+
+    <!-- reCAPTCHA Modal -->
+    <div id="recaptchaModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:30px; border-radius:10px; text-align:center; min-width:400px;">
+            <h3 style="margin-bottom:20px; color:#333;">Security Verification</h3>
+            <p style="margin-bottom:20px; color:#666;">Please complete the security check to continue:</p>
+            <div id="recaptcha-container" style="display:flex; justify-content:center; margin:20px 0;"></div>
+            <div style="margin-top:20px;">
+                <button onclick="closeRecaptchaModal()" style="background:#6c757d; color:white; border:none; padding:10px 20px; border-radius:5px; margin-right:10px; cursor:pointer;">Cancel</button>
+                <button id="verifyBtn" onclick="submitAfterRecaptcha()" style="background:#4EA685; color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">Verify & Continue</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiLoad&render=explicit" async defer></script>
     <script>
         let container = document.getElementById('container');
         function toggle() {
@@ -222,6 +234,109 @@
         }, 200);
 
         // forms submit to server; no client-side stub needed
+        // reCAPTCHA explicit rendering
+        let signupWidgetId = null;
+        let signinWidgetId = null;
+
+        let currentWidgetId = null;
+        let currentForm = null;
+        let recaptchaRendered = false;
+
+        function onRecaptchaApiLoad(){
+            // reCAPTCHA API is loaded, but we'll render it when modal opens
+        }
+
+        function showSignupRecaptcha(){
+            const form = document.getElementById('signupForm');
+            const name = form.querySelector('input[name="name"]').value;
+            const email = form.querySelector('input[name="email"]').value;
+            const password = form.querySelector('input[name="password"]').value;
+            const passwordConfirm = form.querySelector('input[name="password_confirmation"]').value;
+            
+            if (!name || !email || !password || !passwordConfirm) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                alert('Passwords do not match.');
+                return;
+            }
+            
+            currentForm = form;
+            showRecaptchaModal();
+        }
+
+        function showSigninRecaptcha(){
+            const form = document.getElementById('signinForm');
+            const email = form.querySelector('input[name="email"]').value;
+            const password = form.querySelector('input[name="password"]').value;
+            
+            if (!email || !password) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            currentForm = form;
+            showRecaptchaModal();
+        }
+
+        function showRecaptchaModal(){
+            document.getElementById('recaptchaModal').style.display = 'block';
+            
+            // Render reCAPTCHA when modal opens (only once)
+            if (!recaptchaRendered && document.getElementById('recaptcha-container')) {
+                currentWidgetId = grecaptcha.render('recaptcha-container', {
+                    sitekey: '{{ config('services.recaptcha.site_key') ?? env('RECAPTCHA_SITE_KEY') }}',
+                    size: 'normal',
+                    theme: 'light'
+                });
+                recaptchaRendered = true;
+            } else if (currentWidgetId !== null) {
+                // Reset reCAPTCHA for reuse
+                grecaptcha.reset(currentWidgetId);
+            }
+        }
+
+        function closeRecaptchaModal(){
+            document.getElementById('recaptchaModal').style.display = 'none';
+            currentForm = null;
+        }
+
+        function submitAfterRecaptcha(){
+            if (currentWidgetId === null) {
+                alert('reCAPTCHA not loaded. Please try again.');
+                return;
+            }
+            
+            const response = grecaptcha.getResponse(currentWidgetId);
+            if (!response) {
+                alert('Please complete the reCAPTCHA verification.');
+                return;
+            }
+            
+            // Add reCAPTCHA response to the correct hidden form field
+            if (currentForm) {
+                let hiddenField;
+                if (currentForm.id === 'signupForm') {
+                    hiddenField = document.getElementById('signup-g-recaptcha-response');
+                } else if (currentForm.id === 'signinForm') {
+                    hiddenField = document.getElementById('signin-g-recaptcha-response');
+                }
+                
+                if (hiddenField) {
+                    hiddenField.value = response;
+                }
+                
+                // Close modal first, then submit
+                document.getElementById('recaptchaModal').style.display = 'none';
+                
+                // Submit the form (keep reference before clearing)
+                const formToSubmit = currentForm;
+                currentForm = null;
+                formToSubmit.submit();
+            }
+        }
     </script>
 </body>
 </html>

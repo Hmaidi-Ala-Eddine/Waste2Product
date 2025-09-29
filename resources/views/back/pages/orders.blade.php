@@ -22,47 +22,67 @@
         </div>
       </div>
 
+      <!-- Search and Filter Section -->
       <div class="card-body px-3 pt-3 pb-0">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="mb-0 text-dark">Filters</h6>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="mb-0 text-dark">Search & Filter Orders</h6>
           <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addOrderModal">
-            <i class="material-symbols-rounded me-1">add_shopping_cart</i>New Order
+            <i class="material-symbols-rounded me-1">add_shopping_cart</i>Add New Order
           </button>
         </div>
-        <form id="ordersFiltersForm" method="GET" action="{{ route('admin.orders.index') }}">
-          <div class="row g-2 align-items-end">
-            <div class="col-md-2">
-              <label class="form-label text-dark">Order ID</label>
-              <input type="number" class="form-control" name="order_id" value="{{ request('order_id') }}" placeholder="#ID">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label text-dark">Buyer</label>
-              <input type="text" class="form-control" name="buyer" value="{{ request('buyer') }}" placeholder="Name or email">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label text-dark">Status</label>
-              <select name="status" class="form-select">
-                <option value="">All</option>
-                <option value="pending" {{ request('status')=='pending' ? 'selected' : '' }}>Pending</option>
-                <option value="confirmed" {{ request('status')=='confirmed' ? 'selected' : '' }}>Confirmed</option>
-                <option value="shipped" {{ request('status')=='shipped' ? 'selected' : '' }}>Shipped</option>
-                <option value="delivered" {{ request('status')=='delivered' ? 'selected' : '' }}>Delivered</option>
-                <option value="cancelled" {{ request('status')=='cancelled' ? 'selected' : '' }}>Cancelled</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label text-dark">From</label>
-              <input type="date" class="form-control" name="from" value="{{ request('from') }}">
-            </div>
-            <div class="col-md-2">
-              <label class="form-label text-dark">To</label>
-              <input type="date" class="form-control" name="to" value="{{ request('to') }}">
-            </div>
-            <div class="col-md-1 d-flex gap-2">
-              <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary w-100" title="Reset"><i class="material-symbols-rounded">refresh</i></a>
+        
+        <form method="GET" action="{{ route('admin.orders.index') }}" class="row g-3 mb-3 orders-filter">
+          <div class="col-md-4">
+            <div class="input-group input-group-outline">
+              <label class="form-label">Search orders...</label>
+              <input type="text" class="form-control" name="search" value="{{ request('search') }}">
             </div>
           </div>
+          <div class="col-md-2">
+            <div class="input-group input-group-outline">
+              <select class="form-control" name="status">
+                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="shipped" {{ request('status') == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="visually-hidden" for="orders_date_from">From date</label>
+            <input id="orders_date_from" type="date" class="form-control" name="date_from" value="{{ request('date_from') }}" placeholder="From date" aria-label="From date">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn bg-gradient-dark mb-0 w-100">
+              <i class="material-symbols-rounded me-1">search</i>Search
+            </button>
+          </div>
+          <div class="col-md-2">
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary mb-0 w-100">
+              <i class="material-symbols-rounded me-1">refresh</i>Reset
+            </a>
+          </div>
         </form>
+        
+        @if(request()->hasAny(['search', 'status', 'date_from', 'date_to']))
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <small class="text-muted">
+                @isset($orders)
+                  Showing {{ $orders->count() }} of {{ $orders->total() }} results
+                @endisset
+                @if(request('search'))
+                  for "<strong>{{ request('search') }}</strong>"
+                @endif
+              </small>
+            </div>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary btn-sm">
+              <i class="material-symbols-rounded me-1">clear</i>Clear Filters
+            </a>
+          </div>
+        @endif
       </div>
 
       <div class="card-body px-0 pb-2">
@@ -106,8 +126,16 @@
                       <span class="text-secondary text-xs font-weight-bold">{{ optional($order->ordered_at)->format('Y-m-d H:i') }}</span>
                     </td>
                     <td class="align-middle text-center">
-                      <a href="javascript:;" class="text-secondary font-weight-bold text-xs me-2" onclick='openEdit(@json($order))'>Edit</a>
-                      <a href="javascript:;" class="text-secondary font-weight-bold text-xs" onclick='openDelete({{ $order->id }})'>Delete</a>
+                      <a href="javascript:;" class="text-secondary font-weight-bold text-xs me-2 edit-btn" 
+                         onclick='openEdit(@json($order))' 
+                         data-toggle="tooltip" data-original-title="Edit order">
+                        Edit
+                      </a>
+                      <a href="javascript:;" class="text-secondary font-weight-bold text-xs delete-btn" 
+                         onclick='openDelete({{ $order->id }})' 
+                         data-toggle="tooltip" data-original-title="Delete order">
+                        Delete
+                      </a>
                     </td>
                   </tr>
                 @empty
@@ -140,26 +168,6 @@
   </div>
 </div>
 
-<script>
-// Auto-submit filters with debounce
-(function(){
-  const form = document.getElementById('ordersFiltersForm');
-  if (!form) return;
-  let timer;
-  const submitDebounced = () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => form.submit(), 400);
-  };
-  // Text/number/date inputs: debounce on input
-  form.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(el => {
-    el.addEventListener('input', submitDebounced);
-  });
-  // Selects: submit immediately on change
-  form.querySelectorAll('select').forEach(el => {
-    el.addEventListener('change', () => form.submit());
-  });
-})();
-</script>
 
 <!-- Add Order Modal -->
 <div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
@@ -328,6 +336,47 @@
 <script>
 function q(selector) { return document.querySelector(selector); }
 
+// Initialize floating labels when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFloatingLabels();
+});
+
+// Initialize floating labels
+function initializeFloatingLabels() {
+    const inputs = document.querySelectorAll('.input-group-outline .form-control');
+    
+    inputs.forEach(function(input) {
+        const inputGroup = input.closest('.input-group-outline');
+        
+        function checkInput() {
+            if (input.value.trim() !== '') {
+                inputGroup.classList.add('is-filled');
+            } else {
+                inputGroup.classList.remove('is-filled');
+            }
+        }
+        
+        // Initial check
+        checkInput();
+        
+        // Focus event
+        input.addEventListener('focus', function() {
+            inputGroup.classList.add('is-focused');
+        });
+        
+        // Blur event
+        input.addEventListener('blur', function() {
+            inputGroup.classList.remove('is-focused');
+            checkInput();
+        });
+        
+        // Input event
+        input.addEventListener('input', function() {
+            checkInput();
+        });
+    });
+}
+
 function openEdit(order) {
   const form = q('#editOrderForm');
   form.action = `/admin/orders/${order.id}`;
@@ -356,4 +405,165 @@ function openDelete(id) {
   new bootstrap.Modal(q('#deleteOrderModal')).show();
 }
 </script>
+
+@push('styles')
+<style>
+/* Edit and Delete Button Hover Effects */
+.edit-btn {
+    color: #6c757d;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.edit-btn:hover {
+    color: #007bff !important;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.delete-btn {
+    color: #6c757d;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.delete-btn:hover {
+    color: #dc3545 !important;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* Add Order Button Styling */
+.btn.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 7px -1px rgba(40, 167, 69, 0.25);
+}
+
+.btn.bg-gradient-success:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -1px rgba(40, 167, 69, 0.35);
+    color: white;
+}
+
+.btn.bg-gradient-success:active {
+    transform: translateY(0);
+}
+
+/* Modal Styling */
+.modal-header.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-bottom: none;
+}
+
+/* Form Styling */
+#addOrderModal .form-label,
+#editOrderModal .form-label {
+    font-weight: 500;
+    color: #344767;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+#addOrderModal .form-control,
+#editOrderModal .form-control {
+    border: 1px solid #d2d6da;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.15s ease-in-out;
+    background-color: #fff;
+}
+
+#addOrderModal .form-control:focus,
+#editOrderModal .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    outline: none;
+}
+
+/* Enhanced table styling */
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    transition: background-color 0.15s ease-in;
+}
+
+/* Modal animation improvements */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Button improvements */
+#addOrderModal .modal-footer,
+#editOrderModal .modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+#addOrderModal .btn,
+#editOrderModal .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Neat date/datetime inputs (makes mm/dd/yyyy look subtle and aligned) */
+input[type="date"],
+input[type="datetime-local"] {
+    height: 43px;
+    line-height: 43px;
+    color: #344767;
+}
+
+/* Text inside the control */
+input[type="date"]::-webkit-datetime-edit,
+input[type="datetime-local"]::-webkit-datetime-edit {
+    padding: 0.25rem 0.5rem;
+    color: #6c757d; /* main text color */
+}
+
+/* Separator slashes and dashes lighter */
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="datetime-local"]::-webkit-datetime-edit-text {
+    color: #adb5bd;
+}
+
+/* Individual fields slightly darker than separators */
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
+input[type="datetime-local"]::-webkit-datetime-edit-minute-field {
+    color: #6c757d;
+}
+
+/* Calendar icon subtle */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    opacity: .65;
+    filter: grayscale(100%);
+}
+
+/* Keep floating label always shrunk for date in filter row */
+/* Scoped tweak only for the standalone date input */
+#orders_date_from {
+    padding-top: .6rem;
+    padding-bottom: .6rem;
+}
+</style>
+@endpush
+
 @endsection

@@ -9,9 +9,33 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class UserController extends BaseController
 {
+    /**
+     * Verify Google reCAPTCHA response token (v2 Invisible).
+     */
+    private function verifyRecaptcha(Request $request): bool
+    {
+        $token = $request->input('g-recaptcha-response');
+        $secret = config('services.recaptcha.secret_key');
+        if (!$secret || !$token) {
+            return false;
+        }
+
+        try {
+            $resp = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret'   => $secret,
+                'response' => $token,
+                'remoteip' => $request->ip(),
+            ]);
+            return $resp->ok() && ($resp->json('success') === true);
+        } catch (\Throwable $e) {
+            logger()->warning('reCAPTCHA verify failed: '.$e->getMessage());
+            return false;
+        }
+    }
     /**
      * Display a paginated list of users.
      */
@@ -46,6 +70,11 @@ class UserController extends BaseController
      */
     public function store(Request $request)
     {
+        // reCAPTCHA check first
+        if (!$this->verifyRecaptcha($request)) {
+            return back()->withErrors(['recaptcha' => 'reCAPTCHA verification failed. Please try again.'])->withInput();
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'nullable|string|max:50|unique:users,username',
@@ -162,6 +191,11 @@ class UserController extends BaseController
      */
     public function login(Request $request)
     {
+        // reCAPTCHA check first
+        if (!$this->verifyRecaptcha($request)) {
+            return back()->withErrors(['recaptcha' => 'reCAPTCHA verification failed. Please try again.'])->withInput();
+        }
+
         $data = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',

@@ -67,18 +67,21 @@ class PostController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'user_id' => 'nullable|exists:users,id', // Allow admin to specify user
             ]);
 
             $post = new Post();
             $post->title = $validatedData['title'];
             $post->description = $validatedData['description'];
-            $post->user_id = Auth::id();
+            // Use provided user_id if available (admin), otherwise use authenticated user
+            $post->user_id = $validatedData['user_id'] ?? Auth::id();
             $post->likes = 0;
 
             // Handle image upload
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('posts', 'public');
                 $post->image = $imagePath;
+                \Log::info('Post image stored at: ' . $imagePath);
             }
 
             $post->save();
@@ -144,8 +147,9 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post): RedirectResponse|JsonResponse
     {
-        // Check if user owns the post
-        if ($post->user_id !== Auth::id()) {
+        // Allow admin to edit any post, otherwise check ownership
+        $isAdmin = Auth::user() && (Auth::user()->role === 'admin' || Auth::user()->role === 'moderator');
+        if (!$isAdmin && $post->user_id !== Auth::id()) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -160,10 +164,22 @@ class PostController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'user_id' => 'nullable|exists:users,id', // Allow admin to change author
+                'likes' => 'nullable|integer|min:0', // Allow admin to modify likes
             ]);
 
             $post->title = $validatedData['title'];
             $post->description = $validatedData['description'];
+            
+            // Allow admin to change author and likes
+            if ($isAdmin) {
+                if (isset($validatedData['user_id'])) {
+                    $post->user_id = $validatedData['user_id'];
+                }
+                if (isset($validatedData['likes'])) {
+                    $post->likes = $validatedData['likes'];
+                }
+            }
 
             // Handle image upload
             if ($request->hasFile('image')) {
@@ -209,8 +225,9 @@ class PostController extends Controller
      */
     public function destroy(Post $post): RedirectResponse|JsonResponse
     {
-        // Check if user owns the post
-        if ($post->user_id !== Auth::id()) {
+        // Allow admin to delete any post, otherwise check ownership
+        $isAdmin = Auth::user() && (Auth::user()->role === 'admin' || Auth::user()->role === 'moderator');
+        if (!$isAdmin && $post->user_id !== Auth::id()) {
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => false,

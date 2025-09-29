@@ -116,9 +116,10 @@ class Product extends Model
     public function getConditionBadgeClassAttribute(): string
     {
         return match($this->condition) {
-            'new' => 'success',
-            'refurbished' => 'warning',
-            'used' => 'secondary',
+            'excellent' => 'success',
+            'good' => 'info',
+            'fair' => 'warning',
+            'poor' => 'danger',
             default => 'secondary'
         };
     }

@@ -127,8 +127,9 @@
                   </div>
                 @endif
 
-                <form role="form" class="text-start" method="POST" action="{{ route('admin.sign-in.post') }}">
+                <form id="adminSigninForm" role="form" class="text-start" method="POST" action="{{ route('admin.sign-in.post') }}">
                   @csrf
+                  <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
                   <div class="input-group input-group-outline my-3">
                     <input name="email" type="email" class="form-control" placeholder="Email" value="{{ old('email') }}" required>
                   </div>
@@ -140,7 +141,9 @@
                     <label class="form-check-label mb-0 ms-3" for="rememberMe">Remember me</label>
                   </div>
                   <div class="text-center">
-                    <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign in</button>
+                    <button type="button" class="btn bg-gradient-dark w-100 my-4 mb-2" onclick="showRecaptchaModal()">
+                      Sign in
+                    </button>
                   </div>
                   <p class="mt-4 text-sm text-center text-muted">
                     Admin access only. If you need an account, please contact your supervisor or system administrator to request an
@@ -186,10 +189,31 @@
       </footer>
     </div>
   </main>
+
+  <!-- reCAPTCHA Modal -->
+  <div class="modal fade" id="recaptchaModal" tabindex="-1" aria-labelledby="recaptchaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="recaptchaModalLabel">Security Verification</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-3">Please complete the security check to continue:</p>
+          <div id="recaptcha-admin" class="d-flex justify-content-center"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="verifyRecaptcha" onclick="submitAfterRecaptcha()">Verify & Sign In</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!--   Core JS Files   -->
   <script src="{{ asset('assets/back/js/core/popper.min.js') }}"></script>
   <script src="{{ asset('assets/back/js/core/bootstrap.min.js') }}"></script>
   <script src="{{ asset('assets/back/js/plugins/perfect-scrollbar.min.js') }}"></script>
+  <script src="https://www.google.com/recaptcha/api.js?onload=onAdminRecaptchaLoad&render=explicit" async defer></script>
   <script src="{{ asset('assets/back/js/plugins/smooth-scrollbar.min.js') }}"></script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
@@ -198,6 +222,57 @@
         damping: '0.5'
       }
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+    
+    // reCAPTCHA explicit rendering for admin
+    let recaptchaRendered = false;
+    
+    function onAdminRecaptchaLoad(){
+      // reCAPTCHA API is loaded, but we'll render it when modal opens
+    }
+    
+    function showRecaptchaModal(){
+      // Validate form first
+      const form = document.getElementById('adminSigninForm');
+      const email = form.querySelector('input[name="email"]').value;
+      const password = form.querySelector('input[name="password"]').value;
+      
+      if (!email || !password) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      // Show modal
+      const modal = new bootstrap.Modal(document.getElementById('recaptchaModal'));
+      modal.show();
+      
+      // Render reCAPTCHA when modal opens (only once)
+      if (!recaptchaRendered && document.getElementById('recaptcha-admin')) {
+        adminWidgetId = grecaptcha.render('recaptcha-admin', {
+          sitekey: '{{ config('services.recaptcha.site_key') ?? env('RECAPTCHA_SITE_KEY') }}',
+          size: 'normal',
+          theme: 'light'
+        });
+        recaptchaRendered = true;
+      }
+    }
+    
+    function submitAfterRecaptcha(){
+      // Check if reCAPTCHA is completed
+      const response = grecaptcha.getResponse(adminWidgetId);
+      if (!response) {
+        alert('Please complete the reCAPTCHA verification.');
+        return;
+      }
+      
+      // Add reCAPTCHA response to hidden form field
+      document.getElementById('g-recaptcha-response').value = response;
+      
+      // Close modal and submit the form
+      const modal = bootstrap.Modal.getInstance(document.getElementById('recaptchaModal'));
+      modal.hide();
+      
+      document.getElementById('adminSigninForm').submit();
     }
   </script>
   <!-- Github buttons -->
