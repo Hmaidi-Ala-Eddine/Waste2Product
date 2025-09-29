@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->string('category');
-            $table->enum('condition', ['new', 'refurbished', 'used']);
+            $table->enum('condition', ['new', 'refurbished', 'used'])->nullable();
             $table->decimal('price', 10, 2)->nullable();
-            $table->enum('status', ['available', 'sold', 'donated', 'reserved'])->default('available');
+            $table->enum('status', ['available', 'sold', 'donated', 'reserved'])->nullable();
             $table->string('image_path')->nullable();
             $table->timestamps();
 
