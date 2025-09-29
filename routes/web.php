@@ -108,6 +108,72 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
     
+    // Analytics Management routes
+    Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::post('/analytics/generate-today', [\App\Http\Controllers\AnalyticsController::class, 'generateTodayStats'])->name('analytics.generate-today');
+    Route::post('/analytics/check-missing', [\App\Http\Controllers\AnalyticsController::class, 'checkMissingAnalytics'])->name('analytics.check-missing');
+    Route::get('/analytics/data', [\App\Http\Controllers\AnalyticsController::class, 'getData'])->name('analytics.data');
+    Route::delete('/analytics/{analytics}', [\App\Http\Controllers\AnalyticsController::class, 'destroy'])->name('analytics.destroy');
+    
+    // Debug route for analytics data
+    Route::get('/analytics/debug', function() {
+        $today = \Carbon\Carbon::today();
+        
+        // Get all records to see their exact created_at timestamps
+        $allWasteRequests = \App\Models\WasteRequest::select('waste_type', 'quantity', 'created_at')->get();
+        $allProducts = \App\Models\Product::select('name', 'category', 'created_at')->get();
+        $allOrders = \App\Models\Order::select('total_price', 'status', 'created_at')->get();
+        
+        // Also test the date filtering
+        $wasteToday = \App\Models\WasteRequest::whereDate('created_at', $today)->get();
+        
+        return response()->json([
+            'today' => $today->format('Y-m-d H:i:s'),
+            'all_waste_requests' => [
+                'count' => $allWasteRequests->count(),
+                'data' => $allWasteRequests->map(function($wr) {
+                    return [
+                        'waste_type' => $wr->waste_type,
+                        'quantity' => $wr->quantity,
+                        'created_at' => $wr->created_at->format('Y-m-d H:i:s')
+                    ];
+                })
+            ],
+            'waste_today_filtered' => [
+                'count' => $wasteToday->count(),
+                'total_quantity' => $wasteToday->sum('quantity'),
+                'individual_quantities' => $wasteToday->pluck('quantity')->toArray(),
+                'data' => $wasteToday->map(function($wr) {
+                    return [
+                        'waste_type' => $wr->waste_type,
+                        'quantity' => $wr->quantity,
+                        'created_at' => $wr->created_at->format('Y-m-d H:i:s')
+                    ];
+                })
+            ],
+            'all_products' => [
+                'count' => $allProducts->count(),
+                'data' => $allProducts->map(function($p) {
+                    return [
+                        'name' => $p->name,
+                        'category' => $p->category,
+                        'created_at' => $p->created_at->format('Y-m-d H:i:s')
+                    ];
+                })
+            ],
+            'all_orders' => [
+                'count' => $allOrders->count(),
+                'data' => $allOrders->map(function($o) {
+                    return [
+                        'total_price' => $o->total_price,
+                        'status' => $o->status,
+                        'created_at' => $o->created_at->format('Y-m-d H:i:s')
+                    ];
+                })
+            ]
+        ]);
+    })->name('analytics.debug');
+    
     Route::get('/billing', function () {
         return view('back.pages.billing');
     })->name('billing');

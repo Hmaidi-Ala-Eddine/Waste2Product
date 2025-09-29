@@ -37,7 +37,9 @@
           <a class="nav-link {{ request()->routeIs('admin.posts') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.posts') }}">
             <i class="material-symbols-rounded opacity-5">article</i>
             <span class="nav-link-text ms-1">Posts</span>
-
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link {{ request()->routeIs('admin.products*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.products.index') }}">
             <i class="material-symbols-rounded opacity-5">inventory</i>
             <span class="nav-link-text ms-1">Products</span>
@@ -47,7 +49,12 @@
           <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.orders.index') }}">
             <i class="material-symbols-rounded opacity-5">shopping_cart</i>
             <span class="nav-link-text ms-1">Orders</span>
-
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('admin.analytics.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.analytics.index') }}">
+            <i class="material-symbols-rounded opacity-5">analytics</i>
+            <span class="nav-link-text ms-1">Analytics</span>
           </a>
         </li>
         <li class="nav-item">
