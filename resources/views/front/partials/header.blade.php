@@ -138,6 +138,9 @@
                         </ul>
                     </li>
                     <li><a href="{{ route('front.contact') }}">contact</a></li>
+                    @auth
+                        <li><a href="{{ route('front.waste-requests') }}">My Requests</a></li>
+                    @endauth
                 </ul>
             </div>
 

@@ -251,6 +251,12 @@ Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 
 Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
 Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
 
+// Frontend Waste Requests Routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendIndex'])->name('front.waste-requests');
+    Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendStore'])->name('front.waste-requests.store');
+});
+
 // Fallback 404 for unknown routes
 Route::fallback(function () {
     return response()->view('front.pages.404', [], 404);

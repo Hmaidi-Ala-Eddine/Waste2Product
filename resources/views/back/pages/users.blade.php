@@ -92,7 +92,7 @@
               @forelse($users as $index => $user)
                 @php
                   // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg', 'team-6.jpg'];
+                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
                   $avatarImage = $avatarImages[$index % count($avatarImages)];
                 @endphp
                 <tr>

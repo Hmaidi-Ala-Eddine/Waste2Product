@@ -243,4 +243,59 @@ class WasteRequestController extends Controller
         
         return response()->json($collectors);
     }
+
+    /**
+     * Frontend: Display user's waste requests
+     */
+    public function frontendIndex(Request $request)
+    {
+        // Ensure user is authenticated
+        if (!auth()->check()) {
+            return redirect()->route('front.login')->with('error', 'Please login to access waste requests.');
+        }
+
+        $user = auth()->user();
+        
+        // Get user's waste requests with pagination
+        $wasteRequests = WasteRequest::with(['collector'])
+                                   ->where('user_id', $user->id)
+                                   ->orderBy('created_at', 'desc')
+                                   ->paginate(10);
+
+        return view('front.pages.waste-requests', compact('wasteRequests'));
+    }
+
+    /**
+     * Frontend: Store a new waste request from logged-in user
+     */
+    public function frontendStore(Request $request)
+    {
+        // Ensure user is authenticated
+        if (!auth()->check()) {
+            return redirect()->route('front.login')->with('error', 'Please login to submit waste requests.');
+        }
+
+        $user = auth()->user();
+
+        // Validate the request
+        $request->validate([
+            'waste_type' => 'required|in:' . implode(',', array_keys(\App\Models\WasteRequest::getWasteTypes())),
+            'quantity' => 'required|numeric|min:0.01|max:10000',
+            'address' => 'required|string|max:500',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        // Create the waste request
+        WasteRequest::create([
+            'user_id' => $user->id,
+            'waste_type' => $request->waste_type,
+            'quantity' => $request->quantity,
+            'address' => $request->address,
+            'description' => $request->description,
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('front.waste-requests')
+                        ->with('success', 'Your waste collection request has been submitted successfully! We will contact you soon.');
+    }
 }
