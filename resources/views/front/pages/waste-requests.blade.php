@@ -4,6 +4,13 @@
 
 @push('styles')
 <style>
+    /* Force dark navbar text on this page only */
+    .navbar-nav > li > a,
+    .navbar-brand,
+    .attr-nav > ul > li > a {
+        color: #2c3e50 !important;
+    }
+    
     .waste-request-area {
         padding: 100px 0;
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -276,10 +283,23 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="address">Collection Address *</label>
+                            <label for="state">Governorate / State *</label>
+                            <select name="state" id="state" class="form-select" required>
+                                <option value="">Select your governorate</option>
+                                @foreach(\App\Helpers\TunisiaStates::getStates() as $key => $label)
+                                    <option value="{{ $key }}" {{ old('state') == $key ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="error-text" id="state_error">Please select a governorate</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Specific Address *</label>
                             <textarea name="address" id="address" class="form-control" rows="3" 
-                                      placeholder="Enter your full address for collection" required>{{ old('address') }}</textarea>
-                            <div class="error-text" id="address_error">Please enter your address</div>
+                                      placeholder="Enter specific address (street, building, floor, etc.)" required>{{ old('address') }}</textarea>
+                            <div class="error-text" id="address_error">Please enter your specific address</div>
                         </div>
 
                         <div class="form-group">
@@ -316,6 +336,10 @@
                                     <div class="detail-item">
                                         <i class="fas fa-weight-hanging"></i>
                                         <span>{{ $request->quantity }} kg</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-map-pin"></i>
+                                        <span>{{ $request->state }}</span>
                                     </div>
                                     <div class="detail-item">
                                         <i class="fas fa-map-marker-alt"></i>
@@ -369,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('wasteRequestForm');
     const wasteType = document.getElementById('waste_type');
     const quantity = document.getElementById('quantity');
+    const state = document.getElementById('state');
     const address = document.getElementById('address');
     
     // Simple validation function
@@ -379,6 +404,9 @@ document.addEventListener('DOMContentLoaded', function() {
             errorElement.style.display = 'block';
             return false;
         } else if (field.id === 'quantity' && (!field.value || field.value <= 0)) {
+            errorElement.style.display = 'block';
+            return false;
+        } else if (field.id === 'state' && !field.value) {
             errorElement.style.display = 'block';
             return false;
         } else if (field.id === 'address' && !field.value.trim()) {
@@ -393,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners
     wasteType.addEventListener('blur', function() { validateField(this); });
     quantity.addEventListener('blur', function() { validateField(this); });
+    state.addEventListener('blur', function() { validateField(this); });
     address.addEventListener('blur', function() { validateField(this); });
     
     form.addEventListener('submit', function(e) {
@@ -401,6 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validate all required fields
         if (!validateField(wasteType)) isValid = false;
         if (!validateField(quantity)) isValid = false;
+        if (!validateField(state)) isValid = false;
         if (!validateField(address)) isValid = false;
         
         if (!isValid) {

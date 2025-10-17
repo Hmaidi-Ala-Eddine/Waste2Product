@@ -281,6 +281,7 @@ class WasteRequestController extends Controller
         $request->validate([
             'waste_type' => 'required|in:' . implode(',', array_keys(\App\Models\WasteRequest::getWasteTypes())),
             'quantity' => 'required|numeric|min:0.01|max:10000',
+            'state' => 'required|in:' . implode(',', \App\Helpers\TunisiaStates::getStateValues()),
             'address' => 'required|string|max:500',
             'description' => 'nullable|string|max:1000',
         ]);
@@ -290,6 +291,7 @@ class WasteRequestController extends Controller
             'user_id' => $user->id,
             'waste_type' => $request->waste_type,
             'quantity' => $request->quantity,
+            'state' => $request->state,
             'address' => $request->address,
             'description' => $request->description,
             'status' => 'pending',

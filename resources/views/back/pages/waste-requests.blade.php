@@ -117,7 +117,8 @@
                   <td>
                     <p class="text-xs font-weight-bold mb-0">{{ $request->waste_type_formatted }} - {{ $request->quantity }} kg</p>
                     <p class="text-xs text-secondary mb-0">
-                      {{ Str::limit($request->address, 40) }}
+                      <i class="material-symbols-rounded text-xs">location_on</i> {{ $request->state ?? 'N/A' }}
+                      <br>{{ Str::limit($request->address, 35) }}
                       @if($request->collector)
                         <br><span class="text-info">Collector: {{ $request->collector->name }}</span>
                       @else
@@ -242,8 +243,19 @@
               </div>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Pickup Address *</label>
-                <textarea class="form-control" name="address" rows="3" required placeholder="Enter pickup address"></textarea>
+                <label class="form-label text-dark">Governorate *</label>
+                <select class="form-control" name="state" required>
+                  <option value="">Select Governorate</option>
+                  @foreach(\App\Helpers\TunisiaStates::getStates() as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                  @endforeach
+                </select>
+                <div class="invalid-feedback"></div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label text-dark">Specific Address *</label>
+                <textarea class="form-control" name="address" rows="3" required placeholder="Street, building, floor, etc."></textarea>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -336,8 +348,19 @@
               </div>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Pickup Address *</label>
-                <textarea class="form-control" name="address" id="edit_address" rows="3" required placeholder="Enter pickup address"></textarea>
+                <label class="form-label text-dark">Governorate *</label>
+                <select class="form-control" name="state" id="edit_state" required>
+                  <option value="">Select Governorate</option>
+                  @foreach(\App\Helpers\TunisiaStates::getStates() as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                  @endforeach
+                </select>
+                <div class="invalid-feedback"></div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label text-dark">Specific Address *</label>
+                <textarea class="form-control" name="address" id="edit_address" rows="3" required placeholder="Street, building, floor, etc."></textarea>
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -452,6 +475,7 @@ function editRequest(id) {
             document.getElementById('edit_quantity').value = request.quantity;
             document.getElementById('edit_collector_id').value = request.collector_id || '';
             document.getElementById('edit_status').value = request.status;
+            document.getElementById('edit_state').value = request.state || '';
             document.getElementById('edit_address').value = request.address;
             document.getElementById('edit_description').value = request.description || '';
             

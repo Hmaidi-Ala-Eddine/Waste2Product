@@ -139,7 +139,20 @@
                     </li>
                     <li><a href="{{ route('front.contact') }}">contact</a></li>
                     @auth
-                        <li><a href="{{ route('front.waste-requests') }}">My Requests</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Services</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ route('front.waste-requests') }}"><i class="fas fa-clipboard-list me-2"></i>My Waste Requests</a></li>
+                                <li><a href="{{ route('front.collector-application') }}"><i class="fas fa-user-tie me-2"></i>Collector Application</a></li>
+                                @php
+                                    $user = auth()->user();
+                                    $isVerifiedCollector = $user->collector && $user->collector->verification_status === 'verified';
+                                @endphp
+                                @if($isVerifiedCollector)
+                                    <li><a href="{{ route('front.collector-dashboard') }}"><i class="fas fa-truck me-2"></i>Collector Dashboard</a></li>
+                                @endif
+                            </ul>
+                        </li>
                     @endauth
                 </ul>
             </div>

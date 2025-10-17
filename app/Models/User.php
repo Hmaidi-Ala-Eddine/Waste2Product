@@ -96,4 +96,45 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class);
     }
+
+    /**
+     * Get the collector profile for this user (if they are a collector)
+     */
+    public function collector()
+    {
+        return $this->hasOne(Collector::class);
+    }
+
+    /**
+     * Check if user is a verified collector
+     */
+    public function isVerifiedCollector()
+    {
+        return $this->collector && $this->collector->verification_status === 'verified';
+    }
+
+    /**
+     * Check if user has a collector profile (any status)
+     */
+    public function hasCollectorProfile()
+    {
+        return $this->collector !== null;
+    }
+
+    /**
+     * Get collector status badge class for UI
+     */
+    public function getCollectorBadgeAttribute()
+    {
+        if (!$this->collector) {
+            return null;
+        }
+
+        return match($this->collector->verification_status) {
+            'pending' => 'bg-warning',
+            'verified' => 'bg-gradient-success',
+            'suspended' => 'bg-danger',
+            default => 'bg-secondary',
+        };
+    }
 }

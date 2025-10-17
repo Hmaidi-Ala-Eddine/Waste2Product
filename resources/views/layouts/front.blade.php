@@ -53,7 +53,30 @@
             align-items: center;
         }
 
-        /* Navbar Green Hover Effects Only */
+        /* Navbar Menu Items - Always visible */
+        .navbar-nav > li > a {
+            color: white !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        /* White navbar and scrolled state - dark text */
+        .navbar.white .navbar-nav > li > a,
+        .navbar.navbar-scrolled .navbar-nav > li > a,
+        .navbar.sticked .navbar-nav > li > a,
+        .navbar-sticky.navbar-scrolled .navbar-nav > li > a {
+            color: #2c3e50 !important;
+            text-shadow: none;
+        }
+        
+        /* Logo color on scrolled */
+        .navbar.navbar-scrolled .navbar-brand,
+        .navbar.sticked .navbar-brand {
+            color: #2c3e50 !important;
+        }
+        
+        /* Navbar Green Hover Effects */
         .navbar-nav > li > a:hover,
         .navbar-nav > li > a:focus {
             color: #4CAF50 !important;
@@ -64,11 +87,52 @@
             color: #4CAF50 !important;
         }
 
-        /* Dropdown Menu Green Hover */
+        /* Dropdown Menu Styling - White background with dark text */
+        .dropdown-menu {
+            background-color: white !important;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            border: 1px solid rgba(0,0,0,0.08);
+            margin-top: 10px;
+        }
+        
+        .dropdown-menu > li > a {
+            color: #2c3e50 !important;
+            font-weight: 500;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-menu > li > a i {
+            color: #667eea;
+            width: 24px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        
         .dropdown-menu > li > a:hover,
         .dropdown-menu > li > a:focus {
-            background-color: #E8F5E8 !important;
+            background: linear-gradient(135deg, #E8F5E8 0%, #D4F1D4 100%) !important;
             color: #2E7D32 !important;
+            padding-left: 28px;
+            transform: translateX(4px);
+        }
+        
+        .dropdown-menu > li > a:hover i,
+        .dropdown-menu > li > a:focus i {
+            color: #2E7D32 !important;
+        }
+        
+        /* Dropdown separator */
+        .dropdown-menu > li {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .dropdown-menu > li:last-child {
+            border-bottom: none;
         }
     </style>
     
