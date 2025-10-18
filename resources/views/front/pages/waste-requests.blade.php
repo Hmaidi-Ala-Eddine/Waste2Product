@@ -386,7 +386,29 @@
                                     @if($request->collector)
                                         <div class="detail-item">
                                             <i class="fas fa-user-tie"></i>
-                                            <span>{{ $request->collector->name }}</span>
+                                            <div class="d-flex flex-column">
+                                                <span>{{ $request->collector->name }}</span>
+                                                
+                                                @if($request->status === 'collected')
+                                                    <!-- Star Rating System -->
+                                                    <div class="star-rating mt-2" data-request-id="{{ $request->id }}" data-current-rating="{{ $request->rating->rating ?? 0 }}">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <i class="fas fa-star star-icon" 
+                                                               data-rating="{{ $i }}" 
+                                                               style="color: {{ ($request->rating && $i <= $request->rating->rating) ? '#fbbf24' : '#e5e7eb' }}; 
+                                                                      font-size: 1.2rem; 
+                                                                      cursor: pointer; 
+                                                                      transition: color 0.2s;">
+                                                            </i>
+                                                        @endfor
+                                                        @if($request->rating)
+                                                            <small class="text-success ms-2">Rated</small>
+                                                        @else
+                                                            <small class="text-muted ms-2">Rate</small>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endif
                                     @if($request->collected_at)
@@ -598,6 +620,95 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
         submitBtn.disabled = true;
     });
+
+    // ============ STAR RATING SYSTEM ============
+    // Handle star hover effects
+    document.querySelectorAll('.star-rating').forEach(ratingContainer => {
+        const stars = ratingContainer.querySelectorAll('.star-icon');
+        const requestId = ratingContainer.dataset.requestId;
+        let currentRating = parseInt(ratingContainer.dataset.currentRating) || 0;
+        
+        stars.forEach((star, index) => {
+            // Hover effect
+            star.addEventListener('mouseenter', function() {
+                const hoverRating = parseInt(this.dataset.rating);
+                updateStarColors(stars, hoverRating);
+            });
+            
+            // Reset on mouse leave
+            ratingContainer.addEventListener('mouseleave', function() {
+                updateStarColors(stars, currentRating);
+            });
+            
+            // Click to rate
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                submitRating(requestId, rating, stars, ratingContainer);
+            });
+        });
+    });
+
+    function updateStarColors(stars, rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#fbbf24'; // Gold
+            } else {
+                star.style.color = '#e5e7eb'; // Gray
+            }
+        });
+    }
+
+    function submitRating(requestId, rating, stars, container) {
+        // Show loading
+        const originalHtml = container.innerHTML;
+        container.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rating...';
+        
+        fetch(`/waste-requests/${requestId}/rate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ rating: rating })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update current rating
+                container.dataset.currentRating = rating;
+                
+                // Show success message
+                container.innerHTML = originalHtml.replace('Rate', 'Rated');
+                updateStarColors(container.querySelectorAll('.star-icon'), rating);
+                
+                // Show success notification
+                showNotification('Thank you for rating the collector!', 'success');
+            } else {
+                alert(data.error || 'Failed to submit rating');
+                container.innerHTML = originalHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+            container.innerHTML = originalHtml;
+        });
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 });
 </script>
 @endpush

@@ -202,11 +202,9 @@
               <h6 class="text-dark font-weight-bold mb-3">Basic Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">User *</label>
-                <select class="form-control" name="user_id" id="user_id" required>
-                  <option value="">Select User</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">User</label>
+                <input type="text" class="form-control bg-light" value="{{ auth()->user()->name }} ({{ auth()->user()->email }})" readonly disabled>
+                <small class="text-muted">Collector profiles you create will belong to your account</small>
               </div>
               
               <div class="mb-3">
@@ -238,9 +236,20 @@
               <h6 class="text-dark font-weight-bold mb-3">Service Details</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Service Areas</label>
-                <input type="text" class="form-control" name="service_areas" placeholder="Enter areas separated by commas" id="service_areas_input">
-                <small class="text-muted">Enter service areas separated by commas</small>
+                <label class="form-label text-dark">Service Areas (Governorates) *</label>
+                <div class="row g-2">
+                  @foreach(\App\Helpers\TunisiaStates::getStates() as $state)
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        <input class="form-check-input service-area-checkbox" type="checkbox" name="service_areas[]" value="{{ $state }}" id="area_{{ str_replace(' ', '_', $state) }}">
+                        <label class="form-check-label" for="area_{{ str_replace(' ', '_', $state) }}">
+                          {{ $state }}
+                        </label>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+                <small class="text-muted">Select at least one governorate (min: 1, max: 24)</small>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -330,9 +339,20 @@
               </div>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Service Areas</label>
-                <input type="text" class="form-control" name="service_areas" id="edit_service_areas" placeholder="Enter areas separated by commas">
-                <small class="text-muted">Enter service areas separated by commas</small>
+                <label class="form-label text-dark">Service Areas (Governorates) *</label>
+                <div class="row g-2" id="edit_service_areas_container">
+                  @foreach(\App\Helpers\TunisiaStates::getStates() as $state)
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        <input class="form-check-input edit-service-area-checkbox" type="checkbox" name="service_areas[]" value="{{ $state }}" id="edit_area_{{ str_replace(' ', '_', $state) }}">
+                        <label class="form-check-label" for="edit_area_{{ str_replace(' ', '_', $state) }}">
+                          {{ $state }}
+                        </label>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+                <small class="text-muted">Select at least one governorate (min: 1, max: 24)</small>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -383,37 +403,18 @@
 
 @push('scripts')
 <script>
-// Load users when page loads
+// Setup validation when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    loadUsers();
     setupValidation();
 });
-
-// Load users for dropdown (only users without collector profile)
-function loadUsers() {
-    fetch('{{ route("admin.collectors.users") }}')
-        .then(response => response.json())
-        .then(users => {
-            const select = document.getElementById('user_id');
-            if (select) {
-                select.innerHTML = '<option value="">Select User</option>';
-                users.forEach(user => {
-                    select.innerHTML += `<option value="${user.id}">${user.name} (${user.email})</option>`;
-                });
-            }
-        })
-        .catch(error => console.error('Error loading users:', error));
-}
 
 // Setup real-time validation
 function setupValidation() {
     // Add Collector Form Validation
     const addForm = document.getElementById('addCollectorForm');
-    const addUserId = addForm.querySelector('[name="user_id"]');
     const addCompanyName = addForm.querySelector('[name="company_name"]');
     const addVehicleType = addForm.querySelector('[name="vehicle_type"]');
     const addCapacity = addForm.querySelector('[name="capacity_kg"]');
-    const addServiceAreas = document.getElementById('service_areas_input');
     const addBio = addForm.querySelector('[name="bio"]');
 
     // Edit Collector Form Validation
@@ -421,7 +422,6 @@ function setupValidation() {
     const editCompanyName = editForm.querySelector('[name="company_name"]');
     const editVehicleType = editForm.querySelector('[name="vehicle_type"]');
     const editCapacity = editForm.querySelector('[name="capacity_kg"]');
-    const editServiceAreas = document.getElementById('edit_service_areas');
     const editBio = editForm.querySelector('[name="bio"]');
     const editVerificationStatus = editForm.querySelector('[name="verification_status"]');
 
@@ -617,11 +617,16 @@ function editCollector(id) {
             document.getElementById('edit_verification_status').value = collector.verification_status;
             document.getElementById('edit_bio').value = collector.bio || '';
             
-            // Handle service areas (array to comma-separated string)
-            const serviceAreas = collector.service_areas && Array.isArray(collector.service_areas) 
-                ? collector.service_areas.join(', ') 
-                : '';
-            document.getElementById('edit_service_areas').value = serviceAreas;
+            // Handle service areas checkboxes
+            document.querySelectorAll('.edit-service-area-checkbox').forEach(checkbox => {
+                checkbox.checked = false; // Uncheck all first
+            });
+            if (collector.service_areas && Array.isArray(collector.service_areas)) {
+                collector.service_areas.forEach(area => {
+                    const checkbox = document.querySelector(`.edit-service-area-checkbox[value="${area}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
             
             document.getElementById('editCollectorForm').action = `{{ url('admin/collectors') }}/${id}`;
             new bootstrap.Modal(document.getElementById('editCollectorModal')).show();
@@ -639,37 +644,7 @@ function deleteCollector(id, name) {
     new bootstrap.Modal(document.getElementById('deleteCollectorModal')).show();
 }
 
-// Handle service areas input (convert comma-separated to array before submit)
-document.getElementById('addCollectorForm').addEventListener('submit', function(e) {
-    const serviceAreasInput = document.querySelector('#service_areas_input');
-    if (serviceAreasInput && serviceAreasInput.value) {
-        const areas = serviceAreasInput.value.split(',').map(a => a.trim()).filter(a => a);
-        // Create hidden input for array
-        serviceAreasInput.name = '';
-        areas.forEach((area, index) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `service_areas[${index}]`;
-            input.value = area;
-            this.appendChild(input);
-        });
-    }
-});
-
-document.getElementById('editCollectorForm').addEventListener('submit', function(e) {
-    const serviceAreasInput = document.getElementById('edit_service_areas');
-    if (serviceAreasInput && serviceAreasInput.value) {
-        const areas = serviceAreasInput.value.split(',').map(a => a.trim()).filter(a => a);
-        serviceAreasInput.name = '';
-        areas.forEach((area, index) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `service_areas[${index}]`;
-            input.value = area;
-            this.appendChild(input);
-        });
-    }
-});
+// Service areas are now checkboxes - they submit as arrays automatically
 </script>
 @endpush
 

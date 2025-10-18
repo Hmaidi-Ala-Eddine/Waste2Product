@@ -256,6 +256,48 @@
     
     .form-control:focus, .form-select:focus {
         }
+    
+    /* Leaderboard Enhancements */
+    .leaderboard-item {
+        transition: all 0.3s ease !important;
+    }
+    
+    .leaderboard-item:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    }
+    
+    .leaderboard-item.my-rank {
+        animation: pulse-green 2s infinite;
+    }
+    
+    @keyframes pulse-green {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        50% {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+    }
+    
+    /* Scrollbar Styling */
+    .leaderboard-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .leaderboard-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .leaderboard-scroll::-webkit-scrollbar-thumb {
+        background: #10b981;
+        border-radius: 10px;
+    }
+    
+    .leaderboard-scroll::-webkit-scrollbar-thumb:hover {
+        background: #059669;
+    }
         
         .dashboard-card {
             padding: 20px;
@@ -282,6 +324,214 @@
                 Collector Dashboard
             </h2>
             <p>View and accept available waste collection requests in your area</p>
+        </div>
+
+        <!-- Performance Dashboard Row -->
+        <div class="row mb-4">
+            <!-- Performance Stats Cards -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #10b981;">
+                    <div class="mb-3">
+                        <i class="fas fa-trophy" style="font-size: 2.5rem; color: #10b981;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #10b981; font-weight: 700;">{{ $totalCollections }}</h2>
+                    <p class="text-muted mb-0 small">Total Collections</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #3b82f6;">
+                    <div class="mb-3">
+                        <i class="fas fa-calendar-check" style="font-size: 2.5rem; color: #3b82f6;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #3b82f6; font-weight: 700;">{{ $thisMonthCollections }}</h2>
+                    <p class="text-muted mb-0 small">This Month</p>
+                    @if($growthPercentage > 0)
+                        <small class="text-success"><i class="fas fa-arrow-up"></i> +{{ $growthPercentage }}%</small>
+                    @elseif($growthPercentage < 0)
+                        <small class="text-danger"><i class="fas fa-arrow-down"></i> {{ $growthPercentage }}%</small>
+                    @endif
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #f59e0b;">
+                    <div class="mb-3">
+                        <i class="fas fa-weight-hanging" style="font-size: 2.5rem; color: #f59e0b;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #f59e0b; font-weight: 700;">{{ number_format($totalWasteCollected, 1) }}</h2>
+                    <p class="text-muted mb-0 small">Total Waste (kg)</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #8b5cf6;">
+                    <div class="mb-3">
+                        <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #8b5cf6;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #8b5cf6; font-weight: 700;">{{ $successRate }}%</h2>
+                    <p class="text-muted mb-0 small">Success Rate</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance & Leaderboard Row -->
+        <div class="row mb-4">
+            <!-- Performance Details -->
+            <div class="col-lg-6 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-chart-bar me-2"></i>My Performance</h3>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-star" style="font-size: 2rem; color: #fbbf24;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">{{ number_format($averageRating, 1) }}/5.0</h4>
+                                <small class="text-muted">Average Rating</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-medal" style="font-size: 2rem; color: #10b981;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">#{{ $myRank }}</h4>
+                                <small class="text-muted">My Rank</small>
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-cloud" style="font-size: 2rem; color: #06b6d4;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">{{ number_format($co2Saved, 1) }} kg</h4>
+                                <small class="text-muted">CO₂ Saved</small>
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-tree" style="font-size: 2rem; color: #22c55e;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">{{ number_format($treesSaved, 1) }}</h4>
+                                <small class="text-muted">Trees Saved</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="col-lg-6 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-trophy me-2"></i>Top Collectors Leaderboard</h3>
+                        <small class="text-muted">Best performers this month</small>
+                    </div>
+                    
+                    <div class="leaderboard-scroll" style="max-height: 450px; overflow-y: auto; padding-right: 5px;">
+                        @foreach($leaderboard as $leader)
+                            <div class="leaderboard-item {{ $leader['id'] == auth()->user()->collector->id ? 'my-rank' : '' }}" 
+                                 style="display: flex; 
+                                        align-items: center; 
+                                        padding: 18px; 
+                                        margin-bottom: 12px; 
+                                        border-radius: 12px; 
+                                        {{ $leader['id'] == auth()->user()->collector->id ? 'background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);' : 'background: #f9fafb; border: 1px solid #e5e7eb;' }}
+                                        transition: all 0.3s ease;
+                                        cursor: default;">
+                                
+                                <!-- Rank Badge -->
+                                <div style="margin-right: 15px; min-width: 50px; text-align: center;">
+                                    @if($leader['rank'] == 1)
+                                        <div style="position: relative;">
+                                            <i class="fas fa-crown" style="font-size: 2.2rem; color: #fbbf24; filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.5));"></i>
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); font-size: 0.75rem;">1</div>
+                                        </div>
+                                    @elseif($leader['rank'] == 2)
+                                        <div style="position: relative;">
+                                            <i class="fas fa-medal" style="font-size: 2rem; color: #c0c0c0; filter: drop-shadow(0 2px 4px rgba(192, 192, 192, 0.5));"></i>
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #666; font-size: 0.7rem;">2</div>
+                                        </div>
+                                    @elseif($leader['rank'] == 3)
+                                        <div style="position: relative;">
+                                            <i class="fas fa-medal" style="font-size: 2rem; color: #cd7f32; filter: drop-shadow(0 2px 4px rgba(205, 127, 50, 0.5));"></i>
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #fff; font-size: 0.7rem;">3</div>
+                                        </div>
+                                    @else
+                                        <div style="width: 45px; 
+                                                    height: 45px; 
+                                                    border-radius: 50%; 
+                                                    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); 
+                                                    display: flex; 
+                                                    align-items: center; 
+                                                    justify-content: center; 
+                                                    font-weight: 800; 
+                                                    color: #6b7280; 
+                                                    font-size: 1.1rem;
+                                                    border: 2px solid #fff;
+                                                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                            {{ $leader['rank'] }}
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                <!-- Collector Info -->
+                                <div style="flex-grow: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <!-- Name & Company -->
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                <strong style="color: #1f2937; font-size: 1.05rem;">{{ $leader['name'] }}</strong>
+                                                @if($leader['id'] == auth()->user()->collector->id)
+                                                    <span class="badge" style="background: #10b981; color: white; font-size: 0.7rem; padding: 3px 8px; border-radius: 8px;">YOU</span>
+                                                @endif
+                                            </div>
+                                            @if($leader['company_name'])
+                                                <div style="color: #6b7280; font-size: 0.85rem; margin-bottom: 6px;">
+                                                    <i class="fas fa-building" style="font-size: 0.75rem; margin-right: 4px;"></i>
+                                                    {{ $leader['company_name'] }}
+                                                </div>
+                                            @endif
+                                            
+                                            <!-- Star Rating with Number -->
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="fas fa-star" style="color: {{ $i <= $leader['rating'] ? '#fbbf24' : '#e5e7eb' }}; font-size: 0.9rem;"></i>
+                                                @endfor
+                                                <span style="color: #fbbf24; font-weight: 700; font-size: 0.95rem; margin-left: 4px;">
+                                                    {{ number_format($leader['rating'], 1) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Collections Badge -->
+                                        <div style="text-align: right;">
+                                            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                                        color: white; 
+                                                        padding: 8px 14px; 
+                                                        border-radius: 10px; 
+                                                        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+                                                        min-width: 80px;">
+                                                <div style="font-size: 1.3rem; font-weight: 800; line-height: 1;">
+                                                    {{ $leader['total_collections'] }}
+                                                </div>
+                                                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; opacity: 0.9;">
+                                                    Collections
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    <!-- Leaderboard Footer -->
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e5e7eb; text-align: center;">
+                        <small style="color: #6b7280;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Rankings updated in real-time based on total collections
+                        </small>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row">

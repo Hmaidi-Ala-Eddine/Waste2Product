@@ -82,22 +82,8 @@ class CollectorValidator
      */
     public static function rules(?Collector $collector = null): array
     {
-        $userIdRule = $collector 
-            ? ['required', 'integer', 'exists:users,id', Rule::unique('collectors', 'user_id')->ignore($collector->id)]
-            : ['required', 'integer', 'exists:users,id', 'unique:collectors,user_id'];
-
+        // user_id removed - admin creates for themselves (set in controller)
         $rules = [
-            'user_id' => array_merge($userIdRule, [
-                function ($attr, $value, $fail) {
-                    $user = User::find($value);
-                    if ($user && $user->role === 'admin') {
-                        $fail('Admin users cannot be collectors.');
-                    }
-                    if ($user && !$user->is_active) {
-                        $fail('Selected user is not active.');
-                    }
-                }
-            ]),
             'company_name' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z0-9\s\.\,\-\&]+$/'],
             'vehicle_type' => ['required', 'string', Rule::in(array_keys(Collector::getVehicleTypes()))],
             'service_areas' => ['required', 'array', 'min:1', 'max:24'],

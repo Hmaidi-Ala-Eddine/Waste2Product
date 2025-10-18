@@ -86,6 +86,14 @@ class WasteRequest extends Model
     }
 
     /**
+     * Get the rating for this waste request
+     */
+    public function rating()
+    {
+        return $this->hasOne(CollectorRating::class);
+    }
+
+    /**
      * Scope to filter by status
      */
     public function scopeStatus($query, $status)

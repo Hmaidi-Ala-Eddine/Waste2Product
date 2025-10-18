@@ -200,11 +200,9 @@
               <h6 class="text-dark font-weight-bold mb-3">Request Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Customer *</label>
-                <select class="form-control" name="user_id" id="customer_id" required>
-                  <option value="">Select Customer</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">Requested By</label>
+                <input type="text" class="form-control bg-light" value="{{ auth()->user()->name }} ({{ auth()->user()->email }})" readonly disabled>
+                <small class="text-muted">Requests you create will belong to your account</small>
               </div>
               
               <div class="mb-3">
@@ -232,14 +230,15 @@
               <div class="mb-3">
                 <label class="form-label text-dark">Collector (Optional)</label>
                 <select class="form-control" name="collector_id" id="collector_id">
-                  <option value="">Assign Later</option>
+                  <option value="">Select governorate first</option>
                 </select>
+                <small class="text-muted">Choose governorate to see available collectors</small>
                 <div class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Governorate *</label>
-                <select class="form-control" name="state" required>
+                <select class="form-control" name="state" id="state" required>
                   <option value="">Select Governorate</option>
                   @foreach(\App\Helpers\TunisiaStates::getStates() as $key => $label)
                     <option value="{{ $key }}">{{ $label }}</option>
@@ -295,11 +294,9 @@
               <h6 class="text-dark font-weight-bold mb-3">Request Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Customer *</label>
-                <select class="form-control" name="user_id" id="edit_customer_id" required>
-                  <option value="">Select Customer</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">Requested By</label>
+                <input type="text" class="form-control bg-light" id="edit_customer_name" readonly disabled>
+                <small class="text-muted">Owner cannot be changed - requests belong to their creator</small>
               </div>
               
               <div class="mb-3">
@@ -441,23 +438,104 @@ function loadCustomers() {
         .catch(error => console.error('Error loading customers:', error));
 }
 
+// Store collectors globally for filtering
+let allCollectors = [];
+
 // Load collectors for dropdowns
 function loadCollectors() {
     fetch('{{ route("admin.waste-requests.collectors") }}')
-        .then(response => response.json())
-        .then(collectors => {
-            const collectorSelects = ['collector_id', 'edit_collector_id'];
-            collectorSelects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                if (select) {
-                    select.innerHTML = '<option value="">Unassigned</option>';
-                    collectors.forEach(collector => {
-                        select.innerHTML += `<option value="${collector.id}">${collector.name} (${collector.email})</option>`;
-                    });
-                }
-            });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
         })
-        .catch(error => console.error('Error loading collectors:', error));
+        .then(collectors => {
+            allCollectors = collectors; // Store for later filtering
+            console.log('✅ Loaded collectors:', collectors); // Debug
+            console.log('Total collectors:', collectors.length);
+            
+            if (collectors.length === 0) {
+                console.warn('⚠️ No verified collectors found. Make sure:');
+                console.warn('1. Collectors exist in database');
+                console.warn('2. Collectors have verification_status = "verified"');
+                console.warn('3. Collectors have active users');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error loading collectors:', error);
+            alert('Failed to load collectors. Please refresh the page.');
+        });
+}
+
+// Filter collectors for ADD form when governorate is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const stateSelect = document.getElementById('state');
+    const collectorSelect = document.getElementById('collector_id');
+    
+    if (stateSelect && collectorSelect) {
+        stateSelect.addEventListener('change', function() {
+            const selectedState = this.value;
+            
+            if (!selectedState) {
+                // No state selected, show placeholder
+                collectorSelect.innerHTML = '<option value="">Select governorate first</option>';
+                return;
+            }
+            
+            // Filter collectors by selected governorate
+            collectorSelect.innerHTML = '<option value="">Unassigned</option>';
+            
+            const matchingCollectors = allCollectors.filter(collector => {
+                return collector.service_areas && 
+                       Array.isArray(collector.service_areas) && 
+                       collector.service_areas.includes(selectedState);
+            });
+            
+            if (matchingCollectors.length > 0) {
+                // Show only matching collectors
+                matchingCollectors.forEach(collector => {
+                    collectorSelect.innerHTML += `<option value="${collector.id}">${collector.name} (${collector.email})</option>`;
+                });
+            } else {
+                // No collectors serve this area, show all with note
+                collectorSelect.innerHTML = '<option value="">No collectors serve this area</option>';
+                allCollectors.forEach(collector => {
+                    collectorSelect.innerHTML += `<option value="${collector.id}">${collector.name} (${collector.email}) - Outside area</option>`;
+                });
+            }
+        });
+    }
+});
+
+// Filter collectors by governorate for edit form
+function filterCollectorsByGovernorate(governorate, currentCollectorId = null) {
+    const editSelect = document.getElementById('edit_collector_id');
+    if (!editSelect) return;
+    
+    editSelect.innerHTML = '<option value="">Unassigned</option>';
+    
+    // Filter collectors who serve this governorate
+    const matchingCollectors = allCollectors.filter(collector => {
+        return collector.service_areas && 
+               Array.isArray(collector.service_areas) && 
+               collector.service_areas.includes(governorate);
+    });
+    
+    // If no collectors match, show all collectors
+    const collectorsToShow = matchingCollectors.length > 0 ? matchingCollectors : allCollectors;
+    
+    collectorsToShow.forEach(collector => {
+        const label = matchingCollectors.length > 0 
+            ? `${collector.name} (${collector.email})` 
+            : `${collector.name} (${collector.email}) - Outside area`;
+        editSelect.innerHTML += `<option value="${collector.id}">${label}</option>`;
+    });
+    
+    // Set current collector if provided
+    if (currentCollectorId) {
+        editSelect.value = currentCollectorId;
+    }
 }
 
 // Edit request function
@@ -465,14 +543,29 @@ function editRequest(id) {
     fetch(`{{ url('admin/waste-requests') }}/${id}/data`)
         .then(response => response.json())
         .then(request => {
-            document.getElementById('edit_customer_id').value = request.user_id;
+            document.getElementById('edit_customer_name').value = request.customer ? 
+                `${request.customer.name} (${request.customer.email})` : 'Unknown';
             document.getElementById('edit_waste_type').value = request.waste_type;
             document.getElementById('edit_quantity').value = request.quantity;
-            document.getElementById('edit_collector_id').value = request.collector_id || '';
             document.getElementById('edit_status').value = request.status;
             document.getElementById('edit_state').value = request.state || '';
             document.getElementById('edit_address').value = request.address;
             document.getElementById('edit_description').value = request.description || '';
+            
+            // Filter collectors by the request's governorate and set current collector
+            if (request.state) {
+                filterCollectorsByGovernorate(request.state, request.collector_id);
+            } else {
+                // If no state, show all collectors
+                const editSelect = document.getElementById('edit_collector_id');
+                editSelect.innerHTML = '<option value="">Unassigned</option>';
+                allCollectors.forEach(collector => {
+                    editSelect.innerHTML += `<option value="${collector.id}">${collector.name} (${collector.email})</option>`;
+                });
+                if (request.collector_id) {
+                    editSelect.value = request.collector_id;
+                }
+            }
             
             document.getElementById('editRequestForm').action = `{{ url('admin/waste-requests') }}/${id}`;
             new bootstrap.Modal(document.getElementById('editRequestModal')).show();

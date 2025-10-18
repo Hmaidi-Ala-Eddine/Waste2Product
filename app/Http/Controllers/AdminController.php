@@ -11,6 +11,185 @@ use Illuminate\Support\Facades\Mail;
 class AdminController extends Controller
 {
     /**
+     * Display admin dashboard with comprehensive statistics
+     */
+    public function dashboard()
+    {
+        // ============ CURRENT PERIOD STATS ============
+        $totalUsers = \App\Models\User::count();
+        $totalWasteRequests = \App\Models\WasteRequest::count();
+        $totalProducts = \App\Models\Product::count();
+        $totalCollectors = \App\Models\Collector::where('verification_status', 'verified')->count();
+        $totalOrders = \App\Models\Order::count();
+        $totalPosts = \App\Models\Post::count();
+        
+        // ============ GROWTH PERCENTAGES (vs last month) ============
+        $lastMonthUsers = \App\Models\User::where('created_at', '<', now()->subMonth())->count();
+        $userGrowth = $lastMonthUsers > 0 ? round((($totalUsers - $lastMonthUsers) / $lastMonthUsers) * 100, 1) : 0;
+        
+        $lastMonthRequests = \App\Models\WasteRequest::where('created_at', '<', now()->subMonth())->count();
+        $requestGrowth = $lastMonthRequests > 0 ? round((($totalWasteRequests - $lastMonthRequests) / $lastMonthRequests) * 100, 1) : 0;
+        
+        $lastMonthProducts = \App\Models\Product::where('created_at', '<', now()->subMonth())->count();
+        $productGrowth = $lastMonthProducts > 0 ? round((($totalProducts - $lastMonthProducts) / $lastMonthProducts) * 100, 1) : 0;
+        
+        $lastMonthOrders = \App\Models\Order::where('created_at', '<', now()->subMonth())->count();
+        $orderGrowth = $lastMonthOrders > 0 ? round((($totalOrders - $lastMonthOrders) / $lastMonthOrders) * 100, 1) : 0;
+        
+        // ============ WASTE COLLECTION IMPACT ============
+        $totalWasteCollected = \App\Models\WasteRequest::where('status', 'collected')->sum('quantity'); // kg
+        $thisMonthCollected = \App\Models\WasteRequest::where('status', 'collected')
+                                                      ->whereMonth('collected_at', now()->month)
+                                                      ->sum('quantity');
+        
+        // ============ REVENUE FROM PRODUCTS & ORDERS ============
+        $totalRevenue = \App\Models\Product::whereIn('status', ['sold', 'donated'])->sum('price');
+        $thisMonthRevenue = \App\Models\Product::whereIn('status', ['sold', 'donated'])
+                                               ->whereMonth('updated_at', now()->month)
+                                               ->sum('price');
+        
+        // Order revenue
+        $orderRevenue = \App\Models\Order::whereIn('status', ['completed', 'delivered'])->sum('total_price');
+        $thisMonthOrderRevenue = \App\Models\Order::whereIn('status', ['completed', 'delivered'])
+                                                   ->whereMonth('created_at', now()->month)
+                                                   ->sum('total_price');
+        
+        $combinedRevenue = $totalRevenue + $orderRevenue;
+        $thisMonthCombinedRevenue = $thisMonthRevenue + $thisMonthOrderRevenue;
+        
+        // ============ STATUS BREAKDOWN ============
+        $pendingRequests = \App\Models\WasteRequest::where('status', 'pending')->count();
+        $acceptedRequests = \App\Models\WasteRequest::where('status', 'accepted')->count();
+        $collectedRequests = \App\Models\WasteRequest::where('status', 'collected')->count();
+        $cancelledRequests = \App\Models\WasteRequest::where('status', 'cancelled')->count();
+        
+        // ============ PRODUCT STATUS ============
+        $availableProducts = \App\Models\Product::where('status', 'available')->count();
+        $soldProducts = \App\Models\Product::where('status', 'sold')->count();
+        $donatedProducts = \App\Models\Product::where('status', 'donated')->count();
+        $reservedProducts = \App\Models\Product::where('status', 'reserved')->count();
+        
+        // ============ TOP PERFORMERS ============
+        // Top 5 collectors by total collections
+        $topCollectors = \App\Models\Collector::with('user')
+                                              ->where('verification_status', 'verified')
+                                              ->orderBy('total_collections', 'desc')
+                                              ->take(5)
+                                              ->get();
+        
+        // Top 5 governorates by waste volume
+        $topStates = \App\Models\WasteRequest::selectRaw('state, COUNT(*) as total, SUM(quantity) as total_weight')
+                                             ->whereNotNull('state')
+                                             ->groupBy('state')
+                                             ->orderBy('total', 'desc')
+                                             ->take(5)
+                                             ->get();
+        
+        // Waste type breakdown
+        $wasteTypeBreakdown = \App\Models\WasteRequest::selectRaw('waste_type, COUNT(*) as count')
+                                                      ->groupBy('waste_type')
+                                                      ->orderBy('count', 'desc')
+                                                      ->get();
+        
+        // ============ TOP PRODUCTS ============
+        // Top 5 most sold products
+        $topProducts = \App\Models\Product::with('user')
+                                          ->whereIn('status', ['sold', 'donated'])
+                                          ->orderBy('price', 'desc')
+                                          ->take(5)
+                                          ->get();
+        
+        // Products by category
+        $productsByCategory = \App\Models\Product::selectRaw('category, COUNT(*) as count')
+                                                 ->groupBy('category')
+                                                 ->orderBy('count', 'desc')
+                                                 ->get();
+        
+        // ============ ORDER STATISTICS ============
+        $pendingOrders = \App\Models\Order::where('status', 'pending')->count();
+        $processingOrders = \App\Models\Order::where('status', 'processing')->count();
+        $completedOrders = \App\Models\Order::where('status', 'completed')->count();
+        
+        // Recent orders
+        $recentOrders = \App\Models\Order::with('buyer')
+                                         ->latest()
+                                         ->take(5)
+                                         ->get();
+        
+        // ============ USER INSIGHTS ============
+        $activeUsers = \App\Models\User::where('is_active', true)->count();
+        $newUsersThisMonth = \App\Models\User::whereMonth('created_at', now()->month)->count();
+        $usersByRole = \App\Models\User::selectRaw('role, COUNT(*) as count')
+                                       ->groupBy('role')
+                                       ->get();
+        
+        // ============ RECENT DATA ============
+        $recentRequests = \App\Models\WasteRequest::with(['customer', 'collector'])
+                                                   ->latest()
+                                                   ->take(5)
+                                                   ->get();
+        
+        $recentActivities = \App\Models\WasteRequest::with('customer')
+                                                     ->latest()
+                                                     ->take(6)
+                                                     ->get();
+        
+        // ============ CHARTS DATA ============
+        // Last 7 days requests
+        $requestsPerDay = [];
+        $daysLabels = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $daysLabels[] = $date->format('D');
+            $count = \App\Models\WasteRequest::whereDate('created_at', $date->format('Y-m-d'))->count();
+            $requestsPerDay[] = $count;
+        }
+        
+        // Monthly trend (last 6 months)
+        $monthlyTrend = [];
+        $monthLabels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $monthLabels[] = $month->format('M');
+            $count = \App\Models\WasteRequest::whereYear('created_at', $month->year)
+                                             ->whereMonth('created_at', $month->month)
+                                             ->count();
+            $monthlyTrend[] = $count;
+        }
+        
+        // ============ CONVERSION RATES ============
+        $collectionRate = $totalWasteRequests > 0 ? round(($collectedRequests / $totalWasteRequests) * 100, 1) : 0;
+        $productSaleRate = $totalProducts > 0 ? round((($soldProducts + $donatedProducts) / $totalProducts) * 100, 1) : 0;
+        
+        return view('back.dashboard', compact(
+            // Core Stats
+            'totalUsers', 'totalWasteRequests', 'totalProducts', 'totalCollectors', 'totalOrders', 'totalPosts',
+            // Growth
+            'userGrowth', 'requestGrowth', 'productGrowth', 'orderGrowth',
+            // Impact
+            'totalWasteCollected', 'thisMonthCollected',
+            // Revenue
+            'totalRevenue', 'thisMonthRevenue', 'orderRevenue', 'thisMonthOrderRevenue', 'combinedRevenue', 'thisMonthCombinedRevenue',
+            // Request Status
+            'pendingRequests', 'acceptedRequests', 'collectedRequests', 'cancelledRequests',
+            // Product Status
+            'availableProducts', 'soldProducts', 'donatedProducts', 'reservedProducts',
+            // Order Status
+            'pendingOrders', 'processingOrders', 'completedOrders',
+            // Top Performers
+            'topCollectors', 'topStates', 'topProducts',
+            // Breakdowns
+            'wasteTypeBreakdown', 'productsByCategory', 'usersByRole',
+            // Recent Data
+            'recentRequests', 'recentActivities', 'recentOrders',
+            // Charts
+            'requestsPerDay', 'daysLabels', 'monthlyTrend', 'monthLabels',
+            // Rates & Insights
+            'collectionRate', 'productSaleRate', 'activeUsers', 'newUsersThisMonth'
+        ));
+    }
+    
+    /**
      * Display the users management page with search and pagination
      */
     public function users(Request $request)

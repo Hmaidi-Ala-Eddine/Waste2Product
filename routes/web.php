@@ -53,13 +53,8 @@ Route::get('/debug-send-mail', function () {
 
 // Protected admin pages (require authentication + admin role)
 Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->group(function () {
-    Route::get('/', function () {
-        return view('back.dashboard');
-    })->name('dashboard');
+    Route::get('/', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
     
-    Route::get('/tables', function () {
-        return view('back.pages.tables');
-    })->name('tables');
     Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
     Route::post('/users', [\App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store');
     Route::post('/users/check-email', [\App\Http\Controllers\AdminController::class, 'checkEmail'])->name('users.check-email');
@@ -169,22 +164,6 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
         ]);
     })->name('analytics.debug');
     
-    Route::get('/billing', function () {
-        return view('back.pages.billing');
-    })->name('billing');
-    
-    Route::get('/virtual-reality', function () {
-        return view('back.pages.virtual-reality');
-    })->name('virtual-reality');
-    
-    Route::get('/rtl', function () {
-        return view('back.pages.rtl');
-    })->name('rtl');
-    
-    Route::get('/notifications', function () {
-        return view('back.pages.notifications');
-    })->name('notifications');
-    
     Route::get('/profile', function () {
         $user = auth()->user();
         return view('back.pages.profile', compact('user'));
@@ -192,21 +171,11 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     
     Route::post('/profile/upload-picture', [\App\Http\Controllers\AdminController::class, 'uploadProfilePicture'])->name('profile.upload-picture');
     
-    Route::get('/icons', function () {
-        return view('back.pages.icons');
-    })->name('icons');
-    
-    Route::get('/typography', function () {
-        return view('back.pages.typography');
-    })->name('typography');
-    
-    Route::get('/map', function () {
-        return view('back.pages.map');
-    })->name('map');
-    
-    Route::get('/landing', function () {
-        return redirect('/');
-    })->name('landing');
+    // Map Routes
+    Route::get('/map', [\App\Http\Controllers\MapController::class, 'index'])->name('map');
+    Route::get('/map/waste-requests', [\App\Http\Controllers\MapController::class, 'getWasteRequests'])->name('map.waste-requests');
+    Route::get('/map/collectors', [\App\Http\Controllers\MapController::class, 'getCollectors'])->name('map.collectors');
+    Route::get('/map/statistics', [\App\Http\Controllers\MapController::class, 'getStatistics'])->name('map.statistics');
     
     // Logout route
     Route::post('/logout', [\App\controller\UserController::class, 'logout'])->name('logout');
@@ -246,8 +215,11 @@ Route::middleware('auth')->group(function () {
         return view('front.pages.profile', compact('user'));
     })->name('front.profile');
     
+    Route::put('/profile', [\App\Http\Controllers\UserController::class, 'updateProfile'])->name('front.profile.update');
+    
     Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendIndex'])->name('front.waste-requests');
     Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendStore'])->name('front.waste-requests.store');
+    Route::post('/waste-requests/{id}/rate', [\App\Http\Controllers\WasteRequestController::class, 'submitRating'])->name('front.waste-requests.rate');
     
     // Frontend Collector Application Routes
     Route::get('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendIndex'])->name('front.collector-application');

@@ -102,7 +102,7 @@ class ProductController extends Controller
 
         $data = $request->only([
             'user_id', 'name', 'description', 'category', 
-            'condition', 'price', 'status'
+            'condition', 'price', 'status', 'waste_request_id'
         ]);
         
         // Handle image upload
@@ -178,7 +178,7 @@ class ProductController extends Controller
 
         $data = $request->only([
             'user_id', 'name', 'description', 'category', 
-            'condition', 'price', 'status'
+            'condition', 'price', 'status', 'waste_request_id'
         ]);
         
         // Handle image upload

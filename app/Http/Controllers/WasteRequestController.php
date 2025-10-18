@@ -85,11 +85,13 @@ class WasteRequestController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        // Admin creates waste requests for themselves - never on behalf of others
         $wasteRequest = WasteRequest::create([
-            'user_id' => $data['user_id'],
-            'collector_id' => $data['collector_id'] ?? null,
+            'user_id' => auth()->id(),
+            'collector_id' => $data['collector_id'] ?? null, // Optional: can assign during creation or later
             'waste_type' => $data['waste_type'],
             'quantity' => $data['quantity'],
+            'state' => $data['state'] ?? null,
             'address' => $data['address'],
             'description' => $data['description'] ?? null,
             'status' => 'pending',
@@ -136,11 +138,13 @@ class WasteRequestController extends Controller
             $collectedAt = null;
         }
 
+        // Ownership cannot be transferred - user_id stays with original creator
+        // Admin can update fields and assign collectors
         $wasteRequest->update([
-            'user_id' => $data['user_id'],
             'collector_id' => $data['collector_id'] ?? null,
             'waste_type' => $data['waste_type'],
             'quantity' => $data['quantity'],
+            'state' => $data['state'] ?? $wasteRequest->state,
             'address' => $data['address'],
             'description' => $data['description'] ?? null,
             'status' => $data['status'],
@@ -232,14 +236,24 @@ class WasteRequestController extends Controller
     }
 
     /**
-     * Get collectors for dropdown
+     * Get collectors for dropdown (verified collectors only)
      */
     public function getCollectors()
     {
-        $collectors = User::where('role', 'collector')
-                         ->where('is_active', true)
-                         ->select('id', 'name', 'email')
-                         ->get();
+        $collectors = \App\Models\Collector::with('user')
+                         ->where('verification_status', 'verified')
+                         ->whereHas('user', function($query) {
+                             $query->where('is_active', true);
+                         })
+                         ->get()
+                         ->map(function($collector) {
+                             return [
+                                 'id' => $collector->user_id,
+                                 'name' => $collector->user->name,
+                                 'email' => $collector->user->email,
+                                 'service_areas' => $collector->service_areas,
+                             ];
+                         });
         
         return response()->json($collectors);
     }
@@ -257,7 +271,7 @@ class WasteRequestController extends Controller
         $user = auth()->user();
         
         // Get user's waste requests with pagination
-        $wasteRequests = WasteRequest::with(['collector'])
+        $wasteRequests = WasteRequest::with(['collector', 'rating'])
                                    ->where('user_id', $user->id)
                                    ->orderBy('created_at', 'desc')
                                    ->paginate(10);
@@ -299,5 +313,84 @@ class WasteRequestController extends Controller
 
         return redirect()->route('front.waste-requests')
                         ->with('success', 'Your waste collection request has been submitted successfully! We will contact you soon.');
+    }
+
+    /**
+     * Frontend: Submit rating for a collector
+     */
+    public function submitRating(Request $request, $wasteRequestId)
+    {
+        // Ensure user is authenticated
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Please login to rate collectors.'], 401);
+        }
+
+        $user = auth()->user();
+
+        // Validate rating
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'review' => 'nullable|string|max:500',
+        ]);
+
+        // Get the waste request
+        $wasteRequest = \App\Models\WasteRequest::find($wasteRequestId);
+
+        if (!$wasteRequest) {
+            return response()->json(['error' => 'Request not found.'], 404);
+        }
+
+        // Check if user owns this request
+        if ($wasteRequest->user_id !== $user->id) {
+            return response()->json(['error' => 'You can only rate your own requests.'], 403);
+        }
+
+        // Check if request is collected
+        if ($wasteRequest->status !== 'collected') {
+            return response()->json(['error' => 'You can only rate collected requests.'], 400);
+        }
+
+        // Check if collector is assigned
+        if (!$wasteRequest->collector_id) {
+            return response()->json(['error' => 'No collector assigned to this request.'], 400);
+        }
+
+        // Get collector profile
+        $collector = \App\Models\Collector::where('user_id', $wasteRequest->collector_id)->first();
+        if (!$collector) {
+            return response()->json(['error' => 'Collector not found.'], 404);
+        }
+
+        // Create or update rating
+        $rating = \App\Models\CollectorRating::updateOrCreate(
+            ['waste_request_id' => $wasteRequestId],
+            [
+                'collector_id' => $collector->id,
+                'customer_id' => $user->id,
+                'rating' => $validated['rating'],
+                'review' => $validated['review'] ?? null,
+            ]
+        );
+
+        // Update collector's average rating
+        $this->updateCollectorAverageRating($collector->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Thank you for rating the collector!',
+            'rating' => $rating->rating,
+        ]);
+    }
+
+    /**
+     * Update collector's average rating
+     */
+    private function updateCollectorAverageRating($collectorId)
+    {
+        $averageRating = \App\Models\CollectorRating::where('collector_id', $collectorId)
+            ->avg('rating');
+
+        \App\Models\Collector::where('id', $collectorId)
+            ->update(['rating' => round($averageRating, 2)]);
     }
 }
