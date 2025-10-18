@@ -57,4 +57,40 @@ class EcoIdeaApplicationController extends Controller
         $ecoIdeaApplication->delete();
         return response()->json(['message' => 'Application deleted successfully']);
     }
+
+    public function accept($id)
+    {
+        $application = EcoIdeaApplication::findOrFail($id);
+        
+        // Check if team is full
+        $idea = $application->ecoIdea;
+        if ($idea->team_size_current >= $idea->team_size_needed) {
+            return response()->json(['error' => 'Team is already full'], 422);
+        }
+        
+        // Update application status
+        $application->update(['status' => 'accepted']);
+        
+        // Add user to team
+        \App\Models\EcoIdeaTeam::create([
+            'eco_idea_id' => $application->eco_idea_id,
+            'user_id' => $application->user_id,
+            'role' => 'member',
+            'specialization' => 'Team Member',
+            'status' => 'active'
+        ]);
+        
+        // Update team size
+        $idea->increment('team_size_current');
+        
+        return response()->json(['message' => 'Application accepted and user added to team']);
+    }
+
+    public function reject($id)
+    {
+        $application = EcoIdeaApplication::findOrFail($id);
+        $application->update(['status' => 'rejected']);
+        
+        return response()->json(['message' => 'Application rejected']);
+    }
 }

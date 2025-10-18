@@ -121,15 +121,15 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminIndex'])->name('eco-ideas');
     Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminStore'])->name('eco-ideas.store');
     Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'adminGetData'])->name('eco-ideas.data');
+    Route::get('/eco-ideas/{id}/team', [\App\Http\Controllers\EcoIdeaController::class, 'getTeamData'])->name('eco-ideas.team');
     Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminUpdate'])->name('eco-ideas.update');
+    Route::put('/eco-ideas/{id}/verify', [\App\Http\Controllers\EcoIdeaController::class, 'verifyProject'])->name('eco-ideas.verify');
     Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminDestroy'])->name('eco-ideas.delete');
-
-    // Eco Projects admin pages
-    Route::get('/eco-projects', [\App\Http\Controllers\EcoProjectController::class, 'adminIndex'])->name('eco-projects');
-    Route::post('/eco-projects', [\App\Http\Controllers\EcoProjectController::class, 'adminStore'])->name('eco-projects.store');
-    Route::get('/eco-projects/{id}/data', [\App\Http\Controllers\EcoProjectController::class, 'adminGetData'])->name('eco-projects.data');
-    Route::put('/eco-projects/{id}', [\App\Http\Controllers\EcoProjectController::class, 'adminUpdate'])->name('eco-projects.update');
-    Route::delete('/eco-projects/{id}', [\App\Http\Controllers\EcoProjectController::class, 'adminDestroy'])->name('eco-projects.delete');
+    
+    // Team Management routes
+    Route::delete('/eco-idea-teams/{id}', [\App\Http\Controllers\EcoIdeaTeamController::class, 'destroy'])->name('eco-idea-teams.delete');
+    Route::post('/eco-idea-applications/{id}/accept', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'accept'])->name('eco-idea-applications.accept');
+    Route::post('/eco-idea-applications/{id}/reject', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'reject'])->name('eco-idea-applications.reject');
     
     // Events Management routes
     Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
@@ -310,7 +310,6 @@ Route::prefix('api')
     ->withoutMiddleware('web')
     ->group(function () {
         Route::apiResource('eco-ideas', App\Http\Controllers\EcoIdeaController::class);
-        Route::apiResource('eco-projects', App\Http\Controllers\EcoProjectController::class);
     });
 // Frontend Waste Requests Routes (Authenticated Users Only)
 Route::middleware('auth')->group(function () {
