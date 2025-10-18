@@ -90,7 +90,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|min:10',
             'category' => 'required|in:furniture,electronics,plastic,textile,metal',
             'condition' => 'nullable|in:excellent,good,fair,poor',
             'price' => 'nullable|numeric|min:0',
@@ -166,7 +166,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|min:10',
             'category' => 'required|in:furniture,electronics,plastic,textile,metal',
             'condition' => 'nullable|in:excellent,good,fair,poor',
             'price' => 'nullable|numeric|min:0',

@@ -92,7 +92,7 @@
               @forelse($users as $index => $user)
                 @php
                   // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg', 'team-6.jpg'];
+                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
                   $avatarImage = $avatarImages[$index % count($avatarImages)];
                 @endphp
                 <tr>
@@ -124,14 +124,28 @@
                     </p>
                   </td>
                   <td class="align-middle text-center text-sm">
-                    @if($user->role === 'admin')
-                      <span class="badge badge-sm bg-gradient-success">Admin</span>
+                    @if($user->collector && $user->collector->verification_status === 'verified')
+                      <span class="badge badge-sm bg-gradient-success">
+                        <i class="fas fa-truck me-1"></i>Collector
+                      </span>
+                    @elseif($user->role === 'admin')
+                      <span class="badge badge-sm bg-gradient-dark">Admin</span>
                     @elseif($user->role === 'moderator')
                       <span class="badge badge-sm bg-gradient-info">Moderator</span>
-                    @elseif($user->role === 'collector')
-                      <span class="badge badge-sm bg-gradient-warning">Collector</span>
                     @else
                       <span class="badge badge-sm bg-gradient-secondary">User</span>
+                    @endif
+                    
+                    @if($user->collector && $user->collector->verification_status === 'pending')
+                      <br>
+                      <span class="badge badge-sm bg-warning mt-1" style="font-size: 0.7rem;">
+                        <i class="fas fa-clock me-1"></i>Collector Pending
+                      </span>
+                    @elseif($user->collector && $user->collector->verification_status === 'suspended')
+                      <br>
+                      <span class="badge badge-sm bg-danger mt-1" style="font-size: 0.7rem;">
+                        <i class="fas fa-ban me-1"></i>Collector Suspended
+                      </span>
                     @endif
                   </td>
                   <td class="align-middle text-center">

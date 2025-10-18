@@ -15,7 +15,7 @@ class AdminController extends Controller
      */
     public function users(Request $request)
     {
-        $query = User::query();
+        $query = User::with('collector');
         
         // Handle search functionality
         if ($request->filled('search')) {

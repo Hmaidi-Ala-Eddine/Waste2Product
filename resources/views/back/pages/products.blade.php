@@ -114,20 +114,21 @@
               @forelse($products as $index => $product)
                 @php
                   // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg', 'team-6.jpg'];
+                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
                   $avatarImage = $avatarImages[$index % count($avatarImages)];
                 @endphp
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div>
-                        @if($product->image_path && file_exists(public_path('storage/' . $product->image_path)))
+                        @if($product->image_path && trim($product->image_path) !== '')
                           <img src="{{ asset('storage/' . $product->image_path) }}" 
                                class="avatar avatar-sm me-3 border-radius-lg" 
-                               alt="product"
-                               onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null;">
+                               alt="Product image"
+                               loading="lazy"
+                               onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null; this.classList.add('opacity-6');">
                         @else
-                          <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="product">
+                          <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg opacity-6" alt="No image uploaded">
                         @endif
                       </div>
                       <div class="d-flex flex-column justify-content-center">
@@ -191,16 +192,16 @@
           <div class="row g-3">
             @foreach($products as $index => $product)
               @php
-                $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg', 'team-6.jpg'];
+                $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
                 $avatarImage = $avatarImages[$index % count($avatarImages)];
               @endphp
               <div class="col-12 col-md-6 col-xl-3">
                 <div class="card shadow-sm border-0 h-100 product-card">
                   <div class="ratio ratio-16x9 card-img-top bg-light overflow-hidden">
-                    @if($product->image_path && file_exists(public_path('storage/' . $product->image_path)))
-                      <img src="{{ asset('storage/' . $product->image_path) }}" class="object-fit-cover w-100 h-100" alt="product">
+                    @if($product->image_path && trim($product->image_path) !== '')
+                      <img src="{{ asset('storage/' . $product->image_path) }}" class="object-fit-cover w-100 h-100" alt="product" loading="lazy" onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null; this.classList.add('opacity-6');">
                     @else
-                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="object-fit-cover w-100 h-100" alt="product">
+                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="object-fit-cover w-100 h-100 opacity-6" alt="No image uploaded">
                     @endif
                   </div>
                   <div class="card-body">
@@ -772,6 +773,24 @@ function initProductsViewToggle(){
 }
 
 .input-group-outline input[type="file"]::-webkit-file-upload-button:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    transform: translateY(-1px);
+}
+
+.input-group-outline input[type="file"]::file-selector-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.input-group-outline input[type="file"]::file-selector-button:hover {
     background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
     transform: translateY(-1px);
 }

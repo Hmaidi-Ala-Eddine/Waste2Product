@@ -19,6 +19,7 @@ class WasteRequest extends Model
         'collector_id',
         'waste_type',
         'quantity',
+        'state',
         'address',
         'description',
         'status',

@@ -100,6 +100,15 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::post('/waste-requests/{id}/assign-collector', [\App\Http\Controllers\WasteRequestController::class, 'assignCollector'])->name('waste-requests.assign-collector');
     Route::post('/waste-requests/{id}/update-status', [\App\Http\Controllers\WasteRequestController::class, 'updateStatus'])->name('waste-requests.update-status');
     
+    // Collectors Management routes
+    Route::get('/collectors', [\App\Http\Controllers\CollectorController::class, 'index'])->name('collectors');
+    Route::post('/collectors', [\App\Http\Controllers\CollectorController::class, 'store'])->name('collectors.store');
+    Route::get('/collectors/users', [\App\Http\Controllers\CollectorController::class, 'getUsers'])->name('collectors.users');
+    Route::get('/collectors/{id}/data', [\App\Http\Controllers\CollectorController::class, 'getData'])->name('collectors.data');
+    Route::put('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'update'])->name('collectors.update');
+    Route::delete('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'destroy'])->name('collectors.delete');
+    Route::post('/collectors/{id}/update-status', [\App\Http\Controllers\CollectorController::class, 'updateStatus'])->name('collectors.update-status');
+    
     // Posts Management routes
     Route::get('/posts', [\App\Http\Controllers\PostController::class, 'index'])->name('posts');
     Route::post('/posts', [\App\Http\Controllers\PostController::class, 'store'])->name('posts.store');
@@ -289,6 +298,21 @@ Route::prefix('api')
         Route::apiResource('eco-ideas', App\Http\Controllers\EcoIdeaController::class);
         Route::apiResource('eco-projects', App\Http\Controllers\EcoProjectController::class);
     });
+// Frontend Waste Requests Routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendIndex'])->name('front.waste-requests');
+    Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendStore'])->name('front.waste-requests.store');
+    
+    // Frontend Collector Application Routes
+    Route::get('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendIndex'])->name('front.collector-application');
+    Route::post('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendStore'])->name('front.collector-application.store');
+    Route::put('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendUpdate'])->name('front.collector-application.update');
+    
+    // Frontend Collector Dashboard Routes (for verified collectors only)
+    Route::get('/collector-dashboard', [\App\Http\Controllers\CollectorController::class, 'collectorDashboard'])->name('front.collector-dashboard');
+    Route::post('/collector/accept-request/{id}', [\App\Http\Controllers\CollectorController::class, 'acceptRequest'])->name('front.collector.accept-request');
+    Route::post('/collector/complete-collection/{id}', [\App\Http\Controllers\CollectorController::class, 'completeCollection'])->name('front.collector.complete-collection');
+});
 
 // Fallback 404 for unknown routes
 Route::fallback(function () {
