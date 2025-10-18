@@ -100,6 +100,7 @@
                             <li><a href="{{ route('front.about') }}">About Us</a></li>
                             <li><a href="{{ route('front.about2') }}">About Us Two</a></li>
                             <li><a href="{{ route('front.team') }}">Posts</a></li>
+                            <li><a href="{{ route('front.events') }}">Events</a></li>
                             <li><a href="{{ route('front.team2') }}">Team Two</a></li>
                             <li><a href="{{ route('front.team.details') }}">Team Details</a></li>
                             <li><a href="{{ route('front.pricing') }}">Pricing</a></li>

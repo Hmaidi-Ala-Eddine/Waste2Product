@@ -55,8 +55,8 @@
 
         /* Navbar Menu Items - Always visible */
         .navbar-nav > li > a {
-            color: white !important;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            color: #2c3e50 !important; /* make navbar links black/dark */
+            text-shadow: none; /* remove white text shadow */
             font-weight: 500;
             transition: color 0.3s ease;
         }
