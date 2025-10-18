@@ -11,13 +11,13 @@ class EcoIdeaController extends Controller
     // ===== API (stateless JSON) =====
     public function index()
     {
-        return response()->json(EcoIdea::withCount('ecoProjects')->latest()->paginate(10));
+        return response()->json(EcoIdea::with(['creator', 'applications', 'team', 'tasks', 'certificates', 'interactions'])->latest()->paginate(10));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'creator_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'waste_type' => 'required|in:organic,plastic,metal,e-waste,paper,glass,textile,mixed',
@@ -26,6 +26,9 @@ class EcoIdeaController extends Controller
             'difficulty_level' => 'required|in:easy,medium,hard',
             'upvotes' => 'nullable|integer',
             'status' => 'nullable|in:pending,approved,rejected',
+            'team_requirements' => 'nullable|array',
+            'team_size_needed' => 'nullable|integer',
+            'application_description' => 'nullable|string',
         ]);
 
         $ecoIdea = EcoIdea::create($data);
@@ -34,7 +37,7 @@ class EcoIdeaController extends Controller
 
     public function show(EcoIdea $ecoIdea)
     {
-        return response()->json($ecoIdea->load('ecoProjects'));
+        return response()->json($ecoIdea->load(['creator', 'applications.user', 'team.user', 'tasks.assignedUser', 'certificates.user', 'interactions.user']));
     }
 
     public function update(Request $request, EcoIdea $ecoIdea)
@@ -48,6 +51,10 @@ class EcoIdeaController extends Controller
             'difficulty_level' => 'sometimes|required|in:easy,medium,hard',
             'upvotes' => 'sometimes|integer',
             'status' => 'sometimes|in:pending,approved,rejected',
+            'team_requirements' => 'sometimes|nullable|array',
+            'team_size_needed' => 'sometimes|nullable|integer',
+            'application_description' => 'sometimes|nullable|string',
+            'project_status' => 'sometimes|in:idea,recruiting,active,completed,verified',
         ]);
 
         $ecoIdea->update($data);
@@ -63,7 +70,7 @@ class EcoIdeaController extends Controller
     // ===== Admin Blade (pages) =====
     public function adminIndex(Request $request)
     {
-        $query = EcoIdea::with('user');
+        $query = EcoIdea::with('creator');
 
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -81,8 +88,8 @@ class EcoIdeaController extends Controller
         if ($request->filled('difficulty_level') && $request->difficulty_level !== 'all') {
             $query->where('difficulty_level', $request->difficulty_level);
         }
-        if ($request->filled('user_id') && $request->user_id !== 'all') {
-            $query->where('user_id', $request->user_id);
+        if ($request->filled('creator_id') && $request->creator_id !== 'all') {
+            $query->where('creator_id', $request->creator_id);
         }
 
         $ideas = $query->orderByDesc('created_at')->paginate(10);
@@ -93,7 +100,7 @@ class EcoIdeaController extends Controller
     public function adminStore(Request $request)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'creator_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'waste_type' => 'required|in:organic,plastic,metal,e-waste,paper,glass,textile,mixed',
@@ -105,7 +112,7 @@ class EcoIdeaController extends Controller
         ]);
 
         $idea = new EcoIdea();
-        $idea->user_id = $data['user_id'];
+        $idea->creator_id = $data['creator_id'];
         $idea->title = $data['title'];
         $idea->description = $data['description'];
         $idea->waste_type = $data['waste_type'];
@@ -127,7 +134,7 @@ class EcoIdeaController extends Controller
 
     public function adminGetData($id)
     {
-        $idea = EcoIdea::with('user')->findOrFail($id);
+        $idea = EcoIdea::with('creator')->findOrFail($id);
         return response()->json($idea);
     }
 
@@ -135,7 +142,7 @@ class EcoIdeaController extends Controller
     {
         $idea = EcoIdea::findOrFail($id);
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'creator_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'waste_type' => 'required|in:organic,plastic,metal,e-waste,paper,glass,textile,mixed',
@@ -147,7 +154,7 @@ class EcoIdeaController extends Controller
         ]);
 
         // Update basic fields
-        $idea->user_id = $data['user_id'];
+        $idea->creator_id = $data['creator_id'];
         $idea->title = $data['title'];
         $idea->description = $data['description'];
         $idea->waste_type = $data['waste_type'];

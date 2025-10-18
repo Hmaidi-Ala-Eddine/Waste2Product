@@ -6,24 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class EcoProject extends Model
+class EcoIdeaTeam extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'eco_idea_id',
         'user_id',
-        'name',
-        'description',
+        'role',
+        'specialization',
+        'responsibilities',
         'status',
-        'ai_impact_prediction',
-        'image_path',
-        'completion_date',
-    ];
-
-    protected $casts = [
-        'ai_impact_prediction' => 'array',
-        'completion_date' => 'date',
     ];
 
     public function ecoIdea(): BelongsTo
@@ -36,9 +29,3 @@ class EcoProject extends Model
         return $this->belongsTo(User::class);
     }
 }
-
-
-
-
-
-
