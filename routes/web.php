@@ -100,6 +100,15 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::post('/waste-requests/{id}/assign-collector', [\App\Http\Controllers\WasteRequestController::class, 'assignCollector'])->name('waste-requests.assign-collector');
     Route::post('/waste-requests/{id}/update-status', [\App\Http\Controllers\WasteRequestController::class, 'updateStatus'])->name('waste-requests.update-status');
     
+    // Collectors Management routes
+    Route::get('/collectors', [\App\Http\Controllers\CollectorController::class, 'index'])->name('collectors');
+    Route::post('/collectors', [\App\Http\Controllers\CollectorController::class, 'store'])->name('collectors.store');
+    Route::get('/collectors/users', [\App\Http\Controllers\CollectorController::class, 'getUsers'])->name('collectors.users');
+    Route::get('/collectors/{id}/data', [\App\Http\Controllers\CollectorController::class, 'getData'])->name('collectors.data');
+    Route::put('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'update'])->name('collectors.update');
+    Route::delete('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'destroy'])->name('collectors.delete');
+    Route::post('/collectors/{id}/update-status', [\App\Http\Controllers\CollectorController::class, 'updateStatus'])->name('collectors.update-status');
+    
     // Posts Management routes
     Route::get('/posts', [\App\Http\Controllers\PostController::class, 'index'])->name('posts');
     Route::post('/posts', [\App\Http\Controllers\PostController::class, 'store'])->name('posts.store');
@@ -107,6 +116,28 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::get('/posts/{post}/data', [\App\Http\Controllers\PostController::class, 'getData'])->name('posts.data');
     Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
+
+    // Eco Ideas admin pages
+    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminIndex'])->name('eco-ideas');
+    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminStore'])->name('eco-ideas.store');
+    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'adminGetData'])->name('eco-ideas.data');
+    Route::get('/eco-ideas/{id}/team', [\App\Http\Controllers\EcoIdeaController::class, 'getTeamData'])->name('eco-ideas.team');
+    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminUpdate'])->name('eco-ideas.update');
+    Route::put('/eco-ideas/{id}/verify', [\App\Http\Controllers\EcoIdeaController::class, 'verifyProject'])->name('eco-ideas.verify');
+    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminDestroy'])->name('eco-ideas.delete');
+    
+    // Team Management routes
+    Route::delete('/eco-idea-teams/{id}', [\App\Http\Controllers\EcoIdeaTeamController::class, 'destroy'])->name('eco-idea-teams.delete');
+    Route::post('/eco-idea-applications/{id}/accept', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'accept'])->name('eco-idea-applications.accept');
+    Route::post('/eco-idea-applications/{id}/reject', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'reject'])->name('eco-idea-applications.reject');
+    
+    // Events Management routes
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
+    Route::post('/events', [\App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+    Route::get('/events/users', [\App\Http\Controllers\EventController::class, 'getUsers'])->name('events.users');
+    Route::get('/events/{event}/data', [\App\Http\Controllers\EventController::class, 'getData'])->name('events.data');
+    Route::put('/events/{event}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
     
     // Analytics Management routes
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
@@ -245,10 +276,33 @@ Route::get('/login', function () {
     return view('front.login');
 })->name('front.login');
 
+// Front: My Orders list (authenticated users)
+Route::get('/orders', function () {
+    $orders = \App\Models\Order::with(['product:id,name,price,status'])
+        ->where('user_id', auth()->id())
+        ->orderByDesc('ordered_at')
+        ->paginate(10);
+    return view('front.pages.orders', compact('orders'));
+})->middleware('auth')->name('front.orders');
+
+// Front: Delete an order owned by the authenticated user
+Route::delete('/orders/{order}', function ($orderId) {
+    $order = \App\Models\Order::findOrFail($orderId);
+    abort_if($order->user_id !== auth()->id(), 403);
+    $order->delete();
+    return back();
+})->middleware('auth')->name('front.orders.destroy');
+
 // Frontend Posts Routes (Public)
 Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
 Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
 Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
+
+// Frontend Events (Public)
+Route::get('/events', [\App\Http\Controllers\EventController::class, 'frontendIndex'])->name('front.events');
+Route::post('/events/{event}/like', [\App\Http\Controllers\EventController::class, 'like'])->name('front.events.like');
+Route::post('/events/{event}/participate', [\App\Http\Controllers\EventController::class, 'participate'])->name('front.events.participate');
+Route::get('/events/{event}/details', [\App\Http\Controllers\EventController::class, 'getEventDetails'])->name('front.events.details');
 Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
 
     // Product Status Management Routes
@@ -300,6 +354,26 @@ Route::prefix('api')->group(function () {
     Route::get('/sales-analytics', [\App\Http\Controllers\ProductOrderController::class, 'salesAnalytics'])->name('api.sales.analytics');
     Route::get('/complex-join-example', [\App\Http\Controllers\ProductOrderController::class, 'complexJoinExample'])->name('api.join.example');
     Route::get('/admin-dashboard-data', [\App\Http\Controllers\ProductOrderController::class, 'adminDashboardData'])->name('api.admin.dashboard');
+// Eco entities CRUD kept here as requested, but exclude 'web' middleware to avoid CSRF in Postman
+Route::prefix('api')
+    ->withoutMiddleware('web')
+    ->group(function () {
+        Route::apiResource('eco-ideas', App\Http\Controllers\EcoIdeaController::class);
+    });
+// Frontend Waste Requests Routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendIndex'])->name('front.waste-requests');
+    Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendStore'])->name('front.waste-requests.store');
+    
+    // Frontend Collector Application Routes
+    Route::get('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendIndex'])->name('front.collector-application');
+    Route::post('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendStore'])->name('front.collector-application.store');
+    Route::put('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendUpdate'])->name('front.collector-application.update');
+    
+    // Frontend Collector Dashboard Routes (for verified collectors only)
+    Route::get('/collector-dashboard', [\App\Http\Controllers\CollectorController::class, 'collectorDashboard'])->name('front.collector-dashboard');
+    Route::post('/collector/accept-request/{id}', [\App\Http\Controllers\CollectorController::class, 'acceptRequest'])->name('front.collector.accept-request');
+    Route::post('/collector/complete-collection/{id}', [\App\Http\Controllers\CollectorController::class, 'completeCollection'])->name('front.collector.complete-collection');
 });
 
 // Fallback 404 for unknown routes

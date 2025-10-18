@@ -101,6 +101,7 @@
                             <li><a href="{{ route('front.about2') }}">About Us Two</a></li>
                         <li><a href="{{ route('front.team') }}">Posts</a></li>
                         <li><a href="{{ route('front.products') }}">Products</a></li>
+                        <li><a href="{{ route('front.events') }}">Events</a></li>
                         <li><a href="{{ route('front.team2') }}">Team Two</a></li>
                             <li><a href="{{ route('front.team.details') }}">Team Details</a></li>
                             <li><a href="{{ route('front.pricing') }}">Pricing</a></li>
@@ -139,6 +140,22 @@
                         </ul>
                     </li>
                     <li><a href="{{ route('front.contact') }}">contact</a></li>
+                    @auth
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Services</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ route('front.waste-requests') }}"><i class="fas fa-clipboard-list me-2"></i>My Waste Requests</a></li>
+                                <li><a href="{{ route('front.collector-application') }}"><i class="fas fa-user-tie me-2"></i>Collector Application</a></li>
+                                @php
+                                    $user = auth()->user();
+                                    $isVerifiedCollector = $user->collector && $user->collector->verification_status === 'verified';
+                                @endphp
+                                @if($isVerifiedCollector)
+                                    <li><a href="{{ route('front.collector-dashboard') }}"><i class="fas fa-truck me-2"></i>Collector Dashboard</a></li>
+                                @endif
+                            </ul>
+                        </li>
+                    @endauth
                 </ul>
             </div>
 
@@ -154,6 +171,47 @@
                         </li>
                         
                         @auth
+                            @php
+                                $ordersCount = \App\Models\Order::where('user_id', auth()->id())->count();
+                                $recentOrders = \App\Models\Order::with('product')
+                                    ->where('user_id', auth()->id())
+                                    ->orderByDesc('ordered_at')
+                                    ->limit(5)
+                                    ->get();
+                            @endphp
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" title="My Orders">
+                                    Orders
+                                    <span class="badge" style="background:#777;color:#fff;border-radius:10px;padding:2px 6px;font-size:11px;vertical-align: top;">{{ $ordersCount }}</span>
+                                </a>
+                                <ul class="dropdown-menu" style="min-width:320px;padding:15px;">
+                                    <li>
+                                        <h6 style="margin:0 0 10px;">My Recent Orders</h6>
+                                        @if($recentOrders->isEmpty())
+                                            <p style="margin:0;">No orders yet.</p>
+                                        @else
+                                            <div style="max-height:260px;overflow:auto;">
+                                                <ul style="list-style:none;margin:0;padding:0;">
+                                                    @foreach($recentOrders as $order)
+                                                        <li style="padding:8px 0;border-bottom:1px solid #eee;">
+                                                            <div style="display:flex;justify-content:space-between;gap:8px;">
+                                                                <div>
+                                                                    <div style="font-weight:600;">{{ optional($order->product)->name ?? 'Product #'.$order->product_id }}</div>
+                                                                    <div style="font-size:12px;color:#666;">Qty: {{ $order->quantity }} · {{ ucfirst($order->status) }}</div>
+                                                                </div>
+                                                                <div style="white-space:nowrap;font-weight:600;">${{ number_format((float)$order->total_price, 2) }}</div>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    </li>
+                                    <li style="text-align:right;padding-top:8px;border-top:1px solid #eee;">
+                                        <a href="{{ route('front.orders') }}" style="font-size:13px;">View all</a>
+                                    </li>
+                                </ul>
+                            </li>
                             <li class="logout-item">
                                 <form method="POST" action="{{ route('front.logout') }}" style="display: inline;">
                                     @csrf

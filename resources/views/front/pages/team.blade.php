@@ -29,7 +29,7 @@
                                 @endif
                                 
                                 <!-- Like Button -->
-                                <button class="like-btn" onclick="toggleLike({{ $post->id }})" data-post-id="{{ $post->id }}">
+                                <button class="like-btn {{ $post->is_liked ? 'liked' : '' }}" onclick="toggleLike({{ $post->id }})" data-post-id="{{ $post->id }}" data-liked="{{ $post->is_liked ? '1' : '0' }}">
                                     <i class="fas fa-heart" id="like-icon-{{ $post->id }}"></i>
                                     <span id="like-count-{{ $post->id }}">{{ $post->likes }}</span>
                                 </button>
@@ -382,17 +382,21 @@ function toggleLike(postId) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.status === 401) { window.location.href = '/login'; throw new Error('Unauthenticated'); }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             likeCount.textContent = data.likes;
-            likeBtn.classList.toggle('liked');
-            
+            if (data.liked) {
+                likeBtn.classList.add('liked');
+            } else {
+                likeBtn.classList.remove('liked');
+            }
             // Animation effect
             likeIcon.style.transform = 'scale(1.3)';
-            setTimeout(() => {
-                likeIcon.style.transform = 'scale(1)';
-            }, 200);
+            setTimeout(() => { likeIcon.style.transform = 'scale(1)'; }, 200);
         } else {
             alert('Error: ' + (data.message || 'Unable to like post'));
         }

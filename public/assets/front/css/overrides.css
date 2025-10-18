@@ -330,7 +330,8 @@ body.loaded #preloader{
     color: inherit !important;
 }
 
-/* Force white theme on home/onepage transparent navbar */
+/* Force white theme on home/onepage transparent navbar - ONLY HOME PAGE */
+.navbar.white.no-background .navbar-nav > li > a,
 .navbar.white.no-background .login-item .login-link,
 .navbar.white.no-background .login-item .login-link i,
 .navbar.white.no-background .login-item .login-link span {
@@ -338,6 +339,7 @@ body.loaded #preloader{
 }
 
 /* Subtle hover on transparent (home) navbar */
+.navbar.white.no-background .navbar-nav > li > a:hover,
 .navbar.white.no-background .login-item .login-link:hover,
 .navbar.white.no-background .login-item .login-link:hover i,
 .navbar.white.no-background .login-item .login-link:hover span {

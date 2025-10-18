@@ -4,6 +4,7 @@ namespace App\Validators;
 
 use App\Models\User;
 use App\Models\WasteRequest;
+use App\Helpers\TunisiaStates;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -32,6 +33,9 @@ class WasteRequestValidator
                 $q = $parts[0] . '.' . substr($parts[1], 0, 2);
             }
             $sanitized['quantity'] = $q;
+        }
+        if (isset($data['state'])) {
+            $sanitized['state'] = trim(strip_tags($data['state']));
         }
         if (isset($data['address'])) {
             $addr = trim(strip_tags((string)$data['address']));
@@ -75,6 +79,7 @@ class WasteRequestValidator
             ],
             'waste_type' => ['required', 'string', Rule::in(array_keys(WasteRequest::getWasteTypes()))],
             'quantity' => ['required', 'numeric', 'min:0.1', 'max:999999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'state' => ['required', 'string', Rule::in(TunisiaStates::getStateValues())],
             'address' => ['required', 'string', 'min:10', 'max:1000', 'regex:/^[a-zA-Z0-9\s\.,\-\#\/]+$/'],
             'description' => ['nullable', 'string', 'max:2000', 'regex:/^[a-zA-Z0-9\s\.,\-\!\?\(\)]*$/'],
             'collector_id' => [
@@ -126,6 +131,8 @@ class WasteRequestValidator
             'quantity.min' => 'Quantity must be at least 0.1 kg.',
             'quantity.max' => 'Quantity cannot exceed 999,999.99 kg.',
             'quantity.regex' => 'Quantity can have maximum 2 decimal places.',
+            'state.required' => 'Please select a governorate/state.',
+            'state.in' => 'The selected governorate/state is invalid.',
             'address.required' => 'Please enter the pickup address.',
             'address.min' => 'Address must be at least 10 characters long.',
             'address.max' => 'Address cannot exceed 1000 characters.',

@@ -107,7 +107,7 @@
               @forelse($posts as $index => $post)
                 @php
                   // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg', 'team-6.jpg'];
+                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
                   $avatarImage = $avatarImages[$index % count($avatarImages)];
                 @endphp
                 <tr>
@@ -129,15 +129,16 @@
                     </p>
                   </td>
                   <td class="align-middle text-center">
-                    @if($post->image && file_exists(public_path('storage/' . $post->image)))
+                    @if($post->image && trim($post->image) !== '')
                       <img src="{{ asset('storage/' . $post->image) }}" 
                            class="avatar avatar-lg border-radius-lg" 
                            alt="Post image"
-                           onerror="this.src='{{ asset('assets/back/img/team-2.jpg') }}'; this.onerror=null;">
+                           loading="lazy"
+                           onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null; this.classList.add('opacity-6');">
                     @else
-                      <img src="{{ asset('assets/back/img/team-2.jpg') }}" 
+                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" 
                            class="avatar avatar-lg border-radius-lg opacity-6" 
-                           alt="Default image">
+                           alt="No image uploaded">
                     @endif
                   </td>
                   <td class="align-middle text-center text-sm">
@@ -180,16 +181,16 @@
           <div class="row g-3">
             @foreach($posts as $index => $post)
               @php
-                $avatarImages = ['team-1.jpg','team-2.jpg','team-3.jpg','team-4.jpg','team-5.jpg','team-6.jpg'];
+                $avatarImages = ['team-1.jpg','team-2.jpg','team-3.jpg','team-4.jpg','team-5.jpg'];
                 $avatarImage = $avatarImages[$index % count($avatarImages)];
               @endphp
               <div class="col-12 col-md-6 col-xl-3">
                 <div class="card shadow-sm border-0 h-100 post-card">
                   <div class="ratio ratio-16x9 card-img-top bg-light overflow-hidden">
-                    @if($post->image && file_exists(public_path('storage/' . $post->image)))
-                      <img src="{{ asset('storage/' . $post->image) }}" class="object-fit-cover w-100 h-100" alt="post">
+                    @if($post->image && trim($post->image) !== '')
+                      <img src="{{ asset('storage/' . $post->image) }}" class="object-fit-cover w-100 h-100" alt="post" loading="lazy" onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null; this.classList.add('opacity-6');">
                     @else
-                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="object-fit-cover w-100 h-100" alt="post">
+                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="object-fit-cover w-100 h-100 opacity-6" alt="post placeholder">
                     @endif
                   </div>
                   <div class="card-body">
@@ -818,6 +819,13 @@ function initPostsViewToggle(){
 .post-card .card-img-top img{ display:block; }
 .object-fit-cover{ object-fit: cover; }
 .btn-group .btn.active{ background:#344767; color:#fff; }
+
+/* Custom File Upload Styling */
+.input-group-outline input[type="file"] {
+    border: 1px solid #d2d6da;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
     transition: all 0.15s ease-in-out;
     background-color: #fff;
     cursor: pointer;
