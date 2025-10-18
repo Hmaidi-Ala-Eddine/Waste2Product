@@ -107,6 +107,20 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::get('/posts/{post}/data', [\App\Http\Controllers\PostController::class, 'getData'])->name('posts.data');
     Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
+
+    // Eco Ideas admin pages
+    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminIndex'])->name('eco-ideas');
+    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminStore'])->name('eco-ideas.store');
+    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'adminGetData'])->name('eco-ideas.data');
+    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminUpdate'])->name('eco-ideas.update');
+    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminDestroy'])->name('eco-ideas.delete');
+
+    // Eco Projects admin pages
+    Route::get('/eco-projects', [\App\Http\Controllers\EcoProjectController::class, 'adminIndex'])->name('eco-projects');
+    Route::post('/eco-projects', [\App\Http\Controllers\EcoProjectController::class, 'adminStore'])->name('eco-projects.store');
+    Route::get('/eco-projects/{id}/data', [\App\Http\Controllers\EcoProjectController::class, 'adminGetData'])->name('eco-projects.data');
+    Route::put('/eco-projects/{id}', [\App\Http\Controllers\EcoProjectController::class, 'adminUpdate'])->name('eco-projects.update');
+    Route::delete('/eco-projects/{id}', [\App\Http\Controllers\EcoProjectController::class, 'adminDestroy'])->name('eco-projects.delete');
     
     // Analytics Management routes
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
@@ -245,11 +259,36 @@ Route::get('/login', function () {
     return view('front.login');
 })->name('front.login');
 
+// Front: My Orders list (authenticated users)
+Route::get('/orders', function () {
+    $orders = \App\Models\Order::with(['product:id,name,price,status'])
+        ->where('user_id', auth()->id())
+        ->orderByDesc('ordered_at')
+        ->paginate(10);
+    return view('front.pages.orders', compact('orders'));
+})->middleware('auth')->name('front.orders');
+
+// Front: Delete an order owned by the authenticated user
+Route::delete('/orders/{order}', function ($orderId) {
+    $order = \App\Models\Order::findOrFail($orderId);
+    abort_if($order->user_id !== auth()->id(), 403);
+    $order->delete();
+    return back();
+})->middleware('auth')->name('front.orders.destroy');
+
 // Frontend Posts Routes (Public)
 Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
 Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
 Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
 Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
+
+// Eco entities CRUD kept here as requested, but exclude 'web' middleware to avoid CSRF in Postman
+Route::prefix('api')
+    ->withoutMiddleware('web')
+    ->group(function () {
+        Route::apiResource('eco-ideas', App\Http\Controllers\EcoIdeaController::class);
+        Route::apiResource('eco-projects', App\Http\Controllers\EcoProjectController::class);
+    });
 
 // Fallback 404 for unknown routes
 Route::fallback(function () {
