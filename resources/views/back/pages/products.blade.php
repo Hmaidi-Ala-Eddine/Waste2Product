@@ -267,22 +267,14 @@
               <h6 class="text-dark font-weight-bold mb-3">Product Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Owner *</label>
-                <select class="form-control" name="user_id" id="owner_id" required>
-                  <option value="">Select Owner</option>
-                </select>
-                <div class="invalid-feedback"></div>
-              </div>
-              
-              <div class="mb-3">
                 <label class="form-label text-dark">Product Name *</label>
-                <input type="text" class="form-control" name="name" required placeholder="Enter product name">
+                <input type="text" class="form-control" name="name" placeholder="Enter product name">
                 <div class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Category *</label>
-                <select class="form-control" name="category" required>
+                <select class="form-control" name="category">
                   <option value="">Select Category</option>
                   <option value="furniture">Furniture</option>
                   <option value="electronics">Electronics</option>
@@ -295,7 +287,7 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Price *</label>
-                <input type="number" class="form-control" name="price" step="0.01" min="0" required placeholder="0.00">
+                <input type="number" class="form-control" name="price" step="0.01" min="0" placeholder="0.00">
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -306,7 +298,7 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Status *</label>
-                <select class="form-control" name="status" required>
+                <select class="form-control" name="status">
                   <option value="available" selected>Available</option>
                   <option value="sold">Sold</option>
                   <option value="donated">Donated</option>
@@ -380,22 +372,14 @@
               <h6 class="text-dark font-weight-bold mb-3">Product Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Owner *</label>
-                <select class="form-control" name="user_id" id="edit_owner_id" required>
-                  <option value="">Select Owner</option>
-                </select>
-                <div class="invalid-feedback"></div>
-              </div>
-              
-              <div class="mb-3">
                 <label class="form-label text-dark">Product Name *</label>
-                <input type="text" class="form-control" name="name" id="edit_name" required placeholder="Enter product name">
+                <input type="text" class="form-control" name="name" id="edit_name" placeholder="Enter product name">
                 <div class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Category *</label>
-                <select class="form-control" name="category" id="edit_category" required>
+                <select class="form-control" name="category" id="edit_category">
                   <option value="">Select Category</option>
                   <option value="furniture">Furniture</option>
                   <option value="electronics">Electronics</option>
@@ -408,7 +392,7 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Price *</label>
-                <input type="number" class="form-control" name="price" id="edit_price" step="0.01" min="0" required placeholder="0.00">
+                <input type="number" class="form-control" name="price" id="edit_price" step="0.01" min="0" placeholder="0.00">
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -419,7 +403,7 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Status *</label>
-                <select class="form-control" name="status" id="edit_status" required>
+                <select class="form-control" name="status" id="edit_status">
                   <option value="available">Available</option>
                   <option value="sold">Sold</option>
                   <option value="donated">Donated</option>
@@ -502,9 +486,9 @@
 <script>
 // Load users when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    loadUsers();
     initializeFloatingLabels();
     initProductsViewToggle();
+    initializeFormValidation();
 });
 
 // Initialize floating labels
@@ -543,52 +527,305 @@ function initializeFloatingLabels() {
     });
 }
 
-// Load users for dropdowns
-function loadUsers() {
-    fetch('/admin/products/users')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+// Form validation system
+function initializeFormValidation() {
+    // Add validation to add product form
+    const addForm = document.getElementById('addProductForm');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateAddProductForm()) {
+                addForm.submit();
             }
-            return response.json();
-        })
-        .then(users => {
-            console.log('Users loaded:', users); // Debug log
-            const userSelects = ['owner_id', 'edit_owner_id'];
-            userSelects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                if (select) {
-                    select.innerHTML = '<option value="">Select Owner</option>';
-                    users.forEach(user => {
-                        select.innerHTML += `<option value="${user.id}">${user.name} (${user.email})</option>`;
-                    });
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Error loading users:', error);
-            // Fallback: try to load from a different endpoint
-            console.log('Trying fallback endpoint...');
-            fetch('/admin/users')
-                .then(response => response.json())
-                .then(data => {
-                    // Handle different response formats
-                    const users = data.users || data.data || data;
-                    if (Array.isArray(users)) {
-                        const userSelects = ['owner_id', 'edit_owner_id'];
-                        userSelects.forEach(selectId => {
-                            const select = document.getElementById(selectId);
-                            if (select) {
-                                select.innerHTML = '<option value="">Select Owner</option>';
-                                users.forEach(user => {
-                                    select.innerHTML += `<option value="${user.id}">${user.name} (${user.email || user.username || 'No email'})</option>`;
-                                });
-                            }
-                        });
-                    }
-                })
-                .catch(fallbackError => console.error('Fallback also failed:', fallbackError));
         });
+        
+        // Add real-time validation to each field
+        addRealTimeValidation('addProductForm');
+    }
+    
+    // Add validation to edit product form
+    const editForm = document.getElementById('editProductForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateEditProductForm()) {
+                editForm.submit();
+            }
+        });
+        
+        // Add real-time validation to each field
+        addRealTimeValidation('editProductForm');
+    }
+}
+
+// Real-time validation for form fields
+function addRealTimeValidation(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    
+    const fields = {
+        'name': {
+            required: true,
+            minLength: 2,
+            maxLength: 100,
+            message: 'Le nom du produit doit contenir entre 2 et 100 caractères'
+        },
+        'price': {
+            required: true,
+            min: 0,
+            max: 999999.99,
+            message: 'Le prix doit être entre 0 et 999999.99'
+        },
+        'category': {
+            required: true,
+            message: 'Veuillez sélectionner une catégorie'
+        },
+        'status': {
+            required: true,
+            message: 'Veuillez sélectionner un statut'
+        },
+        'description': {
+            required: false,
+            maxLength: 500,
+            message: 'La description ne peut pas dépasser 500 caractères'
+        }
+    };
+    
+    Object.keys(fields).forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field) {
+            // Remove required attribute to prevent browser validation
+            field.removeAttribute('required');
+            
+            // Add validation on blur and input
+            field.addEventListener('blur', () => validateField(field, fields[fieldName]));
+            field.addEventListener('input', () => clearFieldError(field));
+        }
+    });
+    
+    // Special validation for file upload
+    const imageField = form.querySelector('input[type="file"]');
+    if (imageField) {
+        imageField.addEventListener('change', () => validateImageFile(imageField));
+    }
+}
+
+// Validate individual field
+function validateField(field, rules) {
+    const value = field.value.trim();
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Required validation
+    if (rules.required && !value) {
+        isValid = false;
+        errorMessage = rules.message;
+    }
+    
+    // Min length validation
+    if (isValid && rules.minLength && value.length < rules.minLength) {
+        isValid = false;
+        errorMessage = rules.message;
+    }
+    
+    // Max length validation
+    if (isValid && rules.maxLength && value.length > rules.maxLength) {
+        isValid = false;
+        errorMessage = rules.message;
+    }
+    
+    // Min value validation (for numbers)
+    if (isValid && rules.min !== undefined && parseFloat(value) < rules.min) {
+        isValid = false;
+        errorMessage = rules.message;
+    }
+    
+    // Max value validation (for numbers)
+    if (isValid && rules.max !== undefined && parseFloat(value) > rules.max) {
+        isValid = false;
+        errorMessage = rules.message;
+    }
+    
+    if (isValid) {
+        clearFieldError(field);
+    } else {
+        showFieldError(field, errorMessage);
+    }
+    
+    return isValid;
+}
+
+// Validate image file
+function validateImageFile(field) {
+    const file = field.files[0];
+    let isValid = true;
+    let errorMessage = '';
+    
+    if (file) {
+        // Check file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+            isValid = false;
+            errorMessage = 'La taille du fichier ne peut pas dépasser 2MB';
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            isValid = false;
+            errorMessage = 'Format de fichier non supporté. Utilisez JPEG, PNG, JPG ou GIF';
+        }
+    }
+    
+    if (isValid) {
+        clearFieldError(field);
+    } else {
+        showFieldError(field, errorMessage);
+    }
+    
+    return isValid;
+}
+
+// Show field error
+function showFieldError(field, message) {
+    // Remove existing error classes
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+    
+    // Find or create error message element
+    let errorElement = field.parentNode.querySelector('.invalid-feedback');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'invalid-feedback';
+        field.parentNode.appendChild(errorElement);
+    }
+    
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+}
+
+// Clear field error
+function clearFieldError(field) {
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    
+    const errorElement = field.parentNode.querySelector('.invalid-feedback');
+    if (errorElement) {
+        errorElement.style.display = 'none';
+        errorElement.textContent = '';
+    }
+}
+
+// Validate add product form
+function validateAddProductForm() {
+    const form = document.getElementById('addProductForm');
+    let isValid = true;
+    
+    const fields = {
+        'name': { required: true, minLength: 2, maxLength: 100, message: 'Le nom du produit doit contenir entre 2 et 100 caractères' },
+        'price': { required: true, min: 0, max: 999999.99, message: 'Le prix doit être entre 0 et 999999.99' },
+        'category': { required: true, message: 'Veuillez sélectionner une catégorie' },
+        'status': { required: true, message: 'Veuillez sélectionner un statut' },
+        'description': { required: false, maxLength: 500, message: 'La description ne peut pas dépasser 500 caractères' }
+    };
+    
+    // Clear all previous validation states
+    clearAllFieldErrors(form);
+    
+    // Validate all fields
+    Object.keys(fields).forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field && !validateField(field, fields[fieldName])) {
+            isValid = false;
+        }
+    });
+    
+    // Validate image file
+    const imageField = form.querySelector('input[type="file"]');
+    if (imageField && !validateImageFile(imageField)) {
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        // Scroll to first error
+        const firstError = form.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    } else {
+        // Add loading state
+        form.classList.add('form-submitting');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="material-symbols-rounded me-1">hourglass_empty</i>Création en cours...';
+        }
+    }
+    
+    return isValid;
+}
+
+// Validate edit product form
+function validateEditProductForm() {
+    const form = document.getElementById('editProductForm');
+    let isValid = true;
+    
+    const fields = {
+        'name': { required: true, minLength: 2, maxLength: 100, message: 'Le nom du produit doit contenir entre 2 et 100 caractères' },
+        'price': { required: true, min: 0, max: 999999.99, message: 'Le prix doit être entre 0 et 999999.99' },
+        'category': { required: true, message: 'Veuillez sélectionner une catégorie' },
+        'status': { required: true, message: 'Veuillez sélectionner un statut' },
+        'description': { required: false, maxLength: 500, message: 'La description ne peut pas dépasser 500 caractères' }
+    };
+    
+    // Clear all previous validation states
+    clearAllFieldErrors(form);
+    
+    // Validate all fields
+    Object.keys(fields).forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field && !validateField(field, fields[fieldName])) {
+            isValid = false;
+        }
+    });
+    
+    // Validate image file if a new one is selected
+    const imageField = form.querySelector('input[type="file"]');
+    if (imageField && imageField.files.length > 0 && !validateImageFile(imageField)) {
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        // Scroll to first error
+        const firstError = form.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    } else {
+        // Add loading state
+        form.classList.add('form-submitting');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="material-symbols-rounded me-1">hourglass_empty</i>Sauvegarde en cours...';
+        }
+    }
+    
+    return isValid;
+}
+
+// Clear all field errors in a form
+function clearAllFieldErrors(form) {
+    const fields = form.querySelectorAll('.form-control');
+    fields.forEach(field => {
+        field.classList.remove('is-invalid', 'is-valid');
+        const errorElement = field.parentNode.querySelector('.invalid-feedback');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+            errorElement.textContent = '';
+        }
+    });
 }
 
 // Edit product function
@@ -596,7 +833,6 @@ function editProduct(id) {
     fetch(`{{ url('admin/products') }}/${id}/data`)
         .then(response => response.json())
         .then(product => {
-            document.getElementById('edit_owner_id').value = product.user_id;
             document.getElementById('edit_name').value = product.name;
             document.getElementById('edit_category').value = product.category;
             document.getElementById('edit_price').value = product.price;
@@ -803,6 +1039,79 @@ function initProductsViewToggle(){
 .product-card .card-img-top img{ display:block; }
 .object-fit-cover{ object-fit: cover; }
 .btn-group .btn.active{ background:#344767; color:#fff; }
+
+/* Form validation styles */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+}
+
+.form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.invalid-feedback.show {
+    display: block;
+}
+
+/* Enhanced form styling with validation states */
+#addProductModal .form-control:focus,
+#editProductModal .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    outline: none;
+}
+
+#addProductModal .form-control.is-invalid:focus,
+#editProductModal .form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+}
+
+/* Smooth transitions for validation states */
+.form-control {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Loading state for form submission */
+.form-submitting {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.form-submitting .btn {
+    position: relative;
+}
+
+.form-submitting .btn::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 @endpush
 

@@ -99,8 +99,9 @@
                         <ul class="dropdown-menu">
                             <li><a href="{{ route('front.about') }}">About Us</a></li>
                             <li><a href="{{ route('front.about2') }}">About Us Two</a></li>
-                            <li><a href="{{ route('front.team') }}">Posts</a></li>
-                            <li><a href="{{ route('front.team2') }}">Team Two</a></li>
+                        <li><a href="{{ route('front.team') }}">Posts</a></li>
+                        <li><a href="{{ route('front.products') }}">Products</a></li>
+                        <li><a href="{{ route('front.team2') }}">Team Two</a></li>
                             <li><a href="{{ route('front.team.details') }}">Team Details</a></li>
                             <li><a href="{{ route('front.pricing') }}">Pricing</a></li>
                             <li><a href="{{ route('front.faq') }}">FAQ</a></li>
@@ -144,6 +145,14 @@
             <div class="attr-right">
                 <div class="attr-nav">
                     <ul>
+                        <!-- Cart Icon -->
+                        <li class="cart-item">
+                            <a href="{{ route('front.cart') }}" class="cart-link">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span class="cart-counter badge bg-primary" style="display: none;">0</span>
+                            </a>
+                        </li>
+                        
                         @auth
                             <li class="logout-item">
                                 <form method="POST" action="{{ route('front.logout') }}" style="display: inline;">
@@ -180,3 +189,87 @@
         <div class="overlay-screen"></div>
     </nav>
 </header>
+
+<script>
+// Load cart counter on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCartCounter();
+});
+
+function loadCartCounter() {
+    fetch('{{ route("front.cart.summary") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const cartCounter = document.querySelector('.cart-counter');
+                if (cartCounter) {
+                    cartCounter.textContent = data.cart_items_count;
+                    cartCounter.style.display = data.cart_items_count > 0 ? 'inline' : 'none';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading cart counter:', error);
+        });
+}
+</script>
+
+<style>
+/* Cart Icon Styling */
+.cart-item {
+    position: relative;
+    margin-right: 15px;
+}
+
+.cart-link {
+    display: flex;
+    align-items: center;
+    color: #333;
+    text-decoration: none;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.cart-link:hover {
+    color: #4a90e2;
+    background-color: #f8f9fa;
+    text-decoration: none;
+}
+
+.cart-counter {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: #dc3545 !important;
+    color: white;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-counter:empty {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cart-link {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+    
+    .cart-counter {
+        font-size: 9px;
+        padding: 1px 4px;
+        min-width: 16px;
+        height: 16px;
+    }
+}
+</style>

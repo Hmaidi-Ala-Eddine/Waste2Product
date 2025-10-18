@@ -49,6 +49,14 @@ class Product extends Model
     }
 
     /**
+     * Get the cart items for this product.
+     */
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    /**
      * Scope for available products.
      */
     public function scopeAvailable($query)
@@ -122,5 +130,203 @@ class Product extends Model
             'poor' => 'danger',
             default => 'secondary'
         };
+    }
+
+    /**
+     * Scope for products with orders.
+     */
+    public function scopeWithOrders($query)
+    {
+        return $query->with(['orders' => function($q) {
+            $q->orderBy('created_at', 'desc');
+        }]);
+    }
+
+    /**
+     * Scope for products with order statistics.
+     */
+    public function scopeWithOrderStats($query)
+    {
+        return $query->withCount([
+            'orders as total_orders',
+            'orders as pending_orders' => function($q) {
+                $q->where('status', 'pending');
+            },
+            'orders as confirmed_orders' => function($q) {
+                $q->where('status', 'confirmed');
+            },
+            'orders as completed_orders' => function($q) {
+                $q->where('status', 'delivered');
+            }
+        ])->withSum('orders', 'total_price');
+    }
+
+    /**
+     * Scope for products with recent orders.
+     */
+    public function scopeWithRecentOrders($query, $days = 30)
+    {
+        return $query->with(['orders' => function($q) use ($days) {
+            $q->where('created_at', '>=', now()->subDays($days))
+              ->orderBy('created_at', 'desc');
+        }]);
+    }
+
+    /**
+     * Scope for products with buyer information.
+     */
+    public function scopeWithBuyers($query)
+    {
+        return $query->with(['orders.buyer' => function($q) {
+            $q->select('id', 'name', 'email');
+        }]);
+    }
+
+    /**
+     * Scope for products with full order details.
+     */
+    public function scopeWithFullOrderDetails($query)
+    {
+        return $query->with([
+            'orders' => function($q) {
+                $q->with(['buyer:id,name,email'])
+                  ->orderBy('created_at', 'desc');
+            },
+            'user:id,name,email'
+        ]);
+    }
+
+    /**
+     * Scope for products with cart items.
+     */
+    public function scopeWithCartItems($query)
+    {
+        return $query->with(['cartItems' => function($q) {
+            $q->with(['user:id,name,email'])
+              ->orderBy('created_at', 'desc');
+        }]);
+    }
+
+    /**
+     * Scope for products with both orders and cart items.
+     */
+    public function scopeWithOrdersAndCart($query)
+    {
+        return $query->with([
+            'orders' => function($q) {
+                $q->with(['buyer:id,name,email'])
+                  ->orderBy('created_at', 'desc');
+            },
+            'cartItems' => function($q) {
+                $q->with(['user:id,name,email'])
+                  ->orderBy('created_at', 'desc');
+            },
+            'user:id,name,email'
+        ]);
+    }
+
+    /**
+     * Scope for best selling products.
+     */
+    public function scopeBestSelling($query, $limit = 10)
+    {
+        return $query->withCount('orders as sales_count')
+                    ->orderBy('sales_count', 'desc')
+                    ->limit($limit);
+    }
+
+    /**
+     * Scope for products with highest revenue.
+     */
+    public function scopeHighestRevenue($query, $limit = 10)
+    {
+        return $query->withSum('orders', 'total_price as total_revenue')
+                    ->orderBy('total_revenue', 'desc')
+                    ->limit($limit);
+    }
+
+    /**
+     * Scope for products with no orders.
+     */
+    public function scopeWithoutOrders($query)
+    {
+        return $query->doesntHave('orders');
+    }
+
+    /**
+     * Scope for products with pending orders.
+     */
+    public function scopeWithPendingOrders($query)
+    {
+        return $query->whereHas('orders', function($q) {
+            $q->where('status', 'pending');
+        });
+    }
+
+    /**
+     * Get total revenue for this product.
+     */
+    public function getTotalRevenueAttribute(): float
+    {
+        return $this->orders()->sum('total_price') ?? 0;
+    }
+
+    /**
+     * Get total sales count for this product.
+     */
+    public function getTotalSalesAttribute(): int
+    {
+        return $this->orders()->count();
+    }
+
+    /**
+     * Get average order value for this product.
+     */
+    public function getAverageOrderValueAttribute(): float
+    {
+        $totalOrders = $this->orders()->count();
+        if ($totalOrders === 0) return 0;
+        
+        return $this->total_revenue / $totalOrders;
+    }
+
+    /**
+     * Get last order for this product.
+     */
+    public function getLastOrderAttribute()
+    {
+        return $this->orders()->latest()->first();
+    }
+
+    /**
+     * Check if product has any orders.
+     */
+    public function hasOrders(): bool
+    {
+        return $this->orders()->exists();
+    }
+
+    /**
+     * Check if product has pending orders.
+     */
+    public function hasPendingOrders(): bool
+    {
+        return $this->orders()->where('status', 'pending')->exists();
+    }
+
+    /**
+     * Get order statistics for this product.
+     */
+    public function getOrderStats(): array
+    {
+        return [
+            'total_orders' => $this->orders()->count(),
+            'pending_orders' => $this->orders()->where('status', 'pending')->count(),
+            'confirmed_orders' => $this->orders()->where('status', 'confirmed')->count(),
+            'delivered_orders' => $this->orders()->where('status', 'delivered')->count(),
+            'cancelled_orders' => $this->orders()->where('status', 'cancelled')->count(),
+            'total_revenue' => $this->total_revenue,
+            'average_order_value' => $this->average_order_value,
+        ];
     }
 }

@@ -95,15 +95,17 @@ class ProductController extends Controller
             'condition' => 'nullable|in:excellent,good,fair,poor',
             'price' => 'nullable|numeric|min:0',
             'status' => 'required|in:available,sold,donated,reserved',
-            'user_id' => 'required|exists:users,id',
             'waste_request_id' => 'nullable|exists:waste_requests,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $data = $request->only([
-            'user_id', 'name', 'description', 'category', 
+            'name', 'description', 'category', 
             'condition', 'price', 'status'
         ]);
+        
+        // Assign the authenticated user as the product owner
+        $data['user_id'] = auth()->id();
         
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -171,15 +173,17 @@ class ProductController extends Controller
             'condition' => 'nullable|in:excellent,good,fair,poor',
             'price' => 'nullable|numeric|min:0',
             'status' => 'required|in:available,sold,donated,reserved',
-            'user_id' => 'required|exists:users,id',
             'waste_request_id' => 'nullable|exists:waste_requests,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $data = $request->only([
-            'user_id', 'name', 'description', 'category', 
+            'name', 'description', 'category', 
             'condition', 'price', 'status'
         ]);
+        
+        // Assign the authenticated user as the product owner
+        $data['user_id'] = auth()->id();
         
         // Handle image upload
         if ($request->hasFile('image')) {

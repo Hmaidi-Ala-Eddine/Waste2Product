@@ -251,6 +251,57 @@ Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 
 Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
 Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
 
+    // Product Status Management Routes
+    Route::post('/products/{product}/mark-sold', [\App\Http\Controllers\ProductStatusController::class, 'markAsSold'])->name('front.products.mark-sold');
+    Route::post('/products/{product}/mark-available', [\App\Http\Controllers\ProductStatusController::class, 'markAsAvailable'])->name('front.products.mark-available');
+    Route::get('/products/{product}/status-history', [\App\Http\Controllers\ProductStatusController::class, 'getStatusHistory'])->name('front.products.status-history');
+
+// Product-Order-Cart Jointures Routes
+Route::get('/api/products-orders-cart', [\App\Http\Controllers\ProductOrderCartController::class, 'productsWithOrdersAndCart'])->name('api.products-orders-cart');
+Route::get('/api/products-in-cart-not-ordered', [\App\Http\Controllers\ProductOrderCartController::class, 'productsInCartNotOrdered'])->name('api.products-in-cart-not-ordered');
+Route::get('/api/products-ordered-but-in-cart', [\App\Http\Controllers\ProductOrderCartController::class, 'productsOrderedButInCart'])->name('api.products-ordered-but-in-cart');
+Route::get('/api/cart-items-to-orders', [\App\Http\Controllers\ProductOrderCartController::class, 'cartItemsToOrders'])->name('api.cart-items-to-orders');
+Route::get('/api/analytics', [\App\Http\Controllers\ProductOrderCartController::class, 'analytics'])->name('api.analytics');
+Route::get('/api/products-pending-actions', [\App\Http\Controllers\ProductOrderCartController::class, 'productsWithPendingActions'])->name('api.products-pending-actions');
+Route::get('/api/user-cart-orders', [\App\Http\Controllers\ProductOrderCartController::class, 'userCartAndOrders'])->name('api.user-cart-orders');
+
+// Frontend Cart Routes
+Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('front.cart');
+Route::post('/cart/add', [\App\Http\Controllers\CartController::class, 'addItem'])->name('front.cart.add');
+Route::post('/cart/update', [\App\Http\Controllers\CartController::class, 'updateQuantity'])->name('front.cart.update');
+Route::post('/cart/remove', [\App\Http\Controllers\CartController::class, 'removeItem'])->name('front.cart.remove');
+Route::post('/cart/clear', [\App\Http\Controllers\CartController::class, 'clearCart'])->name('front.cart.clear');
+Route::get('/cart/summary', [\App\Http\Controllers\CartController::class, 'getCartSummary'])->name('front.cart.summary');
+Route::get('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('front.checkout');
+Route::post('/checkout/process', [\App\Http\Controllers\CartController::class, 'processCheckout'])->name('front.checkout.process');
+Route::post('/cart/transfer', [\App\Http\Controllers\CartController::class, 'transferToUser'])->name('front.cart.transfer');
+
+// Payment Routes
+Route::get('/payment/{order}', [\App\Http\Controllers\PaymentController::class, 'show'])->name('front.payment.show');
+Route::post('/payment/{order}/process', [\App\Http\Controllers\PaymentController::class, 'process'])->name('front.payment.process');
+Route::get('/payment/{order}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('front.payment.success');
+Route::get('/payment/{order}/failure', [\App\Http\Controllers\PaymentController::class, 'failure'])->name('front.payment.failure');
+
+// Frontend Products Routes (Public)
+Route::get('/products', [\App\Http\Controllers\ProductController::class, 'frontendIndex'])->name('front.products');
+Route::get('/products/{product}/data', [\App\Http\Controllers\ProductController::class, 'getData'])->name('front.products.data');
+Route::post('/products/{product}/contact', [\App\Http\Controllers\ProductController::class, 'contact'])->name('front.products.contact');
+Route::post('/products/{product}/reserve', [\App\Http\Controllers\ProductController::class, 'reserve'])->name('front.products.reserve');
+Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('front.products.show');
+
+// Product-Order Jointure Routes (API)
+Route::prefix('api')->group(function () {
+    Route::get('/products-with-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithOrderStats'])->name('api.products.with-orders');
+    Route::get('/best-selling-products', [\App\Http\Controllers\ProductOrderController::class, 'bestSellingProducts'])->name('api.products.best-selling');
+    Route::get('/highest-revenue-products', [\App\Http\Controllers\ProductOrderController::class, 'highestRevenueProducts'])->name('api.products.highest-revenue');
+    Route::get('/products-pending-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithPendingOrders'])->name('api.products.pending-orders');
+    Route::get('/products-without-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithoutOrders'])->name('api.products.without-orders');
+    Route::get('/products/{product}/orders', [\App\Http\Controllers\ProductOrderController::class, 'productWithOrders'])->name('api.products.orders');
+    Route::get('/sales-analytics', [\App\Http\Controllers\ProductOrderController::class, 'salesAnalytics'])->name('api.sales.analytics');
+    Route::get('/complex-join-example', [\App\Http\Controllers\ProductOrderController::class, 'complexJoinExample'])->name('api.join.example');
+    Route::get('/admin-dashboard-data', [\App\Http\Controllers\ProductOrderController::class, 'adminDashboardData'])->name('api.admin.dashboard');
+});
+
 // Fallback 404 for unknown routes
 Route::fallback(function () {
     return response()->view('front.pages.404', [], 404);
