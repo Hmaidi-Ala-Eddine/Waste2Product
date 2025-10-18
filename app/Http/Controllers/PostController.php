@@ -260,14 +260,26 @@ class PostController extends Controller
      */
     public function toggleLike(Post $post): JsonResponse
     {
-        // This is a simplified implementation
-        // In a real application, you might want to track which users liked which posts
-        $post->incrementLikes();
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([ 'success' => false, 'message' => 'Unauthenticated' ], 401);
+        }
+
+        // Toggle like
+        if ($post->likes()->where('user_id', $user->id)->exists()) {
+            $post->likes()->detach($user->id);
+            $post->decrement('likes');
+            $liked = false;
+        } else {
+            $post->likes()->attach($user->id);
+            $post->increment('likes');
+            $liked = true;
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Post liked!',
             'likes' => $post->likes,
+            'liked' => $liked,
         ]);
     }
 
@@ -333,6 +345,11 @@ class PostController extends Controller
                     ->orderBy('created_at', 'desc')
                     ->paginate(9);
 
+        $user = Auth::user();
+        foreach ($posts as $post) {
+            $post->is_liked = $user ? $post->likes()->where('user_id', $user->id)->exists() : false;
+        }
+
         return view('front.pages.team', compact('posts'));
     }
 
@@ -341,13 +358,25 @@ class PostController extends Controller
      */
     public function like(Request $request, Post $post): JsonResponse
     {
-        // Simple like system - increment likes
-        $post->incrementLikes();
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([ 'success' => false, 'message' => 'Unauthenticated' ], 401);
+        }
+
+        if ($post->likes()->where('user_id', $user->id)->exists()) {
+            $post->likes()->detach($user->id);
+            $post->decrement('likes');
+            $liked = false;
+        } else {
+            $post->likes()->attach($user->id);
+            $post->increment('likes');
+            $liked = true;
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Post liked!',
             'likes' => $post->likes,
+            'liked' => $liked,
         ]);
     }
 

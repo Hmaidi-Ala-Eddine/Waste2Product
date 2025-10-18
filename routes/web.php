@@ -117,6 +117,14 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
     
+    // Events Management routes
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
+    Route::post('/events', [\App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+    Route::get('/events/users', [\App\Http\Controllers\EventController::class, 'getUsers'])->name('events.users');
+    Route::get('/events/{event}/data', [\App\Http\Controllers\EventController::class, 'getData'])->name('events.data');
+    Route::put('/events/{event}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
+    
     // Analytics Management routes
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
     Route::post('/analytics/generate-today', [\App\Http\Controllers\AnalyticsController::class, 'generateTodayStats'])->name('analytics.generate-today');
@@ -258,6 +266,12 @@ Route::get('/login', function () {
 Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
 Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
 Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
+
+// Frontend Events (Public)
+Route::get('/events', [\App\Http\Controllers\EventController::class, 'frontendIndex'])->name('front.events');
+Route::post('/events/{event}/like', [\App\Http\Controllers\EventController::class, 'like'])->name('front.events.like');
+Route::post('/events/{event}/participate', [\App\Http\Controllers\EventController::class, 'participate'])->name('front.events.participate');
+Route::get('/events/{event}/details', [\App\Http\Controllers\EventController::class, 'getEventDetails'])->name('front.events.details');
 Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
 
 // Frontend Waste Requests Routes (Authenticated Users Only)
