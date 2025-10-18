@@ -354,6 +354,8 @@ Route::prefix('api')->group(function () {
     Route::get('/sales-analytics', [\App\Http\Controllers\ProductOrderController::class, 'salesAnalytics'])->name('api.sales.analytics');
     Route::get('/complex-join-example', [\App\Http\Controllers\ProductOrderController::class, 'complexJoinExample'])->name('api.join.example');
     Route::get('/admin-dashboard-data', [\App\Http\Controllers\ProductOrderController::class, 'adminDashboardData'])->name('api.admin.dashboard');
+});
+
 // Eco entities CRUD kept here as requested, but exclude 'web' middleware to avoid CSRF in Postman
 Route::prefix('api')
     ->withoutMiddleware('web')

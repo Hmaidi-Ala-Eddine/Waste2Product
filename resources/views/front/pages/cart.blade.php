@@ -4,16 +4,16 @@
 
 @section('content')
 <!-- Page Title -->
-<section class="page-title" style="background-image: url({{ asset('assets/front/img/banner/page-title.webp') }});">
+<section class="page-title" style="background-image: url({{ asset('assets/front/img/banner/page-title.webp') }}); padding: 80px 0 60px;">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="page-title-content text-center">
-                    <h1 class="title">Shopping Cart</h1>
+                    <h1 class="title" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #333;">Shopping Cart</h1>
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('front.home') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Cart</li>
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a href="{{ route('front.home') }}" style="color: #666;">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page" style="color: #4a90e2;">Cart</li>
                         </ol>
                     </nav>
                 </div>

@@ -163,55 +163,13 @@
                 <div class="attr-nav">
                     <ul>
                         <!-- Cart Icon -->
-                        <li class="cart-item">
+                        <li>
                             <a href="{{ route('front.cart') }}" class="cart-link">
                                 <i class="fas fa-shopping-cart"></i>
-                                <span class="cart-counter badge bg-primary" style="display: none;">0</span>
                             </a>
                         </li>
                         
                         @auth
-                            @php
-                                $ordersCount = \App\Models\Order::where('user_id', auth()->id())->count();
-                                $recentOrders = \App\Models\Order::with('product')
-                                    ->where('user_id', auth()->id())
-                                    ->orderByDesc('ordered_at')
-                                    ->limit(5)
-                                    ->get();
-                            @endphp
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" title="My Orders">
-                                    Orders
-                                    <span class="badge" style="background:#777;color:#fff;border-radius:10px;padding:2px 6px;font-size:11px;vertical-align: top;">{{ $ordersCount }}</span>
-                                </a>
-                                <ul class="dropdown-menu" style="min-width:320px;padding:15px;">
-                                    <li>
-                                        <h6 style="margin:0 0 10px;">My Recent Orders</h6>
-                                        @if($recentOrders->isEmpty())
-                                            <p style="margin:0;">No orders yet.</p>
-                                        @else
-                                            <div style="max-height:260px;overflow:auto;">
-                                                <ul style="list-style:none;margin:0;padding:0;">
-                                                    @foreach($recentOrders as $order)
-                                                        <li style="padding:8px 0;border-bottom:1px solid #eee;">
-                                                            <div style="display:flex;justify-content:space-between;gap:8px;">
-                                                                <div>
-                                                                    <div style="font-weight:600;">{{ optional($order->product)->name ?? 'Product #'.$order->product_id }}</div>
-                                                                    <div style="font-size:12px;color:#666;">Qty: {{ $order->quantity }} · {{ ucfirst($order->status) }}</div>
-                                                                </div>
-                                                                <div style="white-space:nowrap;font-weight:600;">${{ number_format((float)$order->total_price, 2) }}</div>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        @endif
-                                    </li>
-                                    <li style="text-align:right;padding-top:8px;border-top:1px solid #eee;">
-                                        <a href="{{ route('front.orders') }}" style="font-size:13px;">View all</a>
-                                    </li>
-                                </ul>
-                            </li>
                             <li class="logout-item">
                                 <form method="POST" action="{{ route('front.logout') }}" style="display: inline;">
                                     @csrf
@@ -248,86 +206,19 @@
     </nav>
 </header>
 
-<script>
-// Load cart counter on page load
-document.addEventListener('DOMContentLoaded', function() {
-    loadCartCounter();
-});
-
-function loadCartCounter() {
-    fetch('{{ route("front.cart.summary") }}')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const cartCounter = document.querySelector('.cart-counter');
-                if (cartCounter) {
-                    cartCounter.textContent = data.cart_items_count;
-                    cartCounter.style.display = data.cart_items_count > 0 ? 'inline' : 'none';
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error loading cart counter:', error);
-        });
-}
-</script>
 
 <style>
-/* Cart Icon Styling */
-.cart-item {
-    position: relative;
-    margin-right: 15px;
-}
-
+/* Simple Cart Icon Styling */
 .cart-link {
-    display: flex;
-    align-items: center;
     color: #333;
     text-decoration: none;
     font-size: 18px;
-    transition: all 0.3s ease;
-    padding: 8px 12px;
-    border-radius: 8px;
+    transition: color 0.3s ease;
+    padding: 5px;
 }
 
 .cart-link:hover {
     color: #4a90e2;
-    background-color: #f8f9fa;
     text-decoration: none;
-}
-
-.cart-counter {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 10px;
-    background: #dc3545 !important;
-    color: white;
-    min-width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cart-counter:empty {
-    display: none;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .cart-link {
-        font-size: 16px;
-        padding: 6px 10px;
-    }
-    
-    .cart-counter {
-        font-size: 9px;
-        padding: 1px 4px;
-        min-width: 16px;
-        height: 16px;
-    }
 }
 </style>
