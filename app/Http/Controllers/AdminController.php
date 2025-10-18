@@ -71,7 +71,17 @@ class AdminController extends Controller
             'is_active' => 'boolean',
             'faceid_enabled' => 'boolean',
             'send_welcome_email' => 'boolean',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Handle profile picture upload
+        $profilePicturePath = null;
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = 'profile_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/profiles'), $filename);
+            $profilePicturePath = 'uploads/profiles/' . $filename;
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -83,6 +93,7 @@ class AdminController extends Controller
             'phone' => $request->phone,
             'address' => $request->address,
             'role' => $request->role,
+            'profile_picture' => $profilePicturePath,
             'is_active' => $request->has('is_active'),
             'faceid_enabled' => $request->has('faceid_enabled'),
             'email_verified_at' => now(), // Auto-verify admin created users
@@ -125,7 +136,9 @@ class AdminController extends Controller
     public function getUserData($id)
     {
         $user = User::findOrFail($id);
-        return response()->json($user);
+        $userData = $user->toArray();
+        $userData['profile_picture_url'] = $user->profile_picture_url;
+        return response()->json($userData);
     }
 
     /**
@@ -151,9 +164,11 @@ class AdminController extends Controller
             'role' => 'required|in:user,admin,moderator,collector',
             'is_active' => 'boolean',
             'faceid_enabled' => 'boolean',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $user->update([
+        // Handle profile picture upload
+        $updateData = [
             'name' => $request->name,
             'username' => $request->username,
             'first_name' => $request->first_name,
@@ -164,7 +179,21 @@ class AdminController extends Controller
             'role' => $request->role,
             'is_active' => $request->has('is_active'),
             'faceid_enabled' => $request->has('faceid_enabled'),
-        ]);
+        ];
+
+        if ($request->hasFile('profile_picture')) {
+            // Delete old profile picture if exists
+            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
+                unlink(public_path($user->profile_picture));
+            }
+            
+            $file = $request->file('profile_picture');
+            $filename = 'profile_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/profiles'), $filename);
+            $updateData['profile_picture'] = 'uploads/profiles/' . $filename;
+        }
+
+        $user->update($updateData);
 
         return redirect()->route('admin.users')->with('success', 'User updated successfully!');
     }
@@ -184,5 +213,38 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users')->with('delete_success', 'User deleted successfully!');
+    }
+
+    /**
+     * Upload profile picture for logged-in admin
+     */
+    public function uploadProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = auth()->user();
+
+        // Delete old profile picture if exists
+        if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
+            unlink(public_path($user->profile_picture));
+        }
+
+        // Upload new profile picture
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = 'profile_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/profiles'), $filename);
+
+            $user->profile_picture = 'uploads/profiles/' . $filename;
+            $user->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile picture updated successfully!',
+            'picture_url' => $user->profile_picture_url
+        ]);
     }
 }

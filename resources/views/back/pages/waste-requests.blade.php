@@ -97,16 +97,11 @@
             </thead>
             <tbody>
               @forelse($wasteRequests as $index => $request)
-                @php
-                  // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
-                  $avatarImage = $avatarImages[$index % count($avatarImages)];
-                @endphp
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div>
-                        <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $request->customer->name }}">
+                        <img src="{{ $request->customer->profile_picture_url }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $request->customer->name }}" style="object-fit: cover;">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ $request->customer->name }}</h6>
@@ -669,15 +664,23 @@ function deleteRequest(id, customerName) {
 
 /* Form validation styling for both modals */
 #addRequestModal .form-control.is-invalid,
-#editRequestModal .form-control.is-invalid {
+#editRequestModal .form-control.is-invalid,
+#addRequestModal select.form-control.is-invalid,
+#editRequestModal select.form-control.is-invalid {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addRequestModal .form-control.is-valid,
-#editRequestModal .form-control.is-valid {
+#editRequestModal .form-control.is-valid,
+#addRequestModal select.form-control.is-valid,
+#editRequestModal select.form-control.is-valid {
     border-color: #28a745;
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addRequestModal .invalid-feedback,
@@ -757,13 +760,21 @@ function deleteRequest(id, customerName) {
 
 /* Form validation feedback */
 #addRequestModal .form-control.is-invalid,
-#editRequestModal .form-control.is-invalid {
+#editRequestModal .form-control.is-invalid,
+#addRequestModal select.form-control.is-invalid,
+#editRequestModal select.form-control.is-invalid {
     border-color: #dc3545;
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addRequestModal .form-control.is-valid,
-#editRequestModal .form-control.is-valid {
+#editRequestModal .form-control.is-valid,
+#addRequestModal select.form-control.is-valid,
+#editRequestModal select.form-control.is-valid {
     border-color: #28a745;
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addRequestModal .invalid-feedback,

@@ -90,16 +90,11 @@
             </thead>
             <tbody>
               @forelse($users as $index => $user)
-                @php
-                  // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
-                  $avatarImage = $avatarImages[$index % count($avatarImages)];
-                @endphp
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div>
-                        <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $user->name }}">
+                        <img src="{{ $user->profile_picture_url }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $user->name }}" style="object-fit: cover;">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ $user->name }}</h6>
@@ -207,7 +202,7 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="editUserForm" method="POST">
+      <form id="editUserForm" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="modal-body p-4">
@@ -273,6 +268,21 @@
                   <option value="collector">Collector</option>
                 </select>
                 <div class="invalid-feedback"></div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label text-dark">Profile Picture</label>
+                <div class="text-center mb-3">
+                  <div id="edit-image-preview" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #344767; overflow: hidden; margin: 0 auto 15px; background: #f8f9fa;">
+                    <img id="edit-preview-img" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <label for="edit-profile-picture" class="btn btn-outline-dark btn-sm" style="cursor: pointer;">
+                    <i class="material-symbols-rounded me-1" style="font-size: 1rem;">add_photo_alternate</i>
+                    Change Picture
+                  </label>
+                </div>
+                <input type="file" class="form-control d-none" id="edit-profile-picture" name="profile_picture" accept="image/*" onchange="previewEditImage(this)">
+                <small class="text-muted d-block text-center">Optional - Max 2MB (JPG, PNG, GIF)</small>
               </div>
             </div>
           </div>
@@ -351,7 +361,7 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="addUserForm" method="POST" action="{{ route('admin.users.store') }}">
+      <form id="addUserForm" method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="modal-body p-4">
           <div class="row">
@@ -410,6 +420,21 @@
                 <label class="form-label text-dark">Phone Number</label>
                 <input type="tel" class="form-control" name="phone" autocomplete="tel" placeholder="Enter phone number">
                 <div class="invalid-feedback"></div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label text-dark">Profile Picture</label>
+                <div class="text-center mb-3">
+                  <div id="add-image-preview" style="width: 100px; height: 100px; border-radius: 50%; border: 3px dashed #28a745; overflow: hidden; margin: 0 auto 15px; display: none; background: #f8f9fa;">
+                    <img id="add-preview-img" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <label for="add-profile-picture" class="btn btn-outline-success btn-sm" style="cursor: pointer;">
+                    <i class="material-symbols-rounded me-1" style="font-size: 1rem;">add_photo_alternate</i>
+                    Choose Picture
+                  </label>
+                </div>
+                <input type="file" class="form-control d-none" id="add-profile-picture" name="profile_picture" accept="image/*" onchange="previewAddImage(this)">
+                <small class="text-muted d-block text-center">Optional - Max 2MB (JPG, PNG, GIF)</small>
               </div>
             </div>
           </div>
@@ -507,6 +532,14 @@ async function editUser(id) {
         document.getElementById('editRole').value = user.role || '';
         document.getElementById('editIsActive').checked = user.is_active || false;
         document.getElementById('editFaceidEnabled').checked = user.faceid_enabled || false;
+        
+        // Load current profile picture
+        const editPreviewImg = document.getElementById('edit-preview-img');
+        if (user.profile_picture_url) {
+            editPreviewImg.src = user.profile_picture_url;
+        } else {
+            editPreviewImg.src = '';
+        }
         
         // Handle floating labels for filled fields
         const inputs = document.querySelectorAll('#editUserModal .input-group-outline input, #editUserModal .input-group-outline textarea, #editUserModal .input-group-outline select');
@@ -637,6 +670,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!value || value.trim().length < 2) {
                         isValid = false;
                         errorMessage = 'Full name must be at least 2 characters long';
+                    } else if (value.length > 255) {
+                        isValid = false;
+                        errorMessage = 'Name cannot exceed 255 characters';
+                    } else if (!/^[a-zA-Z\s\-\'\.]+(?: [a-zA-Z\s\-\'\.])*$/.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Name can only contain letters, spaces, hyphens, apostrophes, and periods';
                     }
                     break;
                     
@@ -652,6 +691,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!value || value.length < 8) {
                         isValid = false;
                         errorMessage = 'Password must be at least 8 characters long';
+                    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value)) {
+                        isValid = false;
+                        errorMessage = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+                    } else if (value.length > 255) {
+                        isValid = false;
+                        errorMessage = 'Password cannot exceed 255 characters';
                     }
                     break;
                     
@@ -1142,6 +1187,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Profile picture preview functions
+function previewAddImage(input) {
+    const preview = document.getElementById('add-image-preview');
+    const previewImg = document.getElementById('add-preview-img');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+            preview.style.borderStyle = 'solid';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewEditImage(input) {
+    const preview = document.getElementById('edit-image-preview');
+    const previewImg = document.getElementById('edit-preview-img');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
 
 <style>
@@ -1428,15 +1502,23 @@ select.form-control {
 
 /* Form validation styling for both modals */
 #addUserModal .form-control.is-invalid,
-#editUserModal .form-control.is-invalid {
+#editUserModal .form-control.is-invalid,
+#addUserModal select.form-control.is-invalid,
+#editUserModal select.form-control.is-invalid {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addUserModal .form-control.is-valid,
-#editUserModal .form-control.is-valid {
+#editUserModal .form-control.is-valid,
+#addUserModal select.form-control.is-valid,
+#editUserModal select.form-control.is-valid {
     border-color: #28a745;
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addUserModal .invalid-feedback,
@@ -1545,12 +1627,18 @@ select.form-control {
 }
 
 /* Form validation feedback */
-#addUserModal .form-control.is-invalid {
+#addUserModal .form-control.is-invalid,
+#addUserModal select.form-control.is-invalid {
     border-color: #dc3545;
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
-#addUserModal .form-control.is-valid {
+#addUserModal .form-control.is-valid,
+#addUserModal select.form-control.is-valid {
     border-color: #28a745;
+    background-image: none !important;
+    background-color: #fff !important;
 }
 
 #addUserModal .invalid-feedback {

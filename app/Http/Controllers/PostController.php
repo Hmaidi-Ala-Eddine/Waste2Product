@@ -325,29 +325,52 @@ class PostController extends Controller
     }
 
     /**
-     * Display posts for frontend (Public)
+     * Display posts for frontend (Authenticated Users)
      */
     public function frontendIndex(Request $request): View
     {
-        $posts = Post::with(['user', 'comments'])
+        $posts = Post::with(['user', 'comments.user'])
                     ->orderBy('created_at', 'desc')
                     ->paginate(9);
 
-        return view('front.pages.team', compact('posts'));
+        return view('front.pages.posts', compact('posts'));
     }
 
     /**
-     * Like/Unlike a post (Public)
+     * Like/Unlike a post (Public) - Facebook style
      */
     public function like(Request $request, Post $post): JsonResponse
     {
-        // Simple like system - increment likes
-        $post->incrementLikes();
+        $userId = Auth::id();
+        
+        // Check if user already liked this post
+        $existingLike = \App\Models\PostLike::where('user_id', $userId)
+                                             ->where('post_id', $post->id)
+                                             ->first();
+        
+        if ($existingLike) {
+            // User already liked - remove like (unlike)
+            $existingLike->delete();
+            $post->decrement('likes');
+            $action = 'unliked';
+        } else {
+            // User hasn't liked - add like
+            \App\Models\PostLike::create([
+                'user_id' => $userId,
+                'post_id' => $post->id,
+            ]);
+            $post->increment('likes');
+            $action = 'liked';
+        }
+        
+        // Refresh to get updated likes count
+        $post->refresh();
 
         return response()->json([
             'success' => true,
-            'message' => 'Post liked!',
+            'message' => "Post {$action}!",
             'likes' => $post->likes,
+            'action' => $action,
         ]);
     }
 
@@ -390,10 +413,13 @@ class PostController extends Controller
 
         $comment = new Comment();
         $comment->post_id = $post->id;
-        $comment->user_id = 1; // Anonymous user ID or create a system for guest users
+        $comment->user_id = Auth::id(); // Use authenticated user's ID
         $comment->user_name = $validatedData['user_name'];
         $comment->comment = $validatedData['comment'];
         $comment->save();
+
+        // Load the user relationship
+        $comment->load('user');
 
         return response()->json([
             'success' => true,
@@ -403,6 +429,7 @@ class PostController extends Controller
                 'user_name' => $comment->user_name,
                 'comment' => $comment->comment,
                 'created_at' => $comment->created_at,
+                'user_avatar' => $comment->user->profile_picture_url,
             ],
         ]);
     }

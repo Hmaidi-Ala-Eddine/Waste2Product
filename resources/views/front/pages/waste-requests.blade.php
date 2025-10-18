@@ -209,12 +209,50 @@
         color: #2c3e50;
     }
     
-    /* Simple validation error text */
+    /* Enhanced validation styles */
+    .form-control.is-invalid,
+    .form-select.is-invalid,
+    select.form-control.is-invalid {
+        border-color: #e74c3c !important;
+        box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.15) !important;
+        background-image: none !important;
+        background-color: #fff !important;
+    }
+    
+    .form-control.is-valid,
+    .form-select.is-valid,
+    select.form-control.is-valid {
+        border-color: #27ae60 !important;
+        box-shadow: 0 0 0 0.2rem rgba(39, 174, 96, 0.15) !important;
+        background-image: none !important;
+        background-color: #fff !important;
+    }
+    
     .error-text {
         color: #e74c3c;
-        font-size: 0.85rem;
-        margin-top: 5px;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
         display: none;
+        font-weight: 500;
+    }
+    
+    .error-text.show {
+        display: block;
+    }
+    
+    .char-count {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .char-count.text-danger {
+        color: #e74c3c !important;
+    }
+    
+    .char-count.text-warning {
+        color: #f39c12 !important;
     }
     
     @media (max-width: 768px) {
@@ -395,35 +433,145 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantity = document.getElementById('quantity');
     const state = document.getElementById('state');
     const address = document.getElementById('address');
+    const description = document.getElementById('description');
     
-    // Simple validation function
-    function validateField(field) {
-        const errorElement = document.getElementById(field.id + '_error');
-        
-        if (field.id === 'waste_type' && !field.value) {
-            errorElement.style.display = 'block';
-            return false;
-        } else if (field.id === 'quantity' && (!field.value || field.value <= 0)) {
-            errorElement.style.display = 'block';
-            return false;
-        } else if (field.id === 'state' && !field.value) {
-            errorElement.style.display = 'block';
-            return false;
-        } else if (field.id === 'address' && !field.value.trim()) {
-            errorElement.style.display = 'block';
-            return false;
-        } else {
-            errorElement.style.display = 'none';
-            return true;
+    // Clear validation state
+    function clearValidation(field) {
+        field.classList.remove('is-valid', 'is-invalid');
+        const errorEl = document.getElementById(field.id + '_error');
+        if (errorEl) {
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
         }
     }
     
-    // Add event listeners
+    // Set field as invalid
+    function setInvalid(field, message) {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+        const errorEl = document.getElementById(field.id + '_error');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+        return false;
+    }
+    
+    // Set field as valid
+    function setValid(field) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+        const errorEl = document.getElementById(field.id + '_error');
+        if (errorEl) {
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
+        }
+        return true;
+    }
+    
+    // Sanitize quantity input
+    function sanitizeQuantity(input) {
+        let value = input.value.replace(/[^0-9.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (parts[1] && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+        input.value = value;
+    }
+    
+    // Character counter
+    function updateCharCount(field, maxLength) {
+        const currentLength = field.value.length;
+        let countEl = field.parentElement.querySelector('.char-count');
+        if (!countEl) {
+            countEl = document.createElement('small');
+            countEl.className = 'char-count';
+            field.parentElement.appendChild(countEl);
+        }
+        countEl.textContent = `${currentLength}/${maxLength} characters`;
+        if (currentLength > maxLength) {
+            countEl.classList.add('text-danger');
+            countEl.classList.remove('text-warning');
+        } else if (currentLength > maxLength * 0.9) {
+            countEl.classList.add('text-warning');
+            countEl.classList.remove('text-danger');
+        } else {
+            countEl.classList.remove('text-danger', 'text-warning');
+        }
+    }
+    
+    // Validate individual field
+    function validateField(field) {
+        const value = field.value.trim();
+        clearValidation(field);
+        
+        switch(field.id) {
+            case 'waste_type':
+                if (!value) return setInvalid(field, 'Please select a waste type');
+                return setValid(field);
+                
+            case 'quantity':
+                if (!value) return setInvalid(field, 'Please enter the quantity');
+                const qty = parseFloat(value);
+                if (isNaN(qty) || qty <= 0) return setInvalid(field, 'Quantity must be a positive number');
+                if (qty < 0.1) return setInvalid(field, 'Quantity must be at least 0.1 kg');
+                if (qty > 999999.99) return setInvalid(field, 'Quantity cannot exceed 999,999.99 kg');
+                if (!/^\d+(\.\d{1,2})?$/.test(value)) return setInvalid(field, 'Quantity can have maximum 2 decimal places');
+                return setValid(field);
+                
+            case 'state':
+                if (!value) return setInvalid(field, 'Please select a governorate');
+                return setValid(field);
+                
+            case 'address':
+                if (!value) return setInvalid(field, 'Please enter your specific address');
+                if (value.length < 10) return setInvalid(field, 'Address must be at least 10 characters long');
+                if (value.length > 1000) return setInvalid(field, 'Address cannot exceed 1000 characters');
+                if (!/^[a-zA-Z0-9\s\.,\-\#\/]+$/.test(value)) return setInvalid(field, 'Address contains invalid characters');
+                return setValid(field);
+                
+            case 'description':
+                if (value && value.length > 2000) return setInvalid(field, 'Description cannot exceed 2000 characters');
+                if (value && !/^[a-zA-Z0-9\s\.,\-\!\?\(\)]*$/.test(value)) return setInvalid(field, 'Description contains invalid characters');
+                if (value) return setValid(field);
+                return true;
+                
+            default:
+                return true;
+        }
+    }
+    
+    // Event listeners
+    wasteType.addEventListener('change', function() { validateField(this); });
     wasteType.addEventListener('blur', function() { validateField(this); });
+    
+    quantity.addEventListener('input', function() { 
+        sanitizeQuantity(this);
+        validateField(this);
+    });
     quantity.addEventListener('blur', function() { validateField(this); });
+    
+    state.addEventListener('change', function() { validateField(this); });
     state.addEventListener('blur', function() { validateField(this); });
+    
+    address.addEventListener('input', function() { 
+        validateField(this); 
+        updateCharCount(this, 1000);
+    });
     address.addEventListener('blur', function() { validateField(this); });
     
+    if (description) {
+        description.addEventListener('input', function() { 
+            validateField(this); 
+            updateCharCount(this, 2000);
+        });
+        description.addEventListener('blur', function() { validateField(this); });
+    }
+    
+    // Form submission
     form.addEventListener('submit', function(e) {
         let isValid = true;
         
@@ -432,12 +580,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!validateField(quantity)) isValid = false;
         if (!validateField(state)) isValid = false;
         if (!validateField(address)) isValid = false;
+        if (description && description.value && !validateField(description)) isValid = false;
         
         if (!isValid) {
             e.preventDefault();
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
         
+        // Show loading state
         const submitBtn = form.querySelector('.btn-submit');
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
         submitBtn.disabled = true;

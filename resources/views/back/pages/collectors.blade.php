@@ -100,15 +100,11 @@
             </thead>
             <tbody>
               @forelse($collectors as $index => $collector)
-                @php
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
-                  $avatarImage = $avatarImages[$index % count($avatarImages)];
-                @endphp
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div>
-                        <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $collector->user->name }}">
+                        <img src="{{ $collector->user->profile_picture_url }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $collector->user->name }}" style="object-fit: cover;">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ $collector->user->name }}</h6>
@@ -191,11 +187,11 @@
 <div class="modal fade" id="addCollectorModal" tabindex="-1" aria-labelledby="addCollectorModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header bg-gradient-success">
-        <h5 class="modal-title text-white" id="addCollectorModalLabel">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCollectorModalLabel">
           <i class="material-symbols-rounded me-2">add</i>Add New Collector
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="addCollectorForm" method="POST" action="{{ route('admin.collectors.store') }}">
         @csrf
@@ -273,11 +269,11 @@
 <div class="modal fade" id="editCollectorModal" tabindex="-1" aria-labelledby="editCollectorModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header bg-gradient-dark">
-        <h5 class="modal-title text-white" id="editCollectorModalLabel">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCollectorModalLabel">
           <i class="material-symbols-rounded me-2">edit</i>Edit Collector
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="editCollectorForm" method="POST">
         @csrf
@@ -390,6 +386,7 @@
 // Load users when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadUsers();
+    setupValidation();
 });
 
 // Load users for dropdown (only users without collector profile)
@@ -406,6 +403,205 @@ function loadUsers() {
             }
         })
         .catch(error => console.error('Error loading users:', error));
+}
+
+// Setup real-time validation
+function setupValidation() {
+    // Add Collector Form Validation
+    const addForm = document.getElementById('addCollectorForm');
+    const addUserId = addForm.querySelector('[name="user_id"]');
+    const addCompanyName = addForm.querySelector('[name="company_name"]');
+    const addVehicleType = addForm.querySelector('[name="vehicle_type"]');
+    const addCapacity = addForm.querySelector('[name="capacity_kg"]');
+    const addServiceAreas = document.getElementById('service_areas_input');
+    const addBio = addForm.querySelector('[name="bio"]');
+
+    // Edit Collector Form Validation
+    const editForm = document.getElementById('editCollectorForm');
+    const editCompanyName = editForm.querySelector('[name="company_name"]');
+    const editVehicleType = editForm.querySelector('[name="vehicle_type"]');
+    const editCapacity = editForm.querySelector('[name="capacity_kg"]');
+    const editServiceAreas = document.getElementById('edit_service_areas');
+    const editBio = editForm.querySelector('[name="bio"]');
+    const editVerificationStatus = editForm.querySelector('[name="verification_status"]');
+
+    // Validation Rules
+    function validateUser(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Please select a user.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateCompanyName(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (input.value && input.value.length > 255) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Company name cannot exceed 255 characters.';
+            return false;
+        } else if (input.value && !/^[a-zA-Z0-9\s\.\,\-\&]+$/.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Company name contains invalid characters.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            if (input.value) input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateVehicleType(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Please select a vehicle type.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateCapacity(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        const value = parseFloat(input.value);
+        
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Please enter the collection capacity.';
+            return false;
+        } else if (isNaN(value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity must be a valid number.';
+            return false;
+        } else if (value < 1) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity must be at least 1 kg.';
+            return false;
+        } else if (value > 99999.99) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity cannot exceed 99,999.99 kg.';
+            return false;
+        } else if (!/^\d+(\.\d{1,2})?$/.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity can have maximum 2 decimal places.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateBio(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (input.value && input.value.length > 1000) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Bio cannot exceed 1000 characters.';
+            return false;
+        } else if (input.value && !/^[a-zA-Z0-9\s\.\,\-\!\?\(\)]*$/.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Bio contains invalid characters.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            if (input.value) input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    // Add form listeners
+    if (addUserId) {
+        addUserId.addEventListener('blur', () => validateUser(addUserId));
+        addUserId.addEventListener('change', () => validateUser(addUserId));
+    }
+    if (addCompanyName) {
+        addCompanyName.addEventListener('blur', () => validateCompanyName(addCompanyName));
+        addCompanyName.addEventListener('input', () => validateCompanyName(addCompanyName));
+    }
+    if (addVehicleType) {
+        addVehicleType.addEventListener('blur', () => validateVehicleType(addVehicleType));
+        addVehicleType.addEventListener('change', () => validateVehicleType(addVehicleType));
+    }
+    if (addCapacity) {
+        addCapacity.addEventListener('blur', () => validateCapacity(addCapacity));
+        addCapacity.addEventListener('input', () => validateCapacity(addCapacity));
+    }
+    if (addBio) {
+        addBio.addEventListener('blur', () => validateBio(addBio));
+        addBio.addEventListener('input', () => validateBio(addBio));
+    }
+
+    // Edit form listeners
+    if (editCompanyName) {
+        editCompanyName.addEventListener('blur', () => validateCompanyName(editCompanyName));
+        editCompanyName.addEventListener('input', () => validateCompanyName(editCompanyName));
+    }
+    if (editVehicleType) {
+        editVehicleType.addEventListener('blur', () => validateVehicleType(editVehicleType));
+        editVehicleType.addEventListener('change', () => validateVehicleType(editVehicleType));
+    }
+    if (editCapacity) {
+        editCapacity.addEventListener('blur', () => validateCapacity(editCapacity));
+        editCapacity.addEventListener('input', () => validateCapacity(editCapacity));
+    }
+    if (editBio) {
+        editBio.addEventListener('blur', () => validateBio(editBio));
+        editBio.addEventListener('input', () => validateBio(editBio));
+    }
+
+    // Form submission validation
+    addForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        if (!validateUser(addUserId)) isValid = false;
+        if (!validateVehicleType(addVehicleType)) isValid = false;
+        if (!validateCapacity(addCapacity)) isValid = false;
+        if (addCompanyName.value && !validateCompanyName(addCompanyName)) isValid = false;
+        if (addBio.value && !validateBio(addBio)) isValid = false;
+        
+        if (!isValid) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    editForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        if (!validateVehicleType(editVehicleType)) isValid = false;
+        if (!validateCapacity(editCapacity)) isValid = false;
+        if (editCompanyName.value && !validateCompanyName(editCompanyName)) isValid = false;
+        if (editBio.value && !validateBio(editBio)) isValid = false;
+        
+        if (!isValid) {
+            e.preventDefault();
+            return false;
+        }
+    });
 }
 
 // Edit collector function
@@ -487,6 +683,39 @@ document.getElementById('editCollectorForm').addEventListener('submit', function
 
 .card-body {
     background: white;
+}
+
+/* Validation Styles */
+.form-control.is-invalid,
+.form-select.is-invalid,
+select.form-control.is-invalid {
+    border-color: #dc3545 !important;
+    background-image: none !important;
+    background-color: #fff !important;
+}
+
+.form-control.is-valid,
+.form-select.is-valid,
+select.form-control.is-valid {
+    border-color: #28a745 !important;
+    background-image: none !important;
+    background-color: #fff !important;
+}
+
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback.d-block {
+    display: block !important;
+}
+
+.form-control.is-invalid ~ .invalid-feedback,
+.form-select.is-invalid ~ .invalid-feedback {
+    display: block;
 }
 
 /* Edit and Delete Button Hover Effects */

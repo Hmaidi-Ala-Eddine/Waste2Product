@@ -74,6 +74,9 @@
         else if (parseFloat(value) > ValidationConfig.quantity.max) { isValid = false; msg = `Quantity cannot exceed ${ValidationConfig.quantity.max.toLocaleString()} kg.`; }
         else if (!/^\d+(\.\d{1,2})?$/.test(value)) { isValid = false; msg = 'Quantity can have maximum 2 decimal places.'; }
         break;
+      case 'state':
+        if (!value) { isValid = false; msg = 'Please select a governorate/state.'; }
+        break;
       case 'address':
         if (!value) { isValid = false; msg = 'Please enter the pickup address.'; }
         else if (value.length < ValidationConfig.address.min) { isValid = false; msg = `Address must be at least ${ValidationConfig.address.min} characters long.`; }
@@ -97,6 +100,7 @@
     const customer = form.querySelector('select[name="user_id"]');
     const wasteType = form.querySelector('select[name="waste_type"]');
     const quantity = form.querySelector('input[name="quantity"]');
+    const state = form.querySelector('select[name="state"]');
     const address = form.querySelector('textarea[name="address"]');
     const description = form.querySelector('textarea[name="description"]');
     const status = form.querySelector('select[name="status"]');
@@ -108,6 +112,7 @@
       quantity.addEventListener('input', function() { sanitizeQuantityInput(this); validateField(this, 'quantity'); });
       quantity.addEventListener('blur', () => validateField(quantity, 'quantity'));
     }
+    if (state) state.addEventListener('change', () => validateField(state, 'state'));
     if (address) {
       address.addEventListener('input', function() { sanitizeTextInput(this); validateField(this, 'address'); updateCharacterCount(this, ValidationConfig.address.max); });
       address.addEventListener('blur', () => validateField(address, 'address'));
@@ -123,6 +128,7 @@
       ['select[name="user_id"]', 'customer'],
       ['select[name="waste_type"]', 'waste_type'],
       ['input[name="quantity"]', 'quantity'],
+      ['select[name="state"]', 'state'],
       ['textarea[name="address"]', 'address'],
       ['textarea[name="description"]', 'description'],
       ['select[name="status"]', 'status'],

@@ -134,6 +134,108 @@
         .dropdown-menu > li:last-child {
             border-bottom: none;
         }
+
+        /* Profile Dropdown Styling */
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .profile-dropdown {
+            min-width: 280px !important;
+            padding: 0 !important;
+            margin-top: 15px !important;
+        }
+
+        .profile-header {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            padding: 20px !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px 10px 0 0 !important;
+            border-bottom: none !important;
+        }
+
+        .profile-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-info h6 {
+            margin: 0;
+            color: white !important;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .profile-info p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 13px;
+        }
+
+        .profile-dropdown li.divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 8px 0;
+            padding: 0 !important;
+        }
+
+        .profile-dropdown > li > a,
+        .logout-dropdown-btn {
+            color: #2c3e50 !important;
+            padding: 12px 20px !important;
+            display: flex !important;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .profile-dropdown > li > a i,
+        .logout-dropdown-btn i {
+            width: 20px;
+            color: #667eea;
+        }
+
+        .profile-dropdown > li > a:hover,
+        .logout-dropdown-btn:hover {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%) !important;
+            color: #667eea !important;
+            transform: translateX(4px);
+        }
+
+        .profile-dropdown > li > a:hover i,
+        .logout-dropdown-btn:hover i {
+            color: #667eea !important;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+        }
     </style>
     
     @stack('styles')

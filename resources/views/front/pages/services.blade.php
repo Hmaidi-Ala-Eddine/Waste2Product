@@ -2,6 +2,26 @@
 
 @section('title', 'Services')
 
+@push('styles')
+<style>
+    /* Navbar text color fix for services page */
+    .navbar-nav > li > a {
+        color: #2c3e50 !important;
+        text-shadow: none !important;
+    }
+
+    .navbar-nav > li > a:hover,
+    .navbar-nav > li > a:focus {
+        color: #667eea !important;
+    }
+
+    .navbar.white .navbar-nav > li > a,
+    .navbar.navbar-scrolled .navbar-nav > li > a {
+        color: #2c3e50 !important;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="services-style-one-area default-padding" style="background: url({{ asset('assets/front/img/shape/12.png') }});">
         <div class="container">
@@ -21,28 +41,28 @@
                         <div class="services-style-one-item out">
                             <div class="icon"><img src="{{ asset('assets/front/img/icon/5.png') }}" alt=""></div>
                             <div class="content">
-                                <h4><a href="{{ route('front.services.details') }}">Advanced Business <br> Intelligence</a></h4>
+                                <h4><a href="{{ '#' }}">Advanced Business <br> Intelligence</a></h4>
                                 <p>Seeing rather her you not esteem men settle genius excuse. Deal say over you age devonshire Comparison new ham melancholy son themselves instrument out reasonably.</p>
                             </div>
-                            <div class="button"><a class="btn" href="{{ route('front.services.details') }}"><i class="fas fa-arrow-right"></i></a></div>
+                            <div class="button"><a class="btn" href="{{ '#' }}"><i class="fas fa-arrow-right"></i></a></div>
                             <span>01</span>
                         </div>
                         <div class="services-style-one-item">
                             <div class="icon"><img src="{{ asset('assets/front/img/icon/6.png') }}" alt=""></div>
                             <div class="content">
-                                <h4><a href="{{ route('front.services.details') }}">Business Research <br> And Development</a></h4>
+                                <h4><a href="{{ '#' }}">Business Research <br> And Development</a></h4>
                                 <p>Seeing rather her you not esteem men settle genius excuse. Deal say over you age devonshire Comparison new ham melancholy son themselves instrument out reasonably.</p>
                             </div>
-                            <div class="button"><a class="btn" href="{{ route('front.services.details') }}"><i class="fas fa-arrow-right"></i></a></div>
+                            <div class="button"><a class="btn" href="{{ '#' }}"><i class="fas fa-arrow-right"></i></a></div>
                             <span>02</span>
                         </div>
                         <div class="services-style-one-item">
                             <div class="icon"><img src="{{ asset('assets/front/img/icon/7.png') }}" alt=""></div>
                             <div class="content">
-                                <h4><a href="{{ route('front.services.details') }}">Digital Project <br> Management System</a></h4>
+                                <h4><a href="{{ '#' }}">Digital Project <br> Management System</a></h4>
                                 <p>Seeing rather her you not esteem men settle genius excuse. Deal say over you age devonshire Comparison new ham melancholy son themselves instrument out reasonably.</p>
                             </div>
-                            <div class="button"><a class="btn" href="{{ route('front.services.details') }}"><i class="fas fa-arrow-right"></i></a></div>
+                            <div class="button"><a class="btn" href="{{ '#' }}"><i class="fas fa-arrow-right"></i></a></div>
                             <span>03</span>
                         </div>
                     </div>
@@ -103,14 +123,14 @@
         <div class="container">
             <div class="team-style-one-items">
                 <div class="row">
-                    <div class="col-xl-3 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/2.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>CEO & Founder</span><h4><a href="{{ route('front.team.details') }}">Aleesha Brown</a></h4></div></div></div>
-                    <div class="col-xl-3 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/3.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Product Manager</span><h4><a href="{{ route('front.team.details') }}">Kevin Martin</a></h4></div></div></div>
-                    <div class="col-xl-3 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/4.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Financial Consultant</span><h4><a href="{{ route('front.team.details') }}">Sarah Albert</a></h4></div></div></div>
+                    <div class="col-xl-3 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/2.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>CEO & Founder</span><h4><a href="{{ '#' }}">Aleesha Brown</a></h4></div></div></div>
+                    <div class="col-xl-3 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/3.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Product Manager</span><h4><a href="{{ '#' }}">Kevin Martin</a></h4></div></div></div>
+                    <div class="col-xl-3 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/4.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Financial Consultant</span><h4><a href="{{ '#' }}">Sarah Albert</a></h4></div></div></div>
                 </div>
                 <div class="row"><div class="col-xl-9 offset-xl-3 col-lg-12"><div class="team-grid"><div class="row">
-                    <div class="col-xl-4 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/7.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Developer</span><h4><a href="{{ route('front.team.details') }}">Amanulla Joey</a></h4></div></div></div>
-                    <div class="col-xl-4 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/6.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Co Founder</span><h4><a href="{{ route('front.team.details') }}">Kamal Abraham</a></h4></div></div></div>
-                    <div class="col-xl-4 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/9.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Marketing Leader</span><h4><a href="{{ route('front.team.details') }}">Daniyel Joe</a></h4></div></div></div>
+                    <div class="col-xl-4 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/7.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Developer</span><h4><a href="{{ '#' }}">Amanulla Joey</a></h4></div></div></div>
+                    <div class="col-xl-4 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/6.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Co Founder</span><h4><a href="{{ '#' }}">Kamal Abraham</a></h4></div></div></div>
+                    <div class="col-xl-4 col-lg-4 mb-50"><div class="team-style-one-item"><div class="thumb"><img src="{{ asset('assets/front/img/team/9.jpg') }}" alt=""><div class="social-overlay"><ul><li><a href="#"><i class="fab fa-linkedin-in"></i></a></li><li><a href="#"><i class="fab fa-dribbble"></i></a></li><li><a href="#"><i class="fab fa-facebook-f"></i></a></li></ul><div class="icon"><i class="fas fa-plus"></i></div></div></div><div class="info"><span>Marketing Leader</span><h4><a href="{{ '#' }}">Daniyel Joe</a></h4></div></div></div>
                 </div></div></div>
             </div>
         </div>

@@ -30,6 +30,10 @@
         .input-group i { position: absolute; top: 50%; left: 1rem; transform: translateY(-50%); font-size: 1.4rem; color: var(--gray-2); }
         .input-group input { width: 100%; padding: 1rem 3rem; font-size: 1rem; background-color: var(--gray); border-radius: .5rem; border: 0.125rem solid var(--white); outline: none; }
         .input-group input:focus { border: 0.125rem solid var(--primary-color); }
+        .input-group input.is-invalid { border: 0.125rem solid #e74c3c; background-color: #fff5f5; }
+        .input-group input.is-valid { border: 0.125rem solid #27ae60; background-color: #f0fdf4; }
+        .error-message { color: #e74c3c; font-size: 0.75rem; margin-top: 0.25rem; display: none; font-weight: 500; text-align: left; padding-left: 1rem; }
+        .error-message.show { display: block; }
         .form button { cursor: pointer; width: 100%; padding: .6rem 0; border-radius: .5rem; border: none; background-color: var(--primary-color); color: var(--white); font-size: 1.2rem; outline: none; }
         .form p { margin: 1rem 0; font-size: .7rem; }
         .flex-col { flex-direction: column; }
@@ -71,6 +75,22 @@
             .text p { display: none; }
             .text h2 { margin: .5rem; font-size: 2rem; }
         }
+        .signup-pic-btn {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+        }
+        .signup-pic-btn:hover {
+            background-color: #344767 !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 71, 103, 0.3);
+        }
+        .signup-pic-btn * {
+            user-select: none !important;
+            cursor: pointer !important;
+        }
     </style>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -95,25 +115,44 @@
                             </div>
                         @endif
 
-                        <form id="signupForm" method="POST" action="{{ route('front.signup.post') }}">
+                        <form id="signupForm" method="POST" action="{{ route('front.signup.post') }}" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="from" value="front">
                             <input type="hidden" name="g-recaptcha-response" id="signup-g-recaptcha-response">
                             <div class="input-group">
                                 <i class='bx bxs-user'></i>
-                                <input name="name" type="text" placeholder="Full name" required value="{{ old('name') }}">
+                                <input name="name" type="text" placeholder="Full name" required value="{{ old('name') }}" id="signup-name">
+                                <div class="error-message" id="signup-name-error"></div>
                             </div>
                             <div class="input-group">
                                 <i class='bx bx-mail-send'></i>
-                                <input name="email" type="email" placeholder="Email" required value="{{ old('email') }}">
+                                <input name="email" type="email" placeholder="Email" required value="{{ old('email') }}" id="signup-email">
+                                <div class="error-message" id="signup-email-error"></div>
                             </div>
                             <div class="input-group">
                                 <i class='bx bxs-lock-alt'></i>
-                                <input name="password" type="password" placeholder="Password" required>
+                                <input name="password" type="password" placeholder="Password" required id="signup-password">
+                                <div class="error-message" id="signup-password-error"></div>
                             </div>
                             <div class="input-group">
                                 <i class='bx bxs-lock-alt'></i>
-                                <input name="password_confirmation" type="password" placeholder="Confirm password" required>
+                                <input name="password_confirmation" type="password" placeholder="Confirm password" required id="signup-password-confirm">
+                                <div class="error-message" id="signup-password-confirm-error"></div>
+                            </div>
+                            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px 0; margin: 1rem 0;">
+                                <label style="font-size: 0.875rem; color: #344767; margin-bottom: 15px; font-weight: 500; text-align: center;">Profile Picture</label>
+                                <div id="signup-image-preview" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #e0e0e0; overflow: hidden; margin: 0 auto 15px; display: block; background: #f8f9fa; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <img id="signup-preview-img" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    <div id="signup-placeholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc;">
+                                        <i class='bx bx-user' style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+                                <label for="signup-profile-picture" class="signup-pic-btn" style="cursor: pointer; background: white; color: #344767; padding: 8px 20px; border: 1.5px solid #344767; border-radius: 6px; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; font-weight: 500; user-select: none;">
+                                    <i class='bx bx-image-add' style="font-size: 1rem; pointer-events: none;"></i>
+                                    <span style="pointer-events: none;">Change Picture</span>
+                                </label>
+                                <input name="profile_picture" type="file" accept="image/*" id="signup-profile-picture" style="display: none;" onchange="previewSignupImage(this)">
+                                <small style="color: #888; font-size: 0.75rem; margin-top: 10px; display: block; text-align: center;">Optional - Max 2MB (JPG, PNG, GIF)</small>
                             </div>
                             <button type="button" onclick="showSignupRecaptcha()">Sign up</button>
                         </form>
@@ -154,10 +193,12 @@
                             <div class="input-group">
                                 <i class='bx bxs-user'></i>
                                 <input name="email" type="email" id="login-email" placeholder="Email" required value="{{ old('email') }}">
+                                <div class="error-message" id="login-email-error"></div>
                             </div>
                             <div class="input-group">
                                 <i class='bx bxs-lock-alt'></i>
                                 <input name="password" type="password" id="login-password" placeholder="Password" required>
+                                <div class="error-message" id="login-password-error"></div>
                             </div>
                             <button type="button" onclick="showSigninRecaptcha()">Sign in</button>
                             <p>
@@ -246,20 +287,170 @@
             // reCAPTCHA API is loaded, but we'll render it when modal opens
         }
 
-        function showSignupRecaptcha(){
-            const form = document.getElementById('signupForm');
-            const name = form.querySelector('input[name="name"]').value;
-            const email = form.querySelector('input[name="email"]').value;
-            const password = form.querySelector('input[name="password"]').value;
-            const passwordConfirm = form.querySelector('input[name="password_confirmation"]').value;
+        // Validation helper functions
+        function clearValidation(input) {
+            input.classList.remove('is-valid', 'is-invalid');
+            const errorEl = document.getElementById(input.id + '-error');
+            if (errorEl) {
+                errorEl.classList.remove('show');
+                errorEl.textContent = '';
+            }
+        }
+        
+        function setInvalid(input, message) {
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+            const errorEl = document.getElementById(input.id + '-error');
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.classList.add('show');
+            }
+            return false;
+        }
+        
+        function setValid(input) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            const errorEl = document.getElementById(input.id + '-error');
+            if (errorEl) {
+                errorEl.classList.remove('show');
+                errorEl.textContent = '';
+            }
+            return true;
+        }
+        
+        function validateName(input) {
+            const value = input.value.trim();
+            clearValidation(input);
             
-            if (!name || !email || !password || !passwordConfirm) {
-                alert('Please fill in all required fields.');
-                return;
+            if (!value) return setInvalid(input, 'Please enter your full name');
+            if (value.length < 2) return setInvalid(input, 'Name must be at least 2 characters long');
+            if (value.length > 255) return setInvalid(input, 'Name cannot exceed 255 characters');
+            if (!/^[a-zA-Z\s\-\'\.]+(?: [a-zA-Z\s\-\'\.])*$/.test(value)) {
+                return setInvalid(input, 'Name can only contain letters, spaces, hyphens, apostrophes, and periods');
+            }
+            return setValid(input);
+        }
+        
+        function validateEmail(input) {
+            const value = input.value.trim();
+            clearValidation(input);
+            
+            if (!value) return setInvalid(input, 'Please enter your email address');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return setInvalid(input, 'Please enter a valid email address');
+            if (value.length > 255) return setInvalid(input, 'Email cannot exceed 255 characters');
+            return setValid(input);
+        }
+        
+        function validatePassword(input) {
+            const value = input.value;
+            clearValidation(input);
+            
+            if (!value) return setInvalid(input, 'Please enter a password');
+            if (value.length < 8) return setInvalid(input, 'Password must be at least 8 characters long');
+            if (value.length > 255) return setInvalid(input, 'Password cannot exceed 255 characters');
+            if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(value)) {
+                return setInvalid(input, 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
+            }
+            return setValid(input);
+        }
+        
+        function validatePasswordConfirm(input, passwordInput) {
+            const value = input.value;
+            const password = passwordInput.value;
+            clearValidation(input);
+            
+            if (!value) return setInvalid(input, 'Please confirm your password');
+            if (value !== password) return setInvalid(input, 'Passwords do not match');
+            return setValid(input);
+        }
+        
+        // Add real-time validation listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const signupName = document.getElementById('signup-name');
+            const signupEmail = document.getElementById('signup-email');
+            const signupPassword = document.getElementById('signup-password');
+            const signupPasswordConfirm = document.getElementById('signup-password-confirm');
+            const loginEmail = document.getElementById('login-email');
+            const loginPassword = document.getElementById('login-password');
+            
+            if (signupName) {
+                signupName.addEventListener('blur', () => validateName(signupName));
+                signupName.addEventListener('input', () => {
+                    if (signupName.classList.contains('is-invalid')) validateName(signupName);
+                });
             }
             
-            if (password !== passwordConfirm) {
-                alert('Passwords do not match.');
+            if (signupEmail) {
+                signupEmail.addEventListener('blur', () => validateEmail(signupEmail));
+                signupEmail.addEventListener('input', () => {
+                    if (signupEmail.classList.contains('is-invalid')) validateEmail(signupEmail);
+                });
+            }
+            
+            if (signupPassword) {
+                signupPassword.addEventListener('blur', () => validatePassword(signupPassword));
+                signupPassword.addEventListener('input', () => {
+                    if (signupPassword.classList.contains('is-invalid')) validatePassword(signupPassword);
+                    if (signupPasswordConfirm && signupPasswordConfirm.value) {
+                        validatePasswordConfirm(signupPasswordConfirm, signupPassword);
+                    }
+                });
+            }
+            
+            if (signupPasswordConfirm) {
+                signupPasswordConfirm.addEventListener('blur', () => validatePasswordConfirm(signupPasswordConfirm, signupPassword));
+                signupPasswordConfirm.addEventListener('input', () => {
+                    if (signupPasswordConfirm.classList.contains('is-invalid')) {
+                        validatePasswordConfirm(signupPasswordConfirm, signupPassword);
+                    }
+                });
+            }
+            
+            if (loginEmail) {
+                loginEmail.addEventListener('blur', () => validateEmail(loginEmail));
+                loginEmail.addEventListener('input', () => {
+                    if (loginEmail.classList.contains('is-invalid')) validateEmail(loginEmail);
+                });
+            }
+            
+            if (loginPassword) {
+                loginPassword.addEventListener('blur', () => {
+                    const value = loginPassword.value;
+                    clearValidation(loginPassword);
+                    if (!value) return setInvalid(loginPassword, 'Please enter your password');
+                    if (value.length < 8) return setInvalid(loginPassword, 'Password must be at least 8 characters long');
+                    return setValid(loginPassword);
+                });
+                loginPassword.addEventListener('input', () => {
+                    if (loginPassword.classList.contains('is-invalid')) {
+                        const value = loginPassword.value;
+                        clearValidation(loginPassword);
+                        if (!value) return setInvalid(loginPassword, 'Please enter your password');
+                        if (value.length < 8) return setInvalid(loginPassword, 'Password must be at least 8 characters long');
+                        return setValid(loginPassword);
+                    }
+                });
+            }
+        });
+
+        function showSignupRecaptcha(){
+            const form = document.getElementById('signupForm');
+            const nameInput = document.getElementById('signup-name');
+            const emailInput = document.getElementById('signup-email');
+            const passwordInput = document.getElementById('signup-password');
+            const passwordConfirmInput = document.getElementById('signup-password-confirm');
+            
+            let isValid = true;
+            
+            if (!validateName(nameInput)) isValid = false;
+            if (!validateEmail(emailInput)) isValid = false;
+            if (!validatePassword(passwordInput)) isValid = false;
+            if (!validatePasswordConfirm(passwordConfirmInput, passwordInput)) isValid = false;
+            
+            if (!isValid) {
+                const firstInvalid = form.querySelector('.is-invalid');
+                if (firstInvalid) firstInvalid.focus();
                 return;
             }
             
@@ -269,11 +460,28 @@
 
         function showSigninRecaptcha(){
             const form = document.getElementById('signinForm');
-            const email = form.querySelector('input[name="email"]').value;
-            const password = form.querySelector('input[name="password"]').value;
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
             
-            if (!email || !password) {
-                alert('Please fill in all required fields.');
+            let isValid = true;
+            
+            if (!validateEmail(emailInput)) isValid = false;
+            
+            const passwordValue = passwordInput.value;
+            clearValidation(passwordInput);
+            if (!passwordValue) {
+                setInvalid(passwordInput, 'Please enter your password');
+                isValid = false;
+            } else if (passwordValue.length < 8) {
+                setInvalid(passwordInput, 'Password must be at least 8 characters long');
+                isValid = false;
+            } else {
+                setValid(passwordInput);
+            }
+            
+            if (!isValid) {
+                const firstInvalid = form.querySelector('.is-invalid');
+                if (firstInvalid) firstInvalid.focus();
                 return;
             }
             
@@ -335,6 +543,27 @@
                 const formToSubmit = currentForm;
                 currentForm = null;
                 formToSubmit.submit();
+            }
+        }
+
+        // Preview profile picture in signup form
+        function previewSignupImage(input) {
+            const previewImg = document.getElementById('signup-preview-img');
+            const placeholder = document.getElementById('signup-placeholder');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    placeholder.style.display = 'none';
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewImg.style.display = 'none';
+                placeholder.style.display = 'flex';
             }
         }
     </script>

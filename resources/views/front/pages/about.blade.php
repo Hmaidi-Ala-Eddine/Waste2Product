@@ -2,6 +2,26 @@
 
 @section('title', 'About Us')
 
+@push('styles')
+<style>
+    /* Navbar text color fix for about page */
+    .navbar-nav > li > a {
+        color: #2c3e50 !important;
+        text-shadow: none !important;
+    }
+
+    .navbar-nav > li > a:hover,
+    .navbar-nav > li > a:focus {
+        color: #667eea !important;
+    }
+
+    .navbar.white .navbar-nav > li > a,
+    .navbar.navbar-scrolled .navbar-nav > li > a {
+        color: #2c3e50 !important;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="about-style-one-area shape-less default-padding">
         <div class="container">
