@@ -255,7 +255,85 @@
         color: #f39c12 !important;
     }
     
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 100px;
+        right: -400px;
+        background: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        min-width: 320px;
+        transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .toast-notification.show { right: 30px; }
+    .toast-notification.success { border-left: 4px solid #4CAF50; }
+    .toast-notification.error { border-left: 4px solid #f44336; }
+
+    .toast-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .toast-notification.success .toast-icon {
+        background: #e8f5e9;
+        color: #4CAF50;
+    }
+
+    .toast-notification.error .toast-icon {
+        background: #ffebee;
+        color: #f44336;
+    }
+
+    .toast-content { flex: 1; }
+    .toast-message {
+        color: #2c3e50;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        color: #7f8c8d;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .toast-close:hover {
+        background: #f0f0f0;
+        color: #2c3e50;
+    }
+
     @media (max-width: 768px) {
+        .toast-notification {
+            right: -100%;
+            min-width: calc(100% - 40px);
+            left: 20px;
+        }
+
+        .toast-notification.show { right: 0; }
+
         .waste-request-area {
             padding: 60px 0;
         }
@@ -684,15 +762,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show success notification
                 showNotification('Thank you for rating the collector!', 'success');
             } else {
-                alert(data.error || 'Failed to submit rating');
+                showToast(data.error || 'Failed to submit rating', 'error');
                 container.innerHTML = originalHtml;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            showToast('An error occurred. Please try again.', 'error');
             container.innerHTML = originalHtml;
         });
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
     }
 
     function showNotification(message, type) {

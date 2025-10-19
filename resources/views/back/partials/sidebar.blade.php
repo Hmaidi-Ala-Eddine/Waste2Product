@@ -34,6 +34,18 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('admin.events') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.events') }}">
+            <i class="material-symbols-rounded opacity-5">event</i>
+            <span class="nav-link-text ms-1">Events</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('admin.eco-ideas') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.eco-ideas') }}">
+            <i class="material-symbols-rounded opacity-5">lightbulb</i>
+            <span class="nav-link-text ms-1">Eco Ideas</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link {{ request()->routeIs('admin.posts') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.posts') }}">
             <i class="material-symbols-rounded opacity-5">article</i>
             <span class="nav-link-text ms-1">Posts</span>

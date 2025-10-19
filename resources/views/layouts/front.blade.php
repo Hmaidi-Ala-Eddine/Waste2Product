@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Front Office')</title>
     <link rel="shortcut icon" href="{{ asset('assets/front/img/favicon.png') }}" type="image/x-icon">
     <link href="{{ asset('assets/front/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -235,6 +236,85 @@
         .profile-dropdown-item {
             display: flex;
             align-items: center;
+        }
+
+        /* Notification and Cart Icons - Match Navbar Colors */
+        .attr-nav > ul > li.icon-item {
+            display: inline-flex !important;
+            align-items: center !important;
+            margin: 0 8px !important;
+            padding: 0 !important;
+            height: 100% !important;
+        }
+
+        /* Default state - DARK icons (for white/scrolled navbar) */
+        .attr-nav > ul > li.icon-item > a.icon-link {
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            background: transparent !important;
+            transition: all 0.3s ease !important;
+            text-decoration: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .attr-nav > ul > li.icon-item > a.icon-link i {
+            font-size: 20px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            color: #2c3e50 !important;
+            text-shadow: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .attr-nav > ul > li.icon-item > a.icon-link:hover {
+            background: transparent !important;
+            transform: scale(1.15) !important;
+        }
+
+        .attr-nav > ul > li.icon-item > a.icon-link:hover i {
+            color: #4CAF50 !important;
+            filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6)) !important;
+        }
+
+        /* Badge count - Always visible */
+        .attr-nav > ul > li.icon-item > a.icon-link .badge-count {
+            position: absolute !important;
+            top: -4px !important;
+            right: -4px !important;
+            background: #ff4757 !important;
+            color: white !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            padding: 2px 6px !important;
+            border-radius: 10px !important;
+            min-width: 18px !important;
+            height: 18px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.6) !important;
+            border: 2px solid white !important;
+            line-height: 1 !important;
+        }
+
+        /* Home page/Transparent navbar - WHITE icons to match white text */
+        .navbar.white .attr-nav > ul > li.icon-item > a.icon-link i,
+        .navbar.no-background .attr-nav > ul > li.icon-item > a.icon-link i {
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .navbar.white .attr-nav > ul > li.icon-item > a.icon-link:hover i,
+        .navbar.no-background .attr-nav > ul > li.icon-item > a.icon-link:hover i {
+            color: #4CAF50 !important;
+            filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.8)) !important;
         }
     </style>
     

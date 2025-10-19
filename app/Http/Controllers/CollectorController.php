@@ -341,7 +341,7 @@ class CollectorController extends Controller
             ->where('collector_id', $user->id)
             ->whereIn('status', ['accepted', 'collected'])
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(15); // Increased from 5 to 15
 
         // ============ PERFORMANCE STATISTICS ============
         $collector = $user->collector;

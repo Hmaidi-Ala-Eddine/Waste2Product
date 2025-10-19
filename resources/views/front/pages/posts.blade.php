@@ -342,6 +342,67 @@
         font-weight: 700;
     }
 
+    /* Guest User Action Section */
+    .guest-actions-wrapper {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .action-stats {
+        display: flex;
+        gap: 15px;
+        padding: 10px 16px;
+        background: white;
+        border-radius: 10px;
+        border: 1.5px solid #e9ecef;
+        flex-shrink: 0;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #7f8c8d;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .stat-item i {
+        font-size: 16px;
+        color: #95a5a6;
+    }
+
+    .stat-item .count {
+        font-weight: 700;
+        color: #7f8c8d;
+    }
+
+    .login-prompt {
+        flex: 1;
+        text-align: center;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+        border-radius: 10px;
+        color: #856404;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1.5px solid #ffeaa7;
+    }
+
+    .login-prompt a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        border-bottom: 2px solid transparent;
+    }
+
+    .login-prompt a:hover {
+        color: #764ba2;
+        border-bottom-color: #764ba2;
+    }
+
     .comments-section {
         padding: 0;
         background: white;
@@ -664,47 +725,67 @@
 
                         <!-- Post Actions -->
                         <div class="post-actions">
-                            <button class="action-btn like-btn" data-post-id="{{ $post->id }}">
-                                <i class="fas fa-heart"></i>
-                                <span class="count likes-count">{{ $post->likes }}</span>
-                            </button>
-                            <button class="action-btn comment-toggle-btn">
-                                <i class="fas fa-comment"></i>
-                                <span class="count">{{ $post->comments->count() }}</span>
-                            </button>
+                            @auth
+                                <button class="action-btn like-btn" data-post-id="{{ $post->id }}">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="count likes-count">{{ $post->likes }}</span>
+                                </button>
+                                <button class="action-btn comment-toggle-btn">
+                                    <i class="fas fa-comment"></i>
+                                    <span class="count">{{ $post->comments->count() }}</span>
+                                </button>
+                            @else
+                                <div class="guest-actions-wrapper">
+                                    <div class="action-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-heart"></i>
+                                            <span class="count">{{ $post->likes }}</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-comment"></i>
+                                            <span class="count">{{ $post->comments->count() }}</span>
+                                        </span>
+                                    </div>
+                                    <div class="login-prompt">
+                                        <a href="{{ route('front.login') }}">Login</a> to like and comment
+                                    </div>
+                                </div>
+                            @endauth
                         </div>
                     </div>
 
                     <!-- Comments Section (Hidden by default) -->
-                    <div class="comments-section">
-                        <div class="comments-list">
-                            @foreach($post->comments()->latest()->take(5)->get() as $comment)
-                            <div class="comment-item">
-                                <img src="{{ $comment->user->profile_picture_url ?? auth()->user()->profile_picture_url }}" alt="{{ $comment->user_name }}" class="comment-avatar">
-                                <div class="comment-content">
-                                    <div class="comment-bubble">
-                                        <div class="comment-author">{{ $comment->user_name }}</div>
-                                        <div class="comment-text">{{ $comment->comment }}</div>
+                    @auth
+                        <div class="comments-section">
+                            <div class="comments-list">
+                                @foreach($post->comments()->latest()->take(5)->get() as $comment)
+                                <div class="comment-item">
+                                    <img src="{{ $comment->user->profile_picture_url ?? auth()->user()->profile_picture_url }}" alt="{{ $comment->user_name }}" class="comment-avatar">
+                                    <div class="comment-content">
+                                        <div class="comment-bubble">
+                                            <div class="comment-author">{{ $comment->user_name }}</div>
+                                            <div class="comment-text">{{ $comment->comment }}</div>
+                                        </div>
+                                        <div class="comment-time">{{ $comment->created_at->diffForHumans() }}</div>
                                     </div>
-                                    <div class="comment-time">{{ $comment->created_at->diffForHumans() }}</div>
                                 </div>
+                                @endforeach
                             </div>
-                            @endforeach
-                        </div>
 
-                        <!-- Add Comment Form -->
-                        <form class="comment-form" data-post-id="{{ $post->id }}">
-                            @csrf
-                            <img src="{{ auth()->user()->profile_picture_url }}" alt="{{ auth()->user()->name }}" class="comment-user-avatar">
-                            <div class="comment-input-wrapper">
-                                <input type="hidden" name="user_name" value="{{ auth()->user()->name }}">
-                                <input type="text" name="comment" class="comment-input" placeholder="Write a comment..." required>
-                                <button type="submit" class="comment-submit" disabled>
-                                    Post
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <!-- Add Comment Form -->
+                            <form class="comment-form" data-post-id="{{ $post->id }}">
+                                @csrf
+                                <img src="{{ auth()->user()->profile_picture_url }}" alt="{{ auth()->user()->name }}" class="comment-user-avatar">
+                                <div class="comment-input-wrapper">
+                                    <input type="hidden" name="user_name" value="{{ auth()->user()->name }}">
+                                    <input type="text" name="comment" class="comment-input" placeholder="Write a comment..." required>
+                                    <button type="submit" class="comment-submit" disabled>
+                                        Post
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    @endauth
                 </div>
                 @endforeach
             </div>

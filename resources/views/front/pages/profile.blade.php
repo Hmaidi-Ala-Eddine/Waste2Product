@@ -7,9 +7,8 @@
     .profile-wrapper {
         padding-top: 150px;
         padding-bottom: 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-        background-size: 400% 400%;
-        animation: gradientShift 15s ease infinite;
+        /* Simplified static gradient for better performance */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
         min-height: 100vh;
         position: relative;
     }
@@ -25,12 +24,7 @@
         background-size: cover;
         background-position: bottom;
         pointer-events: none;
-    }
-
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+        opacity: 1;
     }
 
     .profile-container {
@@ -46,18 +40,20 @@
         border-radius: 25px;
         box-shadow: 0 30px 90px rgba(0, 0, 0, 0.25);
         overflow: hidden;
-        animation: fadeInUp 0.6s ease;
+        animation: fadeInUp 0.5s ease forwards;
         border: 1px solid rgba(255, 255, 255, 0.3);
+        /* GPU acceleration */
+        transform: translateZ(0);
     }
 
     @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(30px) translateZ(0);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) translateZ(0);
         }
     }
 
@@ -81,22 +77,16 @@
         border-radius: 50%;
         object-fit: cover;
         border: 5px solid white;
+        /* Simplified static shadow for better performance */
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 10px rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
-        animation: avatarGlow 3s ease-in-out infinite;
-    }
-
-    @keyframes avatarGlow {
-        0%, 100% {
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 10px rgba(255, 255, 255, 0.1), 0 0 30px rgba(255, 255, 255, 0.2);
-        }
-        50% {
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 10px rgba(255, 255, 255, 0.1), 0 0 50px rgba(255, 255, 255, 0.4);
-        }
+        transition: transform 0.3s ease;
+        /* GPU acceleration */
+        transform: translateZ(0);
+        will-change: transform;
     }
 
     .profile-avatar-large:hover {
-        transform: scale(1.1);
+        transform: scale(1.05) translateZ(0);
     }
 
     .profile-name {
@@ -129,9 +119,12 @@
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         flex: 1;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         position: relative;
         overflow: hidden;
+        /* GPU acceleration */
+        transform: translateZ(0);
+        will-change: transform;
     }
 
     .stat-item::before {
@@ -145,7 +138,7 @@
     }
 
     .stat-item:hover {
-        transform: translateY(-5px);
+        transform: translateY(-5px) translateZ(0);
         box-shadow: 0 15px 50px rgba(102, 126, 234, 0.3);
     }
 
@@ -215,9 +208,12 @@
         background: white;
         border-radius: 15px;
         border: 2px solid #f0f2f5;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         position: relative;
         overflow: hidden;
+        /* GPU acceleration */
+        transform: translateZ(0);
+        will-change: transform;
     }
 
     .detail-item::before {
@@ -228,18 +224,18 @@
         bottom: 0;
         width: 4px;
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-        transform: scaleY(0);
+        transform: scaleY(0) translateZ(0);
         transition: transform 0.3s ease;
     }
 
     .detail-item:hover {
-        transform: translateY(-3px);
+        transform: translateY(-3px) translateZ(0);
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
         border-color: #667eea;
     }
 
     .detail-item:hover::before {
-        transform: scaleY(1);
+        transform: scaleY(1) translateZ(0);
     }
 
     .detail-label {
@@ -257,12 +253,12 @@
         font-weight: 600;
     }
 
-    /* Floating Decorative Elements */
+    /* Simplified decorative elements - static for better performance */
     .floating-shape {
         position: absolute;
         border-radius: 50%;
-        opacity: 0.1;
-        animation: float 20s infinite;
+        opacity: 0.08;
+        pointer-events: none;
     }
 
     .shape-1 {
@@ -271,7 +267,6 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         top: 10%;
         left: 5%;
-        animation-delay: 0s;
     }
 
     .shape-2 {
@@ -280,7 +275,6 @@
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         top: 60%;
         right: 10%;
-        animation-delay: 5s;
     }
 
     .shape-3 {
@@ -289,52 +283,13 @@
         background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         bottom: 15%;
         left: 15%;
-        animation-delay: 10s;
     }
 
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0) rotate(0deg);
-        }
-        25% {
-            transform: translateY(-30px) rotate(90deg);
-        }
-        50% {
-            transform: translateY(0) rotate(180deg);
-        }
-        75% {
-            transform: translateY(30px) rotate(270deg);
+    /* Removed float animation for better performance */
         }
     }
 
-    /* Sparkle Effects */
-    .sparkle {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        background: white;
-        border-radius: 50%;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-        animation: sparkle 3s infinite;
-    }
-
-    @keyframes sparkle {
-        0%, 100% {
-            opacity: 0;
-            transform: scale(0);
-        }
-        50% {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    .sparkle:nth-child(1) { top: 20%; left: 15%; animation-delay: 0s; }
-    .sparkle:nth-child(2) { top: 40%; right: 20%; animation-delay: 0.5s; }
-    .sparkle:nth-child(3) { top: 60%; left: 25%; animation-delay: 1s; }
-    .sparkle:nth-child(4) { bottom: 30%; right: 30%; animation-delay: 1.5s; }
-    .sparkle:nth-child(5) { top: 30%; left: 40%; animation-delay: 2s; }
-    .sparkle:nth-child(6) { top: 70%; right: 15%; animation-delay: 2.5s; }
+    /* Sparkle effects removed for better performance */
 
     .badge-custom {
         display: inline-flex;
@@ -820,13 +775,7 @@
     <div class="floating-shape shape-2"></div>
     <div class="floating-shape shape-3"></div>
     
-    <!-- Sparkle Effects -->
-    <div class="sparkle"></div>
-    <div class="sparkle"></div>
-    <div class="sparkle"></div>
-    <div class="sparkle"></div>
-    <div class="sparkle"></div>
-    <div class="sparkle"></div>
+    <!-- Sparkle effects removed for better performance -->
     
     <div class="profile-container">
     

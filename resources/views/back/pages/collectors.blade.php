@@ -9,14 +9,11 @@
   <div class="col-12">
     <div class="card my-4">
       <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-        <div class="bg-gradient-success shadow-success border-radius-lg pt-4 pb-3" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;">
+        <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
           <div class="d-flex justify-content-between align-items-center px-3">
-            <h6 class="text-white text-capitalize mb-0 d-flex align-items-center gap-2">
-              <i class="material-symbols-rounded">local_shipping</i>
-              <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;">Collectors Management</span>
-            </h6>
+            <h6 class="text-white text-capitalize mb-0">Collectors Management</h6>
             <div class="text-white">
-              <small style="font-weight: 600;">Total: {{ $collectors->total() }} collectors</small>
+              <small>Total: {{ $collectors->total() }} collectors</small>
             </div>
           </div>
         </div>

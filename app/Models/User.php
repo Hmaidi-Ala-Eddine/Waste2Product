@@ -107,6 +107,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Get cart items for this user
+     */
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * Get cart total
+     */
+    public function getCartTotalAttribute()
+    {
+        return $this->cartItems()->with('product')->get()->sum('subtotal');
+    }
+
+    /**
+     * Get cart count
+     */
+    public function getCartCountAttribute()
+    {
+        return $this->cartItems()->sum('quantity');
+    }
+
+    /**
      * Check if user is a verified collector
      */
     public function isVerifiedCollector()

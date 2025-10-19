@@ -29,8 +29,13 @@
                     <li>
                         <a href="{{ route('front.project') }}">Projects</a>
                     </li>
-                    <li>
-                        <a href="{{ route('front.services') }}">Services</a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Services</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ route('front.shop') }}"><i class="fas fa-box me-2"></i>Products</a></li>
+                            <li><a href="{{ route('front.events') }}"><i class="fas fa-calendar-alt me-2"></i>Events</a></li>
+                            <li><a href="{{ route('front.posts') }}"><i class="fas fa-newspaper me-2"></i>Posts</a></li>
+                        </ul>
                     </li>
                     <li>
                         <a href="{{ route('front.blog.standard') }}">Blog</a>
@@ -42,7 +47,7 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Services</a>
                             <ul class="dropdown-menu">
-                                <li><a href="{{ route('front.posts') }}"><i class="fas fa-newspaper me-2"></i>Posts</a></li>
+                                <li><a href="{{ route('front.my-orders') }}"><i class="fas fa-shopping-bag me-2"></i>My Orders</a></li>
                                 <li><a href="{{ route('front.waste-requests') }}"><i class="fas fa-clipboard-list me-2"></i>My Waste Requests</a></li>
                                 <li><a href="{{ route('front.collector-application') }}"><i class="fas fa-user-tie me-2"></i>Collector Application</a></li>
                                 @php
@@ -62,6 +67,24 @@
                 <div class="attr-nav">
                     <ul>
                         @auth
+                            <!-- Notification Icon -->
+                            <li class="icon-item">
+                                <a href="#" class="icon-link" title="Notifications">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="badge-count">5</span>
+                                </a>
+                            </li>
+                            
+                            <!-- Shopping Cart Icon -->
+                            <li class="icon-item">
+                                <a href="{{ route('front.cart') }}" class="icon-link" title="Shopping Cart">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    @if(auth()->user()->cart_count > 0)
+                                        <span class="badge-count cart-count">{{ auth()->user()->cart_count }}</span>
+                                    @endif
+                                </a>
+                            </li>
+                            
                             <li class="profile-dropdown-item dropdown">
                                 <a href="#" class="profile-toggle" data-toggle="dropdown" aria-expanded="false">
                                     <img src="{{ auth()->user()->profile_picture_url }}" alt="{{ auth()->user()->name }}" class="profile-avatar">

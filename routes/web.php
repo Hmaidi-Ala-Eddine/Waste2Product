@@ -90,6 +90,22 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::delete('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'destroy'])->name('collectors.delete');
     Route::post('/collectors/{id}/update-status', [\App\Http\Controllers\CollectorController::class, 'updateStatus'])->name('collectors.update-status');
     
+    // Events Management routes
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
+    Route::post('/events', [\App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+    Route::get('/events/authors', [\App\Http\Controllers\EventController::class, 'getAuthors'])->name('events.authors');
+    Route::get('/events/{id}/data', [\App\Http\Controllers\EventController::class, 'getData'])->name('events.data');
+    Route::put('/events/{id}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{id}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
+    
+    // Eco Ideas Management routes
+    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'index'])->name('eco-ideas');
+    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'store'])->name('eco-ideas.store');
+    Route::get('/eco-ideas/creators', [\App\Http\Controllers\EcoIdeaController::class, 'getCreators'])->name('eco-ideas.creators');
+    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'getData'])->name('eco-ideas.data');
+    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'update'])->name('eco-ideas.update');
+    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'destroy'])->name('eco-ideas.delete');
+    
     // Posts Management routes
     Route::get('/posts', [\App\Http\Controllers\PostController::class, 'index'])->name('posts');
     Route::post('/posts', [\App\Http\Controllers\PostController::class, 'store'])->name('posts.store');
@@ -200,12 +216,33 @@ Route::get('/login', function () {
     return view('front.login');
 })->name('front.login');
 
-// Frontend Posts Routes (Authenticated Users Only)
+// Frontend Posts Routes - Public viewing, Auth required for interactions
+Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
+
+// Posts interaction routes (Authenticated Users Only)
 Route::middleware('auth')->group(function () {
-    Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
     Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
     Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
     Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
+});
+
+// Frontend Events Routes - Public viewing, Auth required for interactions
+Route::get('/events', [\App\Http\Controllers\EventController::class, 'frontendIndex'])->name('front.events');
+
+// Events interaction routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::post('/events/{id}/participate', [\App\Http\Controllers\EventController::class, 'participate'])->name('front.events.participate');
+    Route::post('/events', [\App\Http\Controllers\EventController::class, 'frontendStore'])->name('front.events.store'); // Admin only, will check in controller
+});
+
+// Frontend Shop Routes - Public viewing
+Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('front.shop');
+Route::get('/shop/{id}', [\App\Http\Controllers\ShopController::class, 'show'])->name('front.shop.show');
+
+// Product Reserve & My Orders (Authenticated)
+Route::middleware('auth')->group(function () {
+    Route::post('/products/{id}/reserve', [\App\Http\Controllers\ShopController::class, 'reserve'])->name('front.products.reserve');
+    Route::get('/my-orders', [\App\Http\Controllers\ShopController::class, 'myOrders'])->name('front.my-orders');
 });
 
 // Frontend Waste Requests Routes (Authenticated Users Only)
@@ -230,6 +267,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/collector-dashboard', [\App\Http\Controllers\CollectorController::class, 'collectorDashboard'])->name('front.collector-dashboard');
     Route::post('/collector/accept-request/{id}', [\App\Http\Controllers\CollectorController::class, 'acceptRequest'])->name('front.collector.accept-request');
     Route::post('/collector/complete-collection/{id}', [\App\Http\Controllers\CollectorController::class, 'completeCollection'])->name('front.collector.complete-collection');
+    
+    // Shopping Cart Routes (Authenticated Users Only)
+    Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('front.cart');
+    Route::post('/cart/add/{id}', [\App\Http\Controllers\CartController::class, 'add'])->name('front.cart.add');
+    Route::put('/cart/update/{id}', [\App\Http\Controllers\CartController::class, 'update'])->name('front.cart.update');
+    Route::delete('/cart/remove/{id}', [\App\Http\Controllers\CartController::class, 'remove'])->name('front.cart.remove');
+    Route::post('/cart/clear', [\App\Http\Controllers\CartController::class, 'clear'])->name('front.cart.clear');
+    
+    // Checkout Routes (Authenticated Users Only)
+    Route::get('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('front.checkout');
+    Route::post('/checkout', [\App\Http\Controllers\CartController::class, 'processCheckout'])->name('front.checkout.process');
+    Route::get('/order/success', [\App\Http\Controllers\CartController::class, 'orderSuccess'])->name('front.order.success');
 });
 
 // Fallback 404 for unknown routes

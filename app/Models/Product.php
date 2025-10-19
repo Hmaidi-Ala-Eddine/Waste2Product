@@ -16,6 +16,7 @@ class Product extends Model
         'category',
         'condition',
         'price',
+        'stock',
         'status',
         'image_path',
     ];
@@ -122,5 +123,46 @@ class Product extends Model
             'poor' => 'danger',
             default => 'secondary'
         };
+    }
+
+    /**
+     * Check if product is in stock.
+     */
+    public function isInStock(): bool
+    {
+        return $this->stock > 0;
+    }
+
+    /**
+     * Check if product is available for purchase.
+     */
+    public function isAvailableForPurchase(): bool
+    {
+        return $this->status === 'available' && $this->isInStock();
+    }
+
+    /**
+     * Decrease stock and update status if out of stock.
+     */
+    public function decreaseStock(int $quantity = 1): void
+    {
+        $this->decrement('stock', $quantity);
+        
+        if ($this->stock <= 0) {
+            $this->update(['status' => 'sold', 'stock' => 0]);
+        }
+    }
+
+    /**
+     * Increase stock.
+     */
+    public function increaseStock(int $quantity = 1): void
+    {
+        $this->increment('stock', $quantity);
+        
+        // If was sold/donated and stock is added, make available again
+        if (in_array($this->status, ['sold', 'donated']) && $this->stock > 0) {
+            $this->update(['status' => 'available']);
+        }
     }
 }
