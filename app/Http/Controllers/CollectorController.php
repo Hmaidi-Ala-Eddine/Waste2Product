@@ -69,8 +69,14 @@ class CollectorController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        // Check if user already has a collector profile (one per user)
+        if (Collector::where('user_id', auth()->id())->exists()) {
+            return redirect()->back()->with('error', 'You already have a collector profile.');
+        }
+
+        // Admin creates collector profile for themselves - never on behalf of others
         $collector = Collector::create([
-            'user_id' => $data['user_id'],
+            'user_id' => auth()->id(),
             'company_name' => $data['company_name'] ?? null,
             'vehicle_type' => $data['vehicle_type'],
             'service_areas' => $data['service_areas'] ?? [],
@@ -113,8 +119,9 @@ class CollectorController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        // Ownership cannot be transferred - user_id stays with original creator
+        // Admin can update profile details and verification status
         $collector->update([
-            'user_id' => $data['user_id'],
             'company_name' => $data['company_name'] ?? null,
             'vehicle_type' => $data['vehicle_type'],
             'service_areas' => $data['service_areas'] ?? [],
@@ -334,9 +341,89 @@ class CollectorController extends Controller
             ->where('collector_id', $user->id)
             ->whereIn('status', ['accepted', 'collected'])
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(15); // Increased from 5 to 15
 
-        return view('front.pages.collector-dashboard', compact('availableRequests', 'myRequests'));
+        // ============ PERFORMANCE STATISTICS ============
+        $collector = $user->collector;
+        
+        // Total collections
+        $totalCollections = $collector->total_collections ?? 0;
+        
+        // This month collections
+        $thisMonthCollections = \App\Models\WasteRequest::where('collector_id', $user->id)
+            ->whereMonth('collected_at', now()->month)
+            ->whereYear('collected_at', now()->year)
+            ->count();
+        
+        // Total waste collected (kg)
+        $totalWasteCollected = \App\Models\WasteRequest::where('collector_id', $user->id)
+            ->where('status', 'collected')
+            ->sum('quantity');
+        
+        // Success rate (collected vs accepted)
+        $acceptedCount = \App\Models\WasteRequest::where('collector_id', $user->id)
+            ->whereIn('status', ['accepted', 'collected'])
+            ->count();
+        $collectedCount = \App\Models\WasteRequest::where('collector_id', $user->id)
+            ->where('status', 'collected')
+            ->count();
+        $successRate = $acceptedCount > 0 ? round(($collectedCount / $acceptedCount) * 100, 1) : 0;
+        
+        // Average rating
+        $averageRating = $collector->rating ?? 0;
+        
+        // Environmental impact calculations
+        $co2Saved = round($totalWasteCollected * 0.5, 2); // Approx 0.5 kg CO2 saved per kg waste
+        $treesSaved = round($totalWasteCollected / 20, 1); // Approx 1 tree per 20kg waste
+        
+        // ============ LEADERBOARD DATA ============
+        // Get all verified collectors with their stats
+        $leaderboard = Collector::with('user')
+            ->where('verification_status', 'verified')
+            ->orderBy('total_collections', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function($c, $index) {
+                return [
+                    'rank' => $index + 1,
+                    'id' => $c->id,
+                    'name' => $c->user->name ?? 'Unknown',
+                    'total_collections' => $c->total_collections ?? 0,
+                    'rating' => $c->rating ?? 0,
+                    'company_name' => $c->company_name,
+                ];
+            });
+        
+        // Find current collector's rank
+        $allCollectors = Collector::where('verification_status', 'verified')
+            ->orderBy('total_collections', 'desc')
+            ->pluck('id')
+            ->toArray();
+        $myRank = array_search($collector->id, $allCollectors) + 1;
+        
+        // Growth vs last month
+        $lastMonthCollections = \App\Models\WasteRequest::where('collector_id', $user->id)
+            ->whereMonth('collected_at', now()->subMonth()->month)
+            ->whereYear('collected_at', now()->subMonth()->year)
+            ->count();
+        $growthPercentage = $lastMonthCollections > 0 
+            ? round((($thisMonthCollections - $lastMonthCollections) / $lastMonthCollections) * 100, 1) 
+            : 0;
+
+        return view('front.pages.collector-dashboard', compact(
+            'availableRequests', 
+            'myRequests',
+            'totalCollections',
+            'thisMonthCollections',
+            'totalWasteCollected',
+            'successRate',
+            'averageRating',
+            'co2Saved',
+            'treesSaved',
+            'leaderboard',
+            'myRank',
+            'growthPercentage'
+        ));
     }
 
     /**

@@ -9,14 +9,11 @@
   <div class="col-12">
     <div class="card my-4">
       <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-        <div class="bg-gradient-success shadow-success border-radius-lg pt-4 pb-3" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;">
+        <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
           <div class="d-flex justify-content-between align-items-center px-3">
-            <h6 class="text-white text-capitalize mb-0 d-flex align-items-center gap-2">
-              <i class="material-symbols-rounded">local_shipping</i>
-              <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;">Collectors Management</span>
-            </h6>
+            <h6 class="text-white text-capitalize mb-0">Collectors Management</h6>
             <div class="text-white">
-              <small style="font-weight: 600;">Total: {{ $collectors->total() }} collectors</small>
+              <small>Total: {{ $collectors->total() }} collectors</small>
             </div>
           </div>
         </div>
@@ -100,15 +97,11 @@
             </thead>
             <tbody>
               @forelse($collectors as $index => $collector)
-                @php
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
-                  $avatarImage = $avatarImages[$index % count($avatarImages)];
-                @endphp
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div>
-                        <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $collector->user->name }}">
+                        <img src="{{ $collector->user->profile_picture_url }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $collector->user->name }}" style="object-fit: cover;">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ $collector->user->name }}</h6>
@@ -191,11 +184,11 @@
 <div class="modal fade" id="addCollectorModal" tabindex="-1" aria-labelledby="addCollectorModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header bg-gradient-success">
-        <h5 class="modal-title text-white" id="addCollectorModalLabel">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCollectorModalLabel">
           <i class="material-symbols-rounded me-2">add</i>Add New Collector
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="addCollectorForm" method="POST" action="{{ route('admin.collectors.store') }}">
         @csrf
@@ -206,11 +199,9 @@
               <h6 class="text-dark font-weight-bold mb-3">Basic Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">User *</label>
-                <select class="form-control" name="user_id" id="user_id" required>
-                  <option value="">Select User</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">User</label>
+                <input type="text" class="form-control bg-light" value="{{ auth()->user()->name }} ({{ auth()->user()->email }})" readonly disabled>
+                <small class="text-muted">Collector profiles you create will belong to your account</small>
               </div>
               
               <div class="mb-3">
@@ -242,9 +233,20 @@
               <h6 class="text-dark font-weight-bold mb-3">Service Details</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Service Areas</label>
-                <input type="text" class="form-control" name="service_areas" placeholder="Enter areas separated by commas" id="service_areas_input">
-                <small class="text-muted">Enter service areas separated by commas</small>
+                <label class="form-label text-dark">Service Areas (Governorates) *</label>
+                <div class="row g-2">
+                  @foreach(\App\Helpers\TunisiaStates::getStates() as $state)
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        <input class="form-check-input service-area-checkbox" type="checkbox" name="service_areas[]" value="{{ $state }}" id="area_{{ str_replace(' ', '_', $state) }}">
+                        <label class="form-check-label" for="area_{{ str_replace(' ', '_', $state) }}">
+                          {{ $state }}
+                        </label>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+                <small class="text-muted">Select at least one governorate (min: 1, max: 24)</small>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -273,11 +275,11 @@
 <div class="modal fade" id="editCollectorModal" tabindex="-1" aria-labelledby="editCollectorModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header bg-gradient-dark">
-        <h5 class="modal-title text-white" id="editCollectorModalLabel">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCollectorModalLabel">
           <i class="material-symbols-rounded me-2">edit</i>Edit Collector
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="editCollectorForm" method="POST">
         @csrf
@@ -334,9 +336,20 @@
               </div>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Service Areas</label>
-                <input type="text" class="form-control" name="service_areas" id="edit_service_areas" placeholder="Enter areas separated by commas">
-                <small class="text-muted">Enter service areas separated by commas</small>
+                <label class="form-label text-dark">Service Areas (Governorates) *</label>
+                <div class="row g-2" id="edit_service_areas_container">
+                  @foreach(\App\Helpers\TunisiaStates::getStates() as $state)
+                    <div class="col-md-4">
+                      <div class="form-check">
+                        <input class="form-check-input edit-service-area-checkbox" type="checkbox" name="service_areas[]" value="{{ $state }}" id="edit_area_{{ str_replace(' ', '_', $state) }}">
+                        <label class="form-check-label" for="edit_area_{{ str_replace(' ', '_', $state) }}">
+                          {{ $state }}
+                        </label>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+                <small class="text-muted">Select at least one governorate (min: 1, max: 24)</small>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -387,25 +400,205 @@
 
 @push('scripts')
 <script>
-// Load users when page loads
+// Setup validation when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    loadUsers();
+    setupValidation();
 });
 
-// Load users for dropdown (only users without collector profile)
-function loadUsers() {
-    fetch('{{ route("admin.collectors.users") }}')
-        .then(response => response.json())
-        .then(users => {
-            const select = document.getElementById('user_id');
-            if (select) {
-                select.innerHTML = '<option value="">Select User</option>';
-                users.forEach(user => {
-                    select.innerHTML += `<option value="${user.id}">${user.name} (${user.email})</option>`;
-                });
-            }
-        })
-        .catch(error => console.error('Error loading users:', error));
+// Setup real-time validation
+function setupValidation() {
+    // Add Collector Form Validation
+    const addForm = document.getElementById('addCollectorForm');
+    const addCompanyName = addForm.querySelector('[name="company_name"]');
+    const addVehicleType = addForm.querySelector('[name="vehicle_type"]');
+    const addCapacity = addForm.querySelector('[name="capacity_kg"]');
+    const addBio = addForm.querySelector('[name="bio"]');
+
+    // Edit Collector Form Validation
+    const editForm = document.getElementById('editCollectorForm');
+    const editCompanyName = editForm.querySelector('[name="company_name"]');
+    const editVehicleType = editForm.querySelector('[name="vehicle_type"]');
+    const editCapacity = editForm.querySelector('[name="capacity_kg"]');
+    const editBio = editForm.querySelector('[name="bio"]');
+    const editVerificationStatus = editForm.querySelector('[name="verification_status"]');
+
+    // Validation Rules
+    function validateUser(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Please select a user.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateCompanyName(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (input.value && input.value.length > 255) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Company name cannot exceed 255 characters.';
+            return false;
+        } else if (input.value && !/^[a-zA-Z0-9\s\.\,\-\&]+$/.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Company name contains invalid characters.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            if (input.value) input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateVehicleType(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Please select a vehicle type.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateCapacity(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        const value = parseFloat(input.value);
+        
+        if (!input.value) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Please enter the collection capacity.';
+            return false;
+        } else if (isNaN(value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity must be a valid number.';
+            return false;
+        } else if (value < 1) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity must be at least 1 kg.';
+            return false;
+        } else if (value > 99999.99) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity cannot exceed 99,999.99 kg.';
+            return false;
+        } else if (!/^\d+(\.\d{1,2})?$/.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Capacity can have maximum 2 decimal places.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    function validateBio(input) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (input.value && input.value.length > 1000) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Bio cannot exceed 1000 characters.';
+            return false;
+        } else if (input.value && !/^[a-zA-Z0-9\s\.\,\-\!\?\(\)]*$/.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            feedback.textContent = 'Bio contains invalid characters.';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            if (input.value) input.classList.add('is-valid');
+            feedback.textContent = '';
+            return true;
+        }
+    }
+
+    // Add form listeners
+    if (addUserId) {
+        addUserId.addEventListener('blur', () => validateUser(addUserId));
+        addUserId.addEventListener('change', () => validateUser(addUserId));
+    }
+    if (addCompanyName) {
+        addCompanyName.addEventListener('blur', () => validateCompanyName(addCompanyName));
+        addCompanyName.addEventListener('input', () => validateCompanyName(addCompanyName));
+    }
+    if (addVehicleType) {
+        addVehicleType.addEventListener('blur', () => validateVehicleType(addVehicleType));
+        addVehicleType.addEventListener('change', () => validateVehicleType(addVehicleType));
+    }
+    if (addCapacity) {
+        addCapacity.addEventListener('blur', () => validateCapacity(addCapacity));
+        addCapacity.addEventListener('input', () => validateCapacity(addCapacity));
+    }
+    if (addBio) {
+        addBio.addEventListener('blur', () => validateBio(addBio));
+        addBio.addEventListener('input', () => validateBio(addBio));
+    }
+
+    // Edit form listeners
+    if (editCompanyName) {
+        editCompanyName.addEventListener('blur', () => validateCompanyName(editCompanyName));
+        editCompanyName.addEventListener('input', () => validateCompanyName(editCompanyName));
+    }
+    if (editVehicleType) {
+        editVehicleType.addEventListener('blur', () => validateVehicleType(editVehicleType));
+        editVehicleType.addEventListener('change', () => validateVehicleType(editVehicleType));
+    }
+    if (editCapacity) {
+        editCapacity.addEventListener('blur', () => validateCapacity(editCapacity));
+        editCapacity.addEventListener('input', () => validateCapacity(editCapacity));
+    }
+    if (editBio) {
+        editBio.addEventListener('blur', () => validateBio(editBio));
+        editBio.addEventListener('input', () => validateBio(editBio));
+    }
+
+    // Form submission validation
+    addForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        if (!validateUser(addUserId)) isValid = false;
+        if (!validateVehicleType(addVehicleType)) isValid = false;
+        if (!validateCapacity(addCapacity)) isValid = false;
+        if (addCompanyName.value && !validateCompanyName(addCompanyName)) isValid = false;
+        if (addBio.value && !validateBio(addBio)) isValid = false;
+        
+        if (!isValid) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    editForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        if (!validateVehicleType(editVehicleType)) isValid = false;
+        if (!validateCapacity(editCapacity)) isValid = false;
+        if (editCompanyName.value && !validateCompanyName(editCompanyName)) isValid = false;
+        if (editBio.value && !validateBio(editBio)) isValid = false;
+        
+        if (!isValid) {
+            e.preventDefault();
+            return false;
+        }
+    });
 }
 
 // Edit collector function
@@ -421,11 +614,16 @@ function editCollector(id) {
             document.getElementById('edit_verification_status').value = collector.verification_status;
             document.getElementById('edit_bio').value = collector.bio || '';
             
-            // Handle service areas (array to comma-separated string)
-            const serviceAreas = collector.service_areas && Array.isArray(collector.service_areas) 
-                ? collector.service_areas.join(', ') 
-                : '';
-            document.getElementById('edit_service_areas').value = serviceAreas;
+            // Handle service areas checkboxes
+            document.querySelectorAll('.edit-service-area-checkbox').forEach(checkbox => {
+                checkbox.checked = false; // Uncheck all first
+            });
+            if (collector.service_areas && Array.isArray(collector.service_areas)) {
+                collector.service_areas.forEach(area => {
+                    const checkbox = document.querySelector(`.edit-service-area-checkbox[value="${area}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
             
             document.getElementById('editCollectorForm').action = `{{ url('admin/collectors') }}/${id}`;
             new bootstrap.Modal(document.getElementById('editCollectorModal')).show();
@@ -443,37 +641,7 @@ function deleteCollector(id, name) {
     new bootstrap.Modal(document.getElementById('deleteCollectorModal')).show();
 }
 
-// Handle service areas input (convert comma-separated to array before submit)
-document.getElementById('addCollectorForm').addEventListener('submit', function(e) {
-    const serviceAreasInput = document.querySelector('#service_areas_input');
-    if (serviceAreasInput && serviceAreasInput.value) {
-        const areas = serviceAreasInput.value.split(',').map(a => a.trim()).filter(a => a);
-        // Create hidden input for array
-        serviceAreasInput.name = '';
-        areas.forEach((area, index) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `service_areas[${index}]`;
-            input.value = area;
-            this.appendChild(input);
-        });
-    }
-});
-
-document.getElementById('editCollectorForm').addEventListener('submit', function(e) {
-    const serviceAreasInput = document.getElementById('edit_service_areas');
-    if (serviceAreasInput && serviceAreasInput.value) {
-        const areas = serviceAreasInput.value.split(',').map(a => a.trim()).filter(a => a);
-        serviceAreasInput.name = '';
-        areas.forEach((area, index) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `service_areas[${index}]`;
-            input.value = area;
-            this.appendChild(input);
-        });
-    }
-});
+// Service areas are now checkboxes - they submit as arrays automatically
 </script>
 @endpush
 
@@ -487,6 +655,39 @@ document.getElementById('editCollectorForm').addEventListener('submit', function
 
 .card-body {
     background: white;
+}
+
+/* Validation Styles */
+.form-control.is-invalid,
+.form-select.is-invalid,
+select.form-control.is-invalid {
+    border-color: #dc3545 !important;
+    background-image: none !important;
+    background-color: #fff !important;
+}
+
+.form-control.is-valid,
+.form-select.is-valid,
+select.form-control.is-valid {
+    border-color: #28a745 !important;
+    background-image: none !important;
+    background-color: #fff !important;
+}
+
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback.d-block {
+    display: block !important;
+}
+
+.form-control.is-invalid ~ .invalid-feedback,
+.form-select.is-invalid ~ .invalid-feedback {
+    display: block;
 }
 
 /* Edit and Delete Button Hover Effects */

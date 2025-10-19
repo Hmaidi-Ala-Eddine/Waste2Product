@@ -3,236 +3,231 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\EventParticipation;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
-    public function index(Request $request): View|JsonResponse
+    /**
+     * Display a listing of events with search
+     */
+    public function index(Request $request)
     {
-        $query = Event::with(['user'])->orderBy('date_time', 'desc');
-
+        $query = Event::with('author');
+        
+        // Handle search functionality
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->where('subject', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('subject', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%")
+                  ->orWhereHas('author', function($authorQuery) use ($search) {
+                      $authorQuery->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
         }
-
-        $events = $query->paginate(10);
-
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'data' => $events]);
-        }
-
+        
+        // Order and paginate results
+        $events = $query->orderBy('date_time', 'desc')->paginate(5);
+        
+        // Preserve query parameters in pagination links
+        $events->appends($request->query());
+        
         return view('back.pages.events', compact('events'));
     }
 
+    /**
+     * Store a newly created event
+     */
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'subject' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'date_time' => 'required|date',
-                'user_id' => 'nullable|exists:users,id',
-            ]);
+        $validated = $request->validate([
+            'subject' => 'required|string|max:255',
+            'date_time' => 'required|date',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string|max:5000',
+            'author_id' => 'required|exists:users,id',
+        ]);
 
-            $event = new Event();
-            $event->subject = $validated['subject'];
-            $event->description = $validated['description'] ?? null;
-            $event->date_time = $validated['date_time'];
-            $event->user_id = $validated['user_id'] ?? Auth::id();
-            $event->likes = 0;
-            $event->participants_count = 0;
-
-            if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('events', 'public');
-                $event->image = $path;
-            }
-
-            $event->save();
-
-            if ($request->expectsJson()) {
-                return response()->json(['success' => true, 'message' => 'Event created', 'data' => $event], 201);
-            }
-
-            return redirect()->route('admin.events')->with('success', 'Event created successfully');
-
-        } catch (ValidationException $e) {
-            if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'errors' => $e->errors()], 422);
-            }
-            return redirect()->back()->withErrors($e->errors())->withInput();
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = 'event_' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('events', $filename, 'public');
+            $validated['image'] = $path;
         }
+
+        Event::create($validated);
+
+        return redirect()->route('admin.events')->with('success', 'Event created successfully!');
     }
 
-    public function update(Request $request, Event $event)
+    /**
+     * Get event data for editing
+     */
+    public function getData($id)
     {
-        $isAdmin = Auth::user() && (Auth::user()->role === 'admin' || Auth::user()->role === 'moderator');
-        if (!$isAdmin && $event->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        try {
-            $validated = $request->validate([
-                'subject' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'date_time' => 'required|date',
-                'user_id' => 'nullable|exists:users,id',
-                'likes' => 'nullable|integer|min:0',
-                'participants_count' => 'nullable|integer|min:0',
-            ]);
-
-            $event->subject = $validated['subject'];
-            $event->description = $validated['description'] ?? null;
-            $event->date_time = $validated['date_time'];
-
-            if ($isAdmin) {
-                if (isset($validated['user_id'])) $event->user_id = $validated['user_id'];
-                if (isset($validated['likes'])) $event->likes = $validated['likes'];
-                if (isset($validated['participants_count'])) $event->participants_count = $validated['participants_count'];
-            }
-
-            if ($request->hasFile('image')) {
-                if ($event->image) Storage::disk('public')->delete($event->image);
-                $path = $request->file('image')->store('events', 'public');
-                $event->image = $path;
-            }
-
-            $event->save();
-
-            if ($request->expectsJson()) {
-                return response()->json(['success' => true, 'message' => 'Event updated', 'data' => $event]);
-            }
-
-            return redirect()->route('admin.events')->with('success', 'Event updated successfully');
-
-        } catch (ValidationException $e) {
-            if ($request->expectsJson()) {
-                return response()->json(['success' => false, 'errors' => $e->errors()], 422);
-            }
-            return redirect()->back()->withErrors($e->errors())->withInput();
-        }
+        $event = Event::with('author')->findOrFail($id);
+        return response()->json($event);
     }
 
-    public function destroy(Event $event)
+    /**
+     * Update the specified event
+     */
+    public function update(Request $request, $id)
     {
-        $isAdmin = Auth::user() && (Auth::user()->role === 'admin' || Auth::user()->role === 'moderator');
-        if (!$isAdmin && $event->user_id !== Auth::id()) abort(403);
+        $event = Event::findOrFail($id);
+        
+        $validated = $request->validate([
+            'subject' => 'required|string|max:255',
+            'date_time' => 'required|date',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string|max:5000',
+            'author_id' => 'required|exists:users,id',
+        ]);
 
-        if ($event->image) Storage::disk('public')->delete($event->image);
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($event->image) {
+                Storage::disk('public')->delete($event->image);
+            }
+            
+            $image = $request->file('image');
+            $filename = 'event_' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('events', $filename, 'public');
+            $validated['image'] = $path;
+        }
+
+        $event->update($validated);
+
+        return redirect()->route('admin.events')->with('success', 'Event updated successfully!');
+    }
+
+    /**
+     * Delete the specified event
+     */
+    public function destroy($id)
+    {
+        $event = Event::findOrFail($id);
+        
+        // Delete image if exists
+        if ($event->image) {
+            Storage::disk('public')->delete($event->image);
+        }
+        
         $event->delete();
 
-        return redirect()->route('admin.events')->with('success', 'Event deleted');
+        return redirect()->route('admin.events')->with('delete_success', 'Event deleted successfully!');
     }
 
-    public function getData(Event $event): JsonResponse
+    /**
+     * Get authors for dropdown
+     */
+    public function getAuthors()
     {
-        return response()->json($event->load('user'));
+        $authors = User::where('is_active', true)
+                      ->select('id', 'name', 'email')
+                      ->get();
+        
+        return response()->json($authors);
     }
 
-    public function getUsers(): JsonResponse
+    /**
+     * Display events for frontend (Public viewing)
+     */
+    public function frontendIndex(Request $request)
     {
-        $users = User::select('id', 'name', 'email')->where('is_active', true)->orderBy('name')->get();
-        return response()->json($users);
-    }
-
-    // Frontend listing
-    public function frontendIndex(Request $request): View
-    {
-        $events = Event::orderBy('date_time', 'desc')->paginate(9);
-        $user = Auth::user();
-
-        // Add helper flags to each event for the view
-        $events->getCollection()->transform(function($event) use ($user) {
-            $event->is_liked = $user ? $event->isLikedBy($user->id) : false;
-            $event->is_participating = $user ? $event->isParticipatedBy($user->id) : false;
-            return $event;
-        });
-
+        $query = Event::with('author');
+        
+        // Handle search
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('subject', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Order by date_time descending to show most recent/upcoming events first
+        $events = $query->orderBy('date_time', 'desc')->paginate(12);
+        $events->appends($request->query());
+        
         return view('front.pages.events', compact('events'));
     }
 
-    // Public like
-    public function like(Event $event): JsonResponse
+    /**
+     * Participate in event (Authenticated users only)
+     * Toggles between participate and cancel
+     */
+    public function participate(Request $request, $id)
     {
-        $user = Auth::user();
-        if (! $user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
-        }
-
-        // Toggle like: attach if not exists, detach if exists
-        if ($event->isLikedBy($user->id)) {
-            $event->likes()->detach($user->id);
-            // decrement cached counter if > 0
-            if ($event->likes > 0) $event->decrement('likes');
-            $liked = false;
+        $event = Event::findOrFail($id);
+        $userId = Auth::id();
+        
+        // Check if user already participated
+        $participation = EventParticipation::where('user_id', $userId)
+                                          ->where('event_id', $id)
+                                          ->first();
+        
+        if ($participation) {
+            // Cancel participation - delete record and decrement
+            $participation->delete();
+            if ($event->engagement > 0) {
+                $event->decrement('engagement');
+            }
+            $message = 'Participation cancelled';
         } else {
-            $event->likes()->attach($user->id);
-            $event->increment('likes');
-            $liked = true;
+            // Register participation - create record and increment
+            EventParticipation::create([
+                'user_id' => $userId,
+                'event_id' => $id,
+            ]);
+            $event->increment('engagement');
+            $message = 'Successfully registered for the event!';
         }
-
-        $event->refresh();
-
+        
         return response()->json([
             'success' => true,
-            'likes' => $event->likes,
-            'liked' => $liked,
+            'message' => $message,
+            'engagement' => $event->engagement,
         ]);
     }
 
-    // Public participate
-    public function participate(Event $event): JsonResponse
+    /**
+     * Store event from frontend (Admin only)
+     */
+    public function frontendStore(Request $request)
     {
-        $user = Auth::user();
-        if (! $user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        // Check if user is admin
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return redirect()->route('front.events')->with('error', 'Unauthorized: Only admins can create events.');
         }
 
-        if ($event->isParticipatedBy($user->id)) {
-            $event->participants()->detach($user->id);
-            if ($event->participants_count > 0) $event->decrement('participants_count');
-            $participating = false;
-        } else {
-            $event->participants()->attach($user->id);
-            $event->increment('participants_count');
-            $participating = true;
+        $validated = $request->validate([
+            'subject' => 'required|string|max:255',
+            'date_time' => 'required|date|after:now',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'required|string|max:5000',
+        ]);
+
+        // Set author as current user
+        $validated['author_id'] = auth()->id();
+        $validated['engagement'] = 0;
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = 'event_' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('events', $filename, 'public');
+            $validated['image'] = $path;
         }
 
-        $event->refresh();
+        Event::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'participants_count' => $event->participants_count,
-            'participating' => $participating,
-        ]);
-    }
-
-    // Get event details for modal
-    public function getEventDetails(Event $event): JsonResponse
-    {
-        $user = Auth::user();
-
-        return response()->json([
-            'success' => true,
-            'event' => [
-                'id' => $event->id,
-                'subject' => $event->subject,
-                'description' => $event->description,
-                'date_time' => $event->date_time,
-                'likes' => $event->likes,
-                'participants_count' => $event->participants_count,
-                'is_liked' => $user ? $event->isLikedBy($user->id) : false,
-                'is_participating' => $user ? $event->isParticipatedBy($user->id) : false,
-            ],
-        ]);
+        return redirect()->route('front.events')->with('success', 'Event created successfully!');
     }
 }

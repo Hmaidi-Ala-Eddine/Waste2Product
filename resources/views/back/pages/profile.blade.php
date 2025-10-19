@@ -12,16 +12,30 @@
     <div class="row gx-4 mb-2">
       <div class="col-auto">
         <div class="avatar avatar-xl position-relative">
-          <img src="{{ asset('assets/back/img/bruce-mars.jpg') }}" alt="profile_image" class="w-100 border-radius-lg shadow-sm">
+          <img id="profile-pic-display" src="{{ $user->profile_picture_url }}" alt="profile_image" class="w-100 border-radius-lg shadow-sm" style="object-fit: cover;">
+          <label for="profile-pic-upload" class="btn btn-sm btn-icon-only bg-gradient-light position-absolute bottom-0 end-0 mb-n2 me-n2" style="cursor: pointer;" data-bs-toggle="tooltip" title="Change profile picture">
+            <i class="material-symbols-rounded text-dark text-xs">edit</i>
+          </label>
+          <form id="profile-pic-form" method="POST" action="{{ route('admin.profile.upload-picture') }}" enctype="multipart/form-data" style="display: none;">
+            @csrf
+            <input type="file" id="profile-pic-upload" name="profile_picture" accept="image/*" onchange="uploadProfilePicture(this)">
+          </form>
         </div>
       </div>
       <div class="col-auto my-auto">
         <div class="h-100">
           <h5 class="mb-1">
-            Richard Davis
+            {{ $user->name }}
           </h5>
           <p class="mb-0 font-weight-normal text-sm">
-            CEO / Co-Founder
+            {{ ucfirst($user->role) }}
+            @if($user->hasCollectorProfile())
+              @if($user->isVerifiedCollector())
+                <span class="badge badge-sm bg-gradient-success ms-2">Verified Collector</span>
+              @else
+                <span class="badge badge-sm bg-gradient-warning ms-2">Collector Pending</span>
+              @endif
+            @endif
           </p>
         </div>
       </div>
@@ -119,25 +133,27 @@
             </div>
             <div class="card-body p-3">
               <p class="text-sm">
-                Hi, I'm Alec Thompson, Decisions: If you can't decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality).
+                Welcome to your profile dashboard. Here you can view and manage your account information.
               </p>
               <hr class="horizontal gray-light my-4">
               <ul class="list-group">
-                <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; Alec M. Thompson</li>
-                <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; (44) 123 1234 123</li>
-                <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; alecthompson@mail.com</li>
-                <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Location:</strong> &nbsp; USA</li>
-                <li class="list-group-item border-0 ps-0 pb-0">
-                  <strong class="text-dark text-sm">Social:</strong> &nbsp;
-                  <a class="btn btn-facebook btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
-                    <i class="fab fa-facebook fa-lg"></i>
-                  </a>
-                  <a class="btn btn-twitter btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
-                    <i class="fab fa-twitter fa-lg"></i>
-                  </a>
-                  <a class="btn btn-instagram btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
-                    <i class="fab fa-instagram fa-lg"></i>
-                  </a>
+                <li class="list-group-item border-0 ps-0 pt-0 text-sm"><strong class="text-dark">Full Name:</strong> &nbsp; {{ $user->name }}</li>
+                @if($user->phone)
+                  <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Mobile:</strong> &nbsp; {{ $user->phone }}</li>
+                @endif
+                <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Email:</strong> &nbsp; {{ $user->email }}</li>
+                @if($user->address)
+                  <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Address:</strong> &nbsp; {{ $user->address }}</li>
+                @endif
+                <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Role:</strong> &nbsp; <span class="badge bg-gradient-dark">{{ ucfirst($user->role) }}</span></li>
+                <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Joined:</strong> &nbsp; {{ $user->created_at->format('F d, Y') }}</li>
+                <li class="list-group-item border-0 ps-0 pb-0 text-sm">
+                  <strong class="text-dark">Status:</strong> &nbsp;
+                  @if($user->is_active)
+                    <span class="badge badge-success">Active</span>
+                  @else
+                    <span class="badge badge-warning">Inactive</span>
+                  @endif
                 </li>
               </ul>
             </div>
@@ -364,4 +380,67 @@
     </div>
   </div>
 </div>
+
+<script>
+function uploadProfilePicture(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File size must be less than 2MB');
+            input.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.match('image.*')) {
+            alert('Please select an image file');
+            input.value = '';
+            return;
+        }
+        
+        // Preview image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profile-pic-display').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        // Submit form via AJAX
+        const formData = new FormData(document.getElementById('profile-pic-form'));
+        
+        fetch('{{ route("admin.profile.upload-picture") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                alertDiv.style.zIndex = '9999';
+                alertDiv.innerHTML = `
+                    <span class="alert-icon"><i class="material-symbols-rounded">check_circle</i></span>
+                    <span class="alert-text"><strong>Success!</strong> ${data.message}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => alertDiv.remove(), 3000);
+            } else {
+                alert('Error updating profile picture');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating profile picture');
+        });
+    }
+}
+</script>
 @endsection

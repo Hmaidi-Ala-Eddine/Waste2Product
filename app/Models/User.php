@@ -27,6 +27,7 @@ class User extends Authenticatable
         'address',
         'role',
         'profile_photo_path',
+        'profile_picture',
         'password',
         'is_active',
         'faceid_enabled',
@@ -106,6 +107,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Get cart items for this user
+     */
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * Get cart total
+     */
+    public function getCartTotalAttribute()
+    {
+        return $this->cartItems()->with('product')->get()->sum('subtotal');
+    }
+
+    /**
+     * Get cart count
+     */
+    public function getCartCountAttribute()
+    {
+        return $this->cartItems()->sum('quantity');
+    }
+
+    /**
      * Check if user is a verified collector
      */
     public function isVerifiedCollector()
@@ -136,5 +161,31 @@ class User extends Authenticatable
             'suspended' => 'bg-danger',
             default => 'bg-secondary',
         };
+    }
+
+    /**
+     * Get the profile picture URL with fallback to UI Avatars
+     */
+    public function getProfilePictureUrlAttribute()
+    {
+        // If user has uploaded profile picture and file exists
+        if ($this->profile_picture && file_exists(public_path($this->profile_picture))) {
+            return asset($this->profile_picture);
+        }
+        
+        // Fallback to UI Avatars with user's name
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=fff&background=667eea&size=200&font-size=0.5&bold=true';
+    }
+
+    /**
+     * Get user initials for avatar
+     */
+    public function getInitialsAttribute()
+    {
+        $words = explode(' ', trim($this->name));
+        if (count($words) >= 2) {
+            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+        }
+        return strtoupper(substr($this->name, 0, 2));
     }
 }

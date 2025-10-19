@@ -107,7 +107,7 @@
         </li>
         <li class="nav-item dropdown d-flex align-items-center">
           <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="material-symbols-rounded">account_circle</i>
+            <img src="{{ auth()->user()->profile_picture_url }}" class="avatar avatar-sm border-radius-lg" alt="{{ auth()->user()->name }}" style="object-fit: cover; cursor: pointer;">
           </a>
           <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4" aria-labelledby="profileDropdown">
             <li>

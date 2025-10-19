@@ -7,20 +7,6 @@ Route::get('/', function () {
     return view('front.home');
 })->name('front.home');
 
-Route::get('/onepage', function () {
-    return view('front.home-onepage');
-})->name('front.onepage');
-
-// Demo home variants
-Route::view('/home-3', 'front.home-3')->name('front.home3');
-Route::view('/home-3-op', 'front.home-3-onepage')->name('front.home3.onepage');
-Route::view('/home-4', 'front.home-4')->name('front.home4');
-Route::view('/home-4-op', 'front.home-4-onepage')->name('front.home4.onepage');
-Route::view('/home-5', 'front.home-5')->name('front.home5');
-Route::view('/home-5-op', 'front.home-5-onepage')->name('front.home5.onepage');
-Route::view('/home-6', 'front.home-6')->name('front.home6');
-Route::view('/home-6-op', 'front.home-6-onepage')->name('front.home6.onepage');
-
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 // Admin auth routes (publicly accessible)
@@ -67,13 +53,8 @@ Route::get('/debug-send-mail', function () {
 
 // Protected admin pages (require authentication + admin role)
 Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->group(function () {
-    Route::get('/', function () {
-        return view('back.dashboard');
-    })->name('dashboard');
+    Route::get('/', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
     
-    Route::get('/tables', function () {
-        return view('back.pages.tables');
-    })->name('tables');
     Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
     Route::post('/users', [\App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store');
     Route::post('/users/check-email', [\App\Http\Controllers\AdminController::class, 'checkEmail'])->name('users.check-email');
@@ -108,6 +89,22 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::put('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'update'])->name('collectors.update');
     Route::delete('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'destroy'])->name('collectors.delete');
     Route::post('/collectors/{id}/update-status', [\App\Http\Controllers\CollectorController::class, 'updateStatus'])->name('collectors.update-status');
+    
+    // Events Management routes
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
+    Route::post('/events', [\App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+    Route::get('/events/authors', [\App\Http\Controllers\EventController::class, 'getAuthors'])->name('events.authors');
+    Route::get('/events/{id}/data', [\App\Http\Controllers\EventController::class, 'getData'])->name('events.data');
+    Route::put('/events/{id}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{id}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
+    
+    // Eco Ideas Management routes
+    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'index'])->name('eco-ideas');
+    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'store'])->name('eco-ideas.store');
+    Route::get('/eco-ideas/creators', [\App\Http\Controllers\EcoIdeaController::class, 'getCreators'])->name('eco-ideas.creators');
+    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'getData'])->name('eco-ideas.data');
+    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'update'])->name('eco-ideas.update');
+    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'destroy'])->name('eco-ideas.delete');
     
     // Posts Management routes
     Route::get('/posts', [\App\Http\Controllers\PostController::class, 'index'])->name('posts');
@@ -205,105 +202,70 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
         ]);
     })->name('analytics.debug');
     
-    Route::get('/billing', function () {
-        return view('back.pages.billing');
-    })->name('billing');
-    
-    Route::get('/virtual-reality', function () {
-        return view('back.pages.virtual-reality');
-    })->name('virtual-reality');
-    
-    Route::get('/rtl', function () {
-        return view('back.pages.rtl');
-    })->name('rtl');
-    
-    Route::get('/notifications', function () {
-        return view('back.pages.notifications');
-    })->name('notifications');
-    
     Route::get('/profile', function () {
-        return view('back.pages.profile');
+        $user = auth()->user();
+        return view('back.pages.profile', compact('user'));
     })->name('profile');
     
-    Route::get('/icons', function () {
-        return view('back.pages.icons');
-    })->name('icons');
+    Route::post('/profile/upload-picture', [\App\Http\Controllers\AdminController::class, 'uploadProfilePicture'])->name('profile.upload-picture');
     
-    Route::get('/typography', function () {
-        return view('back.pages.typography');
-    })->name('typography');
-    
-    Route::get('/map', function () {
-        return view('back.pages.map');
-    })->name('map');
-    
-    Route::get('/landing', function () {
-        return redirect('/');
-    })->name('landing');
+    // Map Routes
+    Route::get('/map', [\App\Http\Controllers\MapController::class, 'index'])->name('map');
+    Route::get('/map/waste-requests', [\App\Http\Controllers\MapController::class, 'getWasteRequests'])->name('map.waste-requests');
+    Route::get('/map/collectors', [\App\Http\Controllers\MapController::class, 'getCollectors'])->name('map.collectors');
+    Route::get('/map/statistics', [\App\Http\Controllers\MapController::class, 'getStatistics'])->name('map.statistics');
     
     // Logout route
     Route::post('/logout', [\App\controller\UserController::class, 'logout'])->name('logout');
 });
 
-// Front pages
-Route::view('/about-us', 'front.pages.about')->name('front.about');
-Route::view('/about-us-2', 'front.pages.about-2')->name('front.about2');
-Route::view('/services', 'front.pages.services')->name('front.services');
-Route::view('/services-2', 'front.pages.services-2')->name('front.services2');
-Route::view('/services-3', 'front.pages.services-3')->name('front.services3');
-Route::view('/services-details', 'front.pages.services-details')->name('front.services.details');
-Route::view('/services-details-2', 'front.pages.services-details-2')->name('front.services.details2');
-Route::get('/team', [PostController::class, 'frontendIndex'])->name('front.team');
-Route::view('/team-2', 'front.pages.team-2')->name('front.team2');
-Route::view('/team-details', 'front.pages.team-details')->name('front.team.details');
-Route::view('/project', 'front.pages.project')->name('front.project');
-Route::view('/project-2', 'front.pages.project-2')->name('front.project2');
-Route::view('/project-3', 'front.pages.project-3')->name('front.project3');
-Route::view('/project-details', 'front.pages.project-details')->name('front.project.details');
-Route::view('/blog-standard', 'front.pages.blog-standard')->name('front.blog.standard');
-Route::view('/blog-with-sidebar', 'front.pages.blog-with-sidebar')->name('front.blog.with_sidebar');
-Route::view('/blog-2-colum', 'front.pages.blog-2-colum')->name('front.blog.2col');
-Route::view('/blog-3-colum', 'front.pages.blog-3-colum')->name('front.blog.3col');
-Route::view('/blog-single', 'front.pages.blog-single')->name('front.blog.single');
-Route::view('/blog-single-with-sidebar', 'front.pages.blog-single-with-sidebar')->name('front.blog.single_with_sidebar');
-Route::view('/contact-us', 'front.pages.contact-us')->name('front.contact');
-Route::view('/faq', 'front.pages.faq')->name('front.faq');
-Route::view('/pricing', 'front.pages.pricing')->name('front.pricing');
+// Main pages routes
+Route::view('/about', 'front.pages.about')->name('front.about');
+Route::view('/contact', 'front.pages.contact-us')->name('front.contact');
 Route::view('/404', 'front.pages.404')->name('front.404');
+
+// Main project page
+Route::view('/projects', 'front.pages.project')->name('front.project');
+
+// Main services page
+Route::view('/services', 'front.pages.services')->name('front.services');
+
+// Main blog page
+Route::view('/blog', 'front.pages.blog-standard')->name('front.blog.standard');
 
 // Login page
 Route::get('/login', function () {
     return view('front.login');
 })->name('front.login');
 
-// Front: My Orders list (authenticated users)
-Route::get('/orders', function () {
-    $orders = \App\Models\Order::with(['product:id,name,price,status'])
-        ->where('user_id', auth()->id())
-        ->orderByDesc('ordered_at')
-        ->paginate(10);
-    return view('front.pages.orders', compact('orders'));
-})->middleware('auth')->name('front.orders');
-
-// Front: Delete an order owned by the authenticated user
-Route::delete('/orders/{order}', function ($orderId) {
-    $order = \App\Models\Order::findOrFail($orderId);
-    abort_if($order->user_id !== auth()->id(), 403);
-    $order->delete();
-    return back();
-})->middleware('auth')->name('front.orders.destroy');
-
-// Frontend Posts Routes (Public)
+// Frontend Posts Routes - Public viewing, Auth required for interactions
 Route::get('/posts', [\App\Http\Controllers\PostController::class, 'frontendIndex'])->name('front.posts');
-Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
-Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
 
-// Frontend Events (Public)
+// Posts interaction routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
+    Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
+    Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
+});
+
+// Frontend Events Routes - Public viewing, Auth required for interactions
 Route::get('/events', [\App\Http\Controllers\EventController::class, 'frontendIndex'])->name('front.events');
-Route::post('/events/{event}/like', [\App\Http\Controllers\EventController::class, 'like'])->name('front.events.like');
-Route::post('/events/{event}/participate', [\App\Http\Controllers\EventController::class, 'participate'])->name('front.events.participate');
-Route::get('/events/{event}/details', [\App\Http\Controllers\EventController::class, 'getEventDetails'])->name('front.events.details');
-Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
+
+// Events interaction routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::post('/events/{id}/participate', [\App\Http\Controllers\EventController::class, 'participate'])->name('front.events.participate');
+    Route::post('/events', [\App\Http\Controllers\EventController::class, 'frontendStore'])->name('front.events.store'); // Admin only, will check in controller
+});
+
+// Frontend Shop Routes - Public viewing
+Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('front.shop');
+Route::get('/shop/{id}', [\App\Http\Controllers\ShopController::class, 'show'])->name('front.shop.show');
+
+// Product Reserve & My Orders (Authenticated)
+Route::middleware('auth')->group(function () {
+    Route::post('/products/{id}/reserve', [\App\Http\Controllers\ShopController::class, 'reserve'])->name('front.products.reserve');
+    Route::get('/my-orders', [\App\Http\Controllers\ShopController::class, 'myOrders'])->name('front.my-orders');
+});
 
     // Product Status Management Routes
     Route::post('/products/{product}/mark-sold', [\App\Http\Controllers\ProductStatusController::class, 'markAsSold'])->name('front.products.mark-sold');
@@ -343,6 +305,10 @@ Route::post('/products/{product}/contact', [\App\Http\Controllers\ProductControl
 Route::post('/products/{product}/reserve', [\App\Http\Controllers\ProductController::class, 'reserve'])->name('front.products.reserve');
 Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('front.products.show');
 
+// Product Reservation Routes
+Route::post('/products/{product}/reservation', [\App\Http\Controllers\ProductReservationController::class, 'store'])->name('front.products.reservation');
+Route::post('/products/{product}/make-available', [\App\Http\Controllers\ProductReservationController::class, 'makeAvailable'])->name('front.products.make-available');
+
 // Product-Order Jointure Routes (API)
 Route::prefix('api')->group(function () {
     Route::get('/products-with-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithOrderStats'])->name('api.products.with-orders');
@@ -364,8 +330,16 @@ Route::prefix('api')
     });
 // Frontend Waste Requests Routes (Authenticated Users Only)
 Route::middleware('auth')->group(function () {
+    Route::get('/profile', function () {
+        $user = auth()->user();
+        return view('front.pages.profile', compact('user'));
+    })->name('front.profile');
+    
+    Route::put('/profile', [\App\Http\Controllers\UserController::class, 'updateProfile'])->name('front.profile.update');
+    
     Route::get('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendIndex'])->name('front.waste-requests');
     Route::post('/waste-requests', [\App\Http\Controllers\WasteRequestController::class, 'frontendStore'])->name('front.waste-requests.store');
+    Route::post('/waste-requests/{id}/rate', [\App\Http\Controllers\WasteRequestController::class, 'submitRating'])->name('front.waste-requests.rate');
     
     // Frontend Collector Application Routes
     Route::get('/collector-application', [\App\Http\Controllers\CollectorController::class, 'frontendIndex'])->name('front.collector-application');
@@ -376,6 +350,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/collector-dashboard', [\App\Http\Controllers\CollectorController::class, 'collectorDashboard'])->name('front.collector-dashboard');
     Route::post('/collector/accept-request/{id}', [\App\Http\Controllers\CollectorController::class, 'acceptRequest'])->name('front.collector.accept-request');
     Route::post('/collector/complete-collection/{id}', [\App\Http\Controllers\CollectorController::class, 'completeCollection'])->name('front.collector.complete-collection');
+    
+    // Shopping Cart Routes (Authenticated Users Only)
+    Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('front.cart');
+    Route::post('/cart/add/{id}', [\App\Http\Controllers\CartController::class, 'add'])->name('front.cart.add');
+    Route::put('/cart/update/{id}', [\App\Http\Controllers\CartController::class, 'update'])->name('front.cart.update');
+    Route::delete('/cart/remove/{id}', [\App\Http\Controllers\CartController::class, 'remove'])->name('front.cart.remove');
+    Route::post('/cart/clear', [\App\Http\Controllers\CartController::class, 'clear'])->name('front.cart.clear');
+    
+    // Checkout Routes (Authenticated Users Only)
+    Route::get('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('front.checkout');
+    Route::post('/checkout', [\App\Http\Controllers\CartController::class, 'processCheckout'])->name('front.checkout.process');
+    Route::get('/order/success', [\App\Http\Controllers\CartController::class, 'orderSuccess'])->name('front.order.success');
 });
 
 // Fallback 404 for unknown routes

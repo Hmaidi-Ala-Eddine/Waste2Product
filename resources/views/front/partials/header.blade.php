@@ -20,130 +20,34 @@
                 </div>
 
                 <ul class="nav navbar-nav navbar-center" data-in="fadeInDown" data-out="fadeOutUp">
-                    <li class="dropdown megamenu-fw">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Home</a>
-                        <ul class="dropdown-menu megamenu-content" role="menu">
-                            <li>
-                                <div class="col-menu-wrap">
-                                    <div class="col-item">
-                                        <div class="menu-thumb">
-                                            <img src="{{ asset('assets/front/img/demo/home-1.jpg') }}" alt="Image Not Found">
-                                            <div class="overlay">
-                                                <a href="{{ route('front.home') }}">Multipage</a>
-                                                <a href="{{ route('front.onepage') }}">Onepage</a>
-                                            </div>
-                                        </div>
-                                        <h6 class="title"><a href="{{ route('front.home') }}">Business Consulting</a></h6>
-                                    </div>
-                                    <div class="col-item">
-                                        <div class="menu-thumb">
-                                            <img src="{{ asset('assets/front/img/demo/home-2.jpg') }}" alt="Image Not Found">
-                                            <div class="overlay">
-                                                <a href="{{ route('front.home3') }}">Multipage</a>
-                                                <a href="{{ route('front.home3.onepage') }}">Onepage</a>
-                                            </div>
-                                        </div>
-                                        <h6 class="title"><a href="{{ route('front.home3') }}">It Solutions</a></h6>
-                                    </div>
-                                    <div class="col-item">
-                                        <div class="menu-thumb">
-                                            <img src="{{ asset('assets/front/img/demo/home-6.jpg') }}" alt="Image Not Found">
-                                            <div class="overlay">
-                                                <a href="{{ route('front.home6') }}">Multipage</a>
-                                                <a href="{{ route('front.home6.onepage') }}">Onepage</a>
-                                            </div>
-                                        </div>
-                                        <h6 class="title"><a href="{{ route('front.home6') }}">Artificial Intelligence</a></h6>
-                                    </div>
-                                    <div class="col-item">
-                                        <div class="menu-thumb">
-                                            <img src="{{ asset('assets/front/img/demo/home-3.jpg') }}" alt="Image Not Found">
-                                            <div class="overlay">
-                                                <a href="{{ route('front.home4') }}">Multipage</a>
-                                                <a href="{{ route('front.home4.onepage') }}">Onepage</a>
-                                            </div>
-                                        </div>
-                                        <h6 class="title"><a href="{{ route('front.home4') }}">Creative Agency</a></h6>
-                                    </div>
-                                    <div class="col-item">
-                                        <div class="menu-thumb">
-                                            <img src="{{ asset('assets/front/img/demo/home-4.jpg') }}" alt="Image Not Found">
-                                            <div class="overlay">
-                                                <a href="{{ route('front.home5') }}">Multipage</a>
-                                                <a href="{{ route('front.home5.onepage') }}">Onepage</a>
-                                            </div>
-                                        </div>
-                                        <h6 class="title"><a href="{{ route('front.home5') }}">Transport & Logistics</a></h6>
-                                    </div>
-                                    <div class="col-item">
-                                        <div class="menu-thumb">
-                                            <img src="{{ asset('assets/front/img/demo/home-5.jpg') }}" alt="Image Not Found">
-                                            <div class="overlay">
-                                                <a href="{{ route('front.home6') }}">Multipage</a>
-                                                <a href="{{ route('front.home6.onepage') }}">Onepage</a>
-                                            </div>
-                                        </div>
-                                        <h6 class="title"><a href="{{ route('front.home6') }}">Financial Advisor</a></h6>
-                                    </div>
-                                </div>
-                                <div class="megamenu-banner">
-                                    <img src="{{ asset('assets/front/img/thumb/7.jpg') }}" alt="Image Not Found">
-                                    <a href="{{ config('site.intro_video_url') }}" class="popup-youtube video-play-button"><i class="fas fa-play"></i></a>
-                                    <h6 class="title"><a href="#">Watch Intro Video</a></h6>
-                                </div>
-                            </li>
-                        </ul>
+                    <li>
+                        <a href="{{ route('front.home') }}">Home</a>
                     </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Pages</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{{ route('front.about') }}">About Us</a></li>
-                            <li><a href="{{ route('front.about2') }}">About Us Two</a></li>
-                        <li><a href="{{ route('front.team') }}">Posts</a></li>
-                        <li><a href="{{ route('front.products') }}">Products</a></li>
-                        <li><a href="{{ route('front.events') }}">Events</a></li>
-                        <li><a href="{{ route('front.team2') }}">Team Two</a></li>
-                            <li><a href="{{ route('front.team.details') }}">Team Details</a></li>
-                            <li><a href="{{ route('front.pricing') }}">Pricing</a></li>
-                            <li><a href="{{ route('front.faq') }}">FAQ</a></li>
-                            <li><a href="{{ route('front.contact') }}">Contact Us</a></li>
-                            <li><a href="{{ route('front.404') }}">Error Page</a></li>
-                        </ul>
+                    <li>
+                        <a href="{{ route('front.about') }}">About Us</a>
                     </li>
-                    <li class="dropdown">
-                        <a href="{{ route('front.project') }}" class="dropdown-toggle" data-toggle="dropdown">Projects</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{{ route('front.project') }}">Project style one</a></li>
-                            <li><a href="{{ route('front.project2') }}">Project style two</a></li>
-                            <li><a href="{{ route('front.project3') }}">Project style three</a></li>
-                            <li><a href="{{ route('front.project.details') }}">Project Details</a></li>
-                        </ul>
+                    <li>
+                        <a href="{{ route('front.project') }}">Projects</a>
                     </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Services</a>
                         <ul class="dropdown-menu">
-                            <li><a href="{{ route('front.services') }}">Services Version One</a></li>
-                            <li><a href="{{ route('front.services2') }}">Services Version Two</a></li>
-                            <li><a href="{{ route('front.services3') }}">Services Version Three</a></li>
-                            <li><a href="{{ route('front.services.details') }}">Services Details</a></li>
+                            <li><a href="{{ route('front.shop') }}"><i class="fas fa-box me-2"></i>Products</a></li>
+                            <li><a href="{{ route('front.events') }}"><i class="fas fa-calendar-alt me-2"></i>Events</a></li>
+                            <li><a href="{{ route('front.posts') }}"><i class="fas fa-newspaper me-2"></i>Posts</a></li>
                         </ul>
                     </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Blog</a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{{ route('front.blog.standard') }}">Blog Standard</a></li>
-                            <li><a href="{{ route('front.blog.with_sidebar') }}">Blog With Sidebar</a></li>
-                            <li><a href="{{ route('front.blog.2col') }}">Blog Grid Two Colum</a></li>
-                            <li><a href="{{ route('front.blog.3col') }}">Blog Grid Three Colum</a></li>
-                            <li><a href="{{ route('front.blog.single') }}">Blog Single</a></li>
-                            <li><a href="{{ route('front.blog.single_with_sidebar') }}">Blog Single With Sidebar</a></li>
-                        </ul>
+                    <li>
+                        <a href="{{ route('front.blog.standard') }}">Blog</a>
                     </li>
-                    <li><a href="{{ route('front.contact') }}">contact</a></li>
+                    <li>
+                        <a href="{{ route('front.contact') }}">Contact</a>
+                    </li>
                     @auth
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Services</a>
                             <ul class="dropdown-menu">
+                                <li><a href="{{ route('front.my-orders') }}"><i class="fas fa-shopping-bag me-2"></i>My Orders</a></li>
                                 <li><a href="{{ route('front.waste-requests') }}"><i class="fas fa-clipboard-list me-2"></i>My Waste Requests</a></li>
                                 <li><a href="{{ route('front.collector-application') }}"><i class="fas fa-user-tie me-2"></i>Collector Application</a></li>
                                 @php
@@ -151,7 +55,7 @@
                                     $isVerifiedCollector = $user->collector && $user->collector->verification_status === 'verified';
                                 @endphp
                                 @if($isVerifiedCollector)
-                                    <li><a href="{{ route('front.collector-dashboard') }}"><i class="fas fa-truck me-2"></i>Collector Dashboard</a></li>
+                                    <li><a href="{{ route('front.collector-dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Collector Dashboard</a></li>
                                 @endif
                             </ul>
                         </li>
@@ -162,26 +66,67 @@
             <div class="attr-right">
                 <div class="attr-nav">
                     <ul>
-                        <!-- Cart Icon -->
-                        <li>
-                            <a href="{{ route('front.cart') }}" class="cart-link">
-                                <i class="fas fa-shopping-cart"></i>
-                            </a>
-                        </li>
-                        
                         @auth
-                            <li class="logout-item">
-                                <form method="POST" action="{{ route('front.logout') }}" style="display: inline;">
-                                    @csrf
-                                    <button type="submit" class="logout-btn">
-                                        <i class="fas fa-sign-out-alt"></i>
-                                        <span>Logout</span>
-                                    </button>
-                                </form>
+                            <!-- Notification Icon -->
+                            <li class="icon-item">
+                                <a href="#" class="icon-link" title="Notifications">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="badge-count">5</span>
+                                </a>
+                            </li>
+                            
+                            <!-- Shopping Cart Icon -->
+                            <li class="icon-item">
+                                <a href="{{ route('front.cart') }}" class="icon-link" title="Shopping Cart">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    @if(auth()->user()->cart_count > 0)
+                                        <span class="badge-count cart-count">{{ auth()->user()->cart_count }}</span>
+                                    @endif
+                                </a>
+                            </li>
+                        @else
+                            <!-- Cart Icon for guests -->
+                            <li class="icon-item">
+                                <a href="{{ route('front.login') }}" class="icon-link" title="Login to access cart">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </a>
+                            </li>
+                        @endauth
+                            
+                        @auth
+                            <li class="profile-dropdown-item dropdown">
+                                <a href="#" class="profile-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <img src="{{ auth()->user()->profile_picture_url }}" alt="{{ auth()->user()->name }}" class="profile-avatar">
+                                </a>
+                                <ul class="dropdown-menu profile-dropdown">
+                                    <li class="profile-header">
+                                        <img src="{{ auth()->user()->profile_picture_url }}" alt="{{ auth()->user()->name }}">
+                                        <div class="profile-info">
+                                            <h6>{{ auth()->user()->name }}</h6>
+                                            <p>{{ auth()->user()->email }}</p>
+                                        </div>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a href="{{ route('front.profile') }}">
+                                            <i class="fas fa-user"></i>
+                                            <span>My Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form method="POST" action="{{ route('front.logout') }}">
+                                            @csrf
+                                            <button type="submit" class="logout-dropdown-btn">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                                <span>Logout</span>
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                         @else
                             <li class="login-item">
-                                <a href="{{ url('/login') }}" class="login-link">
+                                <a href="{{ route('front.login') }}" class="login-link">
                                     <i class="fas fa-sign-in-alt"></i>
                                     <span>Login</span>
                                 </a>

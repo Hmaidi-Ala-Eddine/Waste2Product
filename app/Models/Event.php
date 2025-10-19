@@ -4,69 +4,94 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Event extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'subject',
-        'description',
-        'image',
         'date_time',
-        'likes',
-        'participants_count',
-        'user_id',
+        'image',
+        'description',
+        'author_id',
+        'engagement',
     ];
 
-    protected $casts = [
-        'likes' => 'integer',
-        'participants_count' => 'integer',
-        'date_time' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
-    public function user(): BelongsTo
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
-        return $this->belongsTo(User::class);
+        return [
+            'date_time' => 'datetime',
+            'engagement' => 'integer',
+        ];
     }
 
     /**
-     * Users who liked this event
+     * Get the author of the event
      */
-    public function likes(): BelongsToMany
+    public function author()
     {
-        return $this->belongsToMany(User::class, 'event_likes')->withTimestamps();
+        return $this->belongsTo(User::class, 'author_id');
     }
 
     /**
-     * Users who participate in this event
+     * Get all participations for this event
      */
-    public function participants(): BelongsToMany
+    public function participations()
     {
-        return $this->belongsToMany(User::class, 'event_participants')->withTimestamps();
+        return $this->hasMany(EventParticipation::class);
     }
 
-    public function incrementLikes(): void
+    /**
+     * Check if a user has participated in this event
+     */
+    public function isParticipatedBy($userId)
     {
-        $this->increment('likes');
+        return $this->participations()->where('user_id', $userId)->exists();
     }
 
-    public function incrementParticipants(): void
+    /**
+     * Get the formatted date and time
+     */
+    public function getFormattedDateTimeAttribute()
     {
-        $this->increment('participants_count');
+        return $this->date_time ? $this->date_time->format('d/m/Y H:i') : 'N/A';
     }
 
-    public function isLikedBy($userId): bool
+    /**
+     * Get the image URL
+     */
+    public function getImageUrlAttribute()
     {
-        return $this->likes()->where('user_id', $userId)->exists();
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return asset('assets/img/default-event.jpg');
     }
 
-    public function isParticipatedBy($userId): bool
+    /**
+     * Scope to filter upcoming events
+     */
+    public function scopeUpcoming($query)
     {
-        return $this->participants()->where('user_id', $userId)->exists();
+        return $query->where('date_time', '>=', now());
+    }
+
+    /**
+     * Scope to filter past events
+     */
+    public function scopePast($query)
+    {
+        return $query->where('date_time', '<', now());
     }
 }

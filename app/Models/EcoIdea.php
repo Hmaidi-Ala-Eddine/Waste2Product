@@ -4,94 +4,177 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EcoIdea extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'creator_id',
         'title',
-        'description',
         'waste_type',
-        'image_path',
-        'ai_generated_suggestion',
-        'difficulty_level',
-        'upvotes',
-        'status',
-        'team_requirements',
+        'difficulty',
+        'description',
+        'ai_suggestion',
         'team_size_needed',
-        'team_size_current',
+        'team_requirements',
         'application_description',
-        'is_recruiting',
-        'project_status',
-        'start_date',
-        'completion_date',
-        'verification_date',
-        'final_description',
-        'impact_metrics',
-        'donated_to_ngo',
-        'ngo_name',
-        'ai_suggested_skills',
-        'ai_suggested_team_size',
-        'ai_confidence_level',
-        'similarity_score',
+        'image',
+        'status',
     ];
 
-    protected $casts = [
-        'upvotes' => 'integer',
-        'team_requirements' => 'array',
-        'impact_metrics' => 'array',
-        'ai_suggested_skills' => 'array',
-        'start_date' => 'date',
-        'completion_date' => 'date',
-        'verification_date' => 'date',
-        'is_recruiting' => 'boolean',
-        'donated_to_ngo' => 'boolean',
-        'ai_confidence_level' => 'decimal:2',
-        'similarity_score' => 'decimal:2',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'team_size_needed' => 'integer',
+        ];
+    }
 
-    public function creator(): BelongsTo
+    /**
+     * Available waste types
+     */
+    public static function getWasteTypes(): array
+    {
+        return [
+            'organic' => 'Organic Waste',
+            'plastic' => 'Plastic',
+            'metal' => 'Metal',
+            'e-waste' => 'Electronic Waste',
+            'paper' => 'Paper',
+            'glass' => 'Glass',
+            'textile' => 'Textile',
+            'mixed' => 'Mixed Waste',
+        ];
+    }
+
+    /**
+     * Available difficulty levels
+     */
+    public static function getDifficulties(): array
+    {
+        return [
+            'easy' => 'Easy',
+            'medium' => 'Medium',
+            'hard' => 'Hard',
+        ];
+    }
+
+    /**
+     * Available statuses
+     */
+    public static function getStatuses(): array
+    {
+        return [
+            'pending' => 'Pending',
+            'approved' => 'Approved',
+            'in_progress' => 'In Progress',
+            'completed' => 'Completed',
+            'rejected' => 'Rejected',
+        ];
+    }
+
+    /**
+     * Get the creator of the idea
+     */
+    public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function applications(): HasMany
+    /**
+     * Scope to filter by status
+     */
+    public function scopeStatus($query, $status)
     {
-        return $this->hasMany(EcoIdeaApplication::class);
+        return $query->where('status', $status);
     }
 
-    public function team(): HasMany
+    /**
+     * Scope to filter by waste type
+     */
+    public function scopeWasteType($query, $wasteType)
     {
-        return $this->hasMany(EcoIdeaTeam::class);
+        return $query->where('waste_type', $wasteType);
     }
 
-    public function tasks(): HasMany
+    /**
+     * Scope to filter by difficulty
+     */
+    public function scopeDifficulty($query, $difficulty)
     {
-        return $this->hasMany(EcoIdeaTask::class);
+        return $query->where('difficulty', $difficulty);
     }
 
-    public function certificates(): HasMany
+    /**
+     * Get the formatted waste type
+     */
+    public function getWasteTypeFormattedAttribute()
     {
-        return $this->hasMany(EcoIdeaCertificate::class);
+        return self::getWasteTypes()[$this->waste_type] ?? $this->waste_type;
     }
 
-    public function interactions(): HasMany
+    /**
+     * Get the formatted difficulty
+     */
+    public function getDifficultyFormattedAttribute()
     {
-        return $this->hasMany(EcoIdeaInteraction::class);
+        return self::getDifficulties()[$this->difficulty] ?? $this->difficulty;
     }
 
-    public function similarities(): HasMany
+    /**
+     * Get the formatted status
+     */
+    public function getStatusFormattedAttribute()
     {
-        return $this->hasMany(EcoIdeaSimilarity::class, 'original_idea_id');
+        return self::getStatuses()[$this->status] ?? $this->status;
+    }
+
+    /**
+     * Get the status badge class for UI
+     */
+    public function getStatusBadgeClassAttribute()
+    {
+        return match($this->status) {
+            'pending' => 'bg-warning',
+            'approved' => 'bg-success',
+            'in_progress' => 'bg-info',
+            'completed' => 'bg-dark',
+            'rejected' => 'bg-danger',
+            default => 'bg-secondary',
+        };
+    }
+
+    /**
+     * Get the difficulty badge class for UI
+     */
+    public function getDifficultyBadgeClassAttribute()
+    {
+        return match($this->difficulty) {
+            'easy' => 'bg-success',
+            'medium' => 'bg-warning',
+            'hard' => 'bg-danger',
+            default => 'bg-secondary',
+        };
+    }
+
+    /**
+     * Get the image URL
+     */
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        return asset('assets/img/default-idea.jpg');
     }
 }
-
-
-
-
-
-

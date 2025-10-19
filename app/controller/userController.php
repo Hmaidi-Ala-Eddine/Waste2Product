@@ -86,7 +86,17 @@ class UserController extends BaseController
             'role' => 'nullable|string|max:50',
             'address' => 'nullable|string',
             'faceid_enabled' => 'nullable|boolean',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Handle profile picture upload
+        $profilePicturePath = null;
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = 'profile_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/profiles'), $filename);
+            $profilePicturePath = 'uploads/profiles/' . $filename;
+        }
 
         $user = User::create([
             'name' => $data['name'],
@@ -98,6 +108,7 @@ class UserController extends BaseController
             'password' => $data['password'],
             'role' => $data['role'] ?? 'user',
             'address' => $data['address'] ?? null,
+            'profile_picture' => $profilePicturePath,
             'faceid_enabled' => $data['faceid_enabled'] ?? false,
             'is_active' => false, // mark new accounts inactive until email verification
         ]);

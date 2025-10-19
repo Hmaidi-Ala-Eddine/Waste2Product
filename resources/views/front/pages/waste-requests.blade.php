@@ -209,15 +209,131 @@
         color: #2c3e50;
     }
     
-    /* Simple validation error text */
-    .error-text {
-        color: #e74c3c;
-        font-size: 0.85rem;
-        margin-top: 5px;
-        display: none;
+    /* Enhanced validation styles */
+    .form-control.is-invalid,
+    .form-select.is-invalid,
+    select.form-control.is-invalid {
+        border-color: #e74c3c !important;
+        box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.15) !important;
+        background-image: none !important;
+        background-color: #fff !important;
     }
     
+    .form-control.is-valid,
+    .form-select.is-valid,
+    select.form-control.is-valid {
+        border-color: #27ae60 !important;
+        box-shadow: 0 0 0 0.2rem rgba(39, 174, 96, 0.15) !important;
+        background-image: none !important;
+        background-color: #fff !important;
+    }
+    
+    .error-text {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: none;
+        font-weight: 500;
+    }
+    
+    .error-text.show {
+        display: block;
+    }
+    
+    .char-count {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .char-count.text-danger {
+        color: #e74c3c !important;
+    }
+    
+    .char-count.text-warning {
+        color: #f39c12 !important;
+    }
+    
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 100px;
+        right: -400px;
+        background: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        min-width: 320px;
+        transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .toast-notification.show { right: 30px; }
+    .toast-notification.success { border-left: 4px solid #4CAF50; }
+    .toast-notification.error { border-left: 4px solid #f44336; }
+
+    .toast-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .toast-notification.success .toast-icon {
+        background: #e8f5e9;
+        color: #4CAF50;
+    }
+
+    .toast-notification.error .toast-icon {
+        background: #ffebee;
+        color: #f44336;
+    }
+
+    .toast-content { flex: 1; }
+    .toast-message {
+        color: #2c3e50;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        color: #7f8c8d;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .toast-close:hover {
+        background: #f0f0f0;
+        color: #2c3e50;
+    }
+
     @media (max-width: 768px) {
+        .toast-notification {
+            right: -100%;
+            min-width: calc(100% - 40px);
+            left: 20px;
+        }
+
+        .toast-notification.show { right: 0; }
+
         .waste-request-area {
             padding: 60px 0;
         }
@@ -348,7 +464,29 @@
                                     @if($request->collector)
                                         <div class="detail-item">
                                             <i class="fas fa-user-tie"></i>
-                                            <span>{{ $request->collector->name }}</span>
+                                            <div class="d-flex flex-column">
+                                                <span>{{ $request->collector->name }}</span>
+                                                
+                                                @if($request->status === 'collected')
+                                                    <!-- Star Rating System -->
+                                                    <div class="star-rating mt-2" data-request-id="{{ $request->id }}" data-current-rating="{{ $request->rating->rating ?? 0 }}">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <i class="fas fa-star star-icon" 
+                                                               data-rating="{{ $i }}" 
+                                                               style="color: {{ ($request->rating && $i <= $request->rating->rating) ? '#fbbf24' : '#e5e7eb' }}; 
+                                                                      font-size: 1.2rem; 
+                                                                      cursor: pointer; 
+                                                                      transition: color 0.2s;">
+                                                            </i>
+                                                        @endfor
+                                                        @if($request->rating)
+                                                            <small class="text-success ms-2">Rated</small>
+                                                        @else
+                                                            <small class="text-muted ms-2">Rate</small>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endif
                                     @if($request->collected_at)
@@ -395,35 +533,145 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantity = document.getElementById('quantity');
     const state = document.getElementById('state');
     const address = document.getElementById('address');
+    const description = document.getElementById('description');
     
-    // Simple validation function
-    function validateField(field) {
-        const errorElement = document.getElementById(field.id + '_error');
-        
-        if (field.id === 'waste_type' && !field.value) {
-            errorElement.style.display = 'block';
-            return false;
-        } else if (field.id === 'quantity' && (!field.value || field.value <= 0)) {
-            errorElement.style.display = 'block';
-            return false;
-        } else if (field.id === 'state' && !field.value) {
-            errorElement.style.display = 'block';
-            return false;
-        } else if (field.id === 'address' && !field.value.trim()) {
-            errorElement.style.display = 'block';
-            return false;
-        } else {
-            errorElement.style.display = 'none';
-            return true;
+    // Clear validation state
+    function clearValidation(field) {
+        field.classList.remove('is-valid', 'is-invalid');
+        const errorEl = document.getElementById(field.id + '_error');
+        if (errorEl) {
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
         }
     }
     
-    // Add event listeners
+    // Set field as invalid
+    function setInvalid(field, message) {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+        const errorEl = document.getElementById(field.id + '_error');
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+        return false;
+    }
+    
+    // Set field as valid
+    function setValid(field) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+        const errorEl = document.getElementById(field.id + '_error');
+        if (errorEl) {
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
+        }
+        return true;
+    }
+    
+    // Sanitize quantity input
+    function sanitizeQuantity(input) {
+        let value = input.value.replace(/[^0-9.]/g, '');
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        if (parts[1] && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+        input.value = value;
+    }
+    
+    // Character counter
+    function updateCharCount(field, maxLength) {
+        const currentLength = field.value.length;
+        let countEl = field.parentElement.querySelector('.char-count');
+        if (!countEl) {
+            countEl = document.createElement('small');
+            countEl.className = 'char-count';
+            field.parentElement.appendChild(countEl);
+        }
+        countEl.textContent = `${currentLength}/${maxLength} characters`;
+        if (currentLength > maxLength) {
+            countEl.classList.add('text-danger');
+            countEl.classList.remove('text-warning');
+        } else if (currentLength > maxLength * 0.9) {
+            countEl.classList.add('text-warning');
+            countEl.classList.remove('text-danger');
+        } else {
+            countEl.classList.remove('text-danger', 'text-warning');
+        }
+    }
+    
+    // Validate individual field
+    function validateField(field) {
+        const value = field.value.trim();
+        clearValidation(field);
+        
+        switch(field.id) {
+            case 'waste_type':
+                if (!value) return setInvalid(field, 'Please select a waste type');
+                return setValid(field);
+                
+            case 'quantity':
+                if (!value) return setInvalid(field, 'Please enter the quantity');
+                const qty = parseFloat(value);
+                if (isNaN(qty) || qty <= 0) return setInvalid(field, 'Quantity must be a positive number');
+                if (qty < 0.1) return setInvalid(field, 'Quantity must be at least 0.1 kg');
+                if (qty > 999999.99) return setInvalid(field, 'Quantity cannot exceed 999,999.99 kg');
+                if (!/^\d+(\.\d{1,2})?$/.test(value)) return setInvalid(field, 'Quantity can have maximum 2 decimal places');
+                return setValid(field);
+                
+            case 'state':
+                if (!value) return setInvalid(field, 'Please select a governorate');
+                return setValid(field);
+                
+            case 'address':
+                if (!value) return setInvalid(field, 'Please enter your specific address');
+                if (value.length < 10) return setInvalid(field, 'Address must be at least 10 characters long');
+                if (value.length > 1000) return setInvalid(field, 'Address cannot exceed 1000 characters');
+                if (!/^[a-zA-Z0-9\s\.,\-\#\/]+$/.test(value)) return setInvalid(field, 'Address contains invalid characters');
+                return setValid(field);
+                
+            case 'description':
+                if (value && value.length > 2000) return setInvalid(field, 'Description cannot exceed 2000 characters');
+                if (value && !/^[a-zA-Z0-9\s\.,\-\!\?\(\)]*$/.test(value)) return setInvalid(field, 'Description contains invalid characters');
+                if (value) return setValid(field);
+                return true;
+                
+            default:
+                return true;
+        }
+    }
+    
+    // Event listeners
+    wasteType.addEventListener('change', function() { validateField(this); });
     wasteType.addEventListener('blur', function() { validateField(this); });
+    
+    quantity.addEventListener('input', function() { 
+        sanitizeQuantity(this);
+        validateField(this);
+    });
     quantity.addEventListener('blur', function() { validateField(this); });
+    
+    state.addEventListener('change', function() { validateField(this); });
     state.addEventListener('blur', function() { validateField(this); });
+    
+    address.addEventListener('input', function() { 
+        validateField(this); 
+        updateCharCount(this, 1000);
+    });
     address.addEventListener('blur', function() { validateField(this); });
     
+    if (description) {
+        description.addEventListener('input', function() { 
+            validateField(this); 
+            updateCharCount(this, 2000);
+        });
+        description.addEventListener('blur', function() { validateField(this); });
+    }
+    
+    // Form submission
     form.addEventListener('submit', function(e) {
         let isValid = true;
         
@@ -432,16 +680,137 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!validateField(quantity)) isValid = false;
         if (!validateField(state)) isValid = false;
         if (!validateField(address)) isValid = false;
+        if (description && description.value && !validateField(description)) isValid = false;
         
         if (!isValid) {
             e.preventDefault();
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
         
+        // Show loading state
         const submitBtn = form.querySelector('.btn-submit');
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
         submitBtn.disabled = true;
     });
+
+    // ============ STAR RATING SYSTEM ============
+    // Handle star hover effects
+    document.querySelectorAll('.star-rating').forEach(ratingContainer => {
+        const stars = ratingContainer.querySelectorAll('.star-icon');
+        const requestId = ratingContainer.dataset.requestId;
+        let currentRating = parseInt(ratingContainer.dataset.currentRating) || 0;
+        
+        stars.forEach((star, index) => {
+            // Hover effect
+            star.addEventListener('mouseenter', function() {
+                const hoverRating = parseInt(this.dataset.rating);
+                updateStarColors(stars, hoverRating);
+            });
+            
+            // Reset on mouse leave
+            ratingContainer.addEventListener('mouseleave', function() {
+                updateStarColors(stars, currentRating);
+            });
+            
+            // Click to rate
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                submitRating(requestId, rating, stars, ratingContainer);
+            });
+        });
+    });
+
+    function updateStarColors(stars, rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#fbbf24'; // Gold
+            } else {
+                star.style.color = '#e5e7eb'; // Gray
+            }
+        });
+    }
+
+    function submitRating(requestId, rating, stars, container) {
+        // Show loading
+        const originalHtml = container.innerHTML;
+        container.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rating...';
+        
+        fetch(`/waste-requests/${requestId}/rate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ rating: rating })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update current rating
+                container.dataset.currentRating = rating;
+                
+                // Show success message
+                container.innerHTML = originalHtml.replace('Rate', 'Rated');
+                updateStarColors(container.querySelectorAll('.star-icon'), rating);
+                
+                // Show success notification
+                showNotification('Thank you for rating the collector!', 'success');
+            } else {
+                showToast(data.error || 'Failed to submit rating', 'error');
+                container.innerHTML = originalHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred. Please try again.', 'error');
+            container.innerHTML = originalHtml;
+        });
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 });
 </script>
 @endpush

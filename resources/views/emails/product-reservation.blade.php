@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvelle réservation pour votre produit</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nouvelle réservation de produit</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,11 +14,11 @@
             padding: 20px;
         }
         .header {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 30px;
-            text-align: center;
+            padding: 20px;
             border-radius: 10px 10px 0 0;
+            text-align: center;
         }
         .content {
             background: #f8f9fa;
@@ -30,102 +30,82 @@
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
-            border-left: 4px solid #28a745;
+            border-left: 4px solid #667eea;
         }
         .reservation-info {
             background: white;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
-            border-left: 4px solid #ffc107;
+            border-left: 4px solid #28a745;
         }
         .message-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #17a2b8;
-        }
-        .alert {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+            background: #e3f2fd;
             padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin: 15px 0;
         }
         .footer {
             text-align: center;
             margin-top: 30px;
-            color: #6c757d;
-            font-size: 14px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
         }
         .btn {
             display: inline-block;
             padding: 12px 24px;
-            background: #28a745;
+            background: #667eea;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
-            margin: 10px 0;
+            border-radius: 6px;
+            margin: 10px 5px;
         }
         .btn:hover {
-            background: #218838;
+            background: #5a6fd8;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🎯 Nouvelle réservation pour votre produit</h1>
-        <p>Quelqu'un a réservé votre produit sur Waste2Product</p>
+        <h1>🛍️ Nouvelle réservation de produit</h1>
+        <p>Quelqu'un souhaite réserver votre produit !</p>
     </div>
 
     <div class="content">
-        <div class="alert">
-            <strong>⚠️ Action requise:</strong> Votre produit a été réservé. Vous avez 24 heures pour contacter l'acheteur potentiel.
-        </div>
-
-        <h2>Détails du produit réservé</h2>
+        <h2>Informations du produit</h2>
         <div class="product-info">
             <h3>{{ $product->name }}</h3>
             <p><strong>Catégorie:</strong> {{ ucfirst($product->category) }}</p>
-            <p><strong>Prix:</strong> {{ $product->formatted_price }}</p>
-            <p><strong>Condition:</strong> {{ ucfirst($product->condition) }}</p>
-            <p><strong>Nouveau statut:</strong> <span style="color: #ffc107; font-weight: bold;">RÉSERVÉ</span></p>
+            <p><strong>Prix:</strong> {{ $product->price ? number_format($product->price, 2) . ' TND' : 'Gratuit' }}</p>
+            <p><strong>État:</strong> {{ ucfirst($product->condition ?? 'Non spécifié') }}</p>
+            @if($product->description)
+                <p><strong>Description:</strong> {{ $product->description }}</p>
+            @endif
         </div>
 
-        <h2>Informations de la réservation</h2>
+        <h2>Informations du demandeur</h2>
         <div class="reservation-info">
-            <p><strong>Nom:</strong> {{ $reservationData['name'] }}</p>
-            <p><strong>Email:</strong> {{ $reservationData['email'] }}</p>
-            <p><strong>Téléphone:</strong> {{ $reservationData['phone'] }}</p>
-            <p><strong>Date de réservation:</strong> {{ now()->format('d/m/Y à H:i') }}</p>
+            <p><strong>Nom:</strong> {{ $reservationData['first_name'] }} {{ $reservationData['last_name'] }}</p>
+            <p><strong>Email:</strong> <a href="mailto:{{ $reservationData['email'] }}">{{ $reservationData['email'] }}</a></p>
+            <p><strong>Date de demande:</strong> {{ now()->format('d/m/Y à H:i') }}</p>
         </div>
 
-        @if(isset($reservationData['message']) && $reservationData['message'])
-            <h2>Message du client</h2>
-            <div class="message-box">
-                <p>{{ $reservationData['message'] }}</p>
-            </div>
-        @endif
-
-        <div style="text-align: center;">
-            <a href="mailto:{{ $reservationData['email'] }}" class="btn">Contacter le client</a>
+        <h2>Message du demandeur</h2>
+        <div class="message-box">
+            <p><em>"{{ $reservationData['message'] }}"</em></p>
         </div>
 
-        <div class="alert">
-            <strong>📋 Prochaines étapes:</strong>
-            <ul style="margin: 10px 0;">
-                <li>Contactez le client dans les 24 heures</li>
-                <li>Confirmez la vente ou annulez la réservation</li>
-                <li>Mettez à jour le statut du produit (vendus/disponible)</li>
-            </ul>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ route('front.shop.show', $product->id) }}" class="btn">Voir le produit</a>
+            <a href="mailto:{{ $reservationData['email'] }}" class="btn">Répondre par email</a>
         </div>
+    </div>
 
-        <div class="footer">
-            <p>Ce message a été envoyé via le système Waste2Product</p>
-            <p>Votre produit est maintenant marqué comme "Réservé" et n'apparaîtra plus dans les recherches.</p>
-        </div>
+    <div class="footer">
+        <p>Cet email a été envoyé automatiquement par le système Waste2Product.</p>
+        <p>Vous recevez cet email car vous êtes le propriétaire de ce produit.</p>
     </div>
 </body>
 </html>

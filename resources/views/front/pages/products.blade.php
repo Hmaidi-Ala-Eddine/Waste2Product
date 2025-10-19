@@ -1064,7 +1064,7 @@ function addToCart(productId) {
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
     
-    fetch('{{ route("front.cart.add") }}', {
+    fetch(`/cart/add/${productId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

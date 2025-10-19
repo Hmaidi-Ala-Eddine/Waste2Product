@@ -135,6 +135,187 @@
         .dropdown-menu > li:last-child {
             border-bottom: none;
         }
+
+        /* Profile Dropdown Styling */
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .profile-dropdown {
+            min-width: 280px !important;
+            padding: 0 !important;
+            margin-top: 15px !important;
+        }
+
+        .profile-header {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            padding: 20px !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px 10px 0 0 !important;
+            border-bottom: none !important;
+        }
+
+        .profile-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-info h6 {
+            margin: 0;
+            color: white !important;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .profile-info p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 13px;
+        }
+
+        .profile-dropdown li.divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 8px 0;
+            padding: 0 !important;
+        }
+
+        .profile-dropdown > li > a,
+        .logout-dropdown-btn {
+            color: #2c3e50 !important;
+            padding: 12px 20px !important;
+            display: flex !important;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .profile-dropdown > li > a i,
+        .logout-dropdown-btn i {
+            width: 20px;
+            color: #667eea;
+        }
+
+        .profile-dropdown > li > a:hover,
+        .logout-dropdown-btn:hover {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%) !important;
+            color: #667eea !important;
+            transform: translateX(4px);
+        }
+
+        .profile-dropdown > li > a:hover i,
+        .logout-dropdown-btn:hover i {
+            color: #667eea !important;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Notification and Cart Icons - Match Navbar Colors */
+        .attr-nav > ul > li.icon-item {
+            display: inline-flex !important;
+            align-items: center !important;
+            margin: 0 8px !important;
+            padding: 0 !important;
+            height: 100% !important;
+        }
+
+        /* Default state - DARK icons (for white/scrolled navbar) */
+        .attr-nav > ul > li.icon-item > a.icon-link {
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            background: transparent !important;
+            transition: all 0.3s ease !important;
+            text-decoration: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .attr-nav > ul > li.icon-item > a.icon-link i {
+            font-size: 20px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            color: #2c3e50 !important;
+            text-shadow: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .attr-nav > ul > li.icon-item > a.icon-link:hover {
+            background: transparent !important;
+            transform: scale(1.15) !important;
+        }
+
+        .attr-nav > ul > li.icon-item > a.icon-link:hover i {
+            color: #4CAF50 !important;
+            filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.6)) !important;
+        }
+
+        /* Badge count - Always visible */
+        .attr-nav > ul > li.icon-item > a.icon-link .badge-count {
+            position: absolute !important;
+            top: -4px !important;
+            right: -4px !important;
+            background: #ff4757 !important;
+            color: white !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            padding: 2px 6px !important;
+            border-radius: 10px !important;
+            min-width: 18px !important;
+            height: 18px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.6) !important;
+            border: 2px solid white !important;
+            line-height: 1 !important;
+        }
+
+        /* Home page/Transparent navbar - WHITE icons to match white text */
+        .navbar.white .attr-nav > ul > li.icon-item > a.icon-link i,
+        .navbar.no-background .attr-nav > ul > li.icon-item > a.icon-link i {
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .navbar.white .attr-nav > ul > li.icon-item > a.icon-link:hover i,
+        .navbar.no-background .attr-nav > ul > li.icon-item > a.icon-link:hover i {
+            color: #4CAF50 !important;
+            filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.8)) !important;
+        }
     </style>
     
     @stack('styles')
@@ -251,6 +432,84 @@
                 }, 4000); // 4 seconds
             });
         });
+
+        // Global notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.global-notification');
+            existingNotifications.forEach(notification => notification.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `global-notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    </div>
+                    <div class="notification-message">${message}</div>
+                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Add styles
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                max-width: 400px;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .notification-icon {
+                font-size: 18px;
+            }
+            .notification-message {
+                flex: 1;
+                font-weight: 500;
+            }
+            .notification-close {
+                background: none;
+                border: none;
+                color: white;
+                cursor: pointer;
+                padding: 0;
+                font-size: 14px;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
     @stack('scripts')
 </body>

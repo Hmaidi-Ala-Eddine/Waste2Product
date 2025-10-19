@@ -259,7 +259,7 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="addProductForm" method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
+      <form id="addProductForm" method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" onsubmit="event.preventDefault(); submitProductForm(this, false);">
         @csrf
         <div class="modal-body p-4">
           <div class="row">
@@ -334,7 +334,7 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description</label>
-                <textarea class="form-control" name="description" rows="4" placeholder="Enter product description"></textarea>
+                <textarea class="form-control" name="description" rows="4" placeholder="Entrez une description du produit"></textarea>
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -363,7 +363,7 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="editProductForm" method="POST" enctype="multipart/form-data">
+      <form id="editProductForm" method="POST" enctype="multipart/form-data" onsubmit="event.preventDefault(); submitProductForm(this, true);">
         @csrf
         @method('PUT')
         <div class="modal-body p-4">
@@ -440,7 +440,7 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description</label>
-                <textarea class="form-control" name="description" id="edit_description" rows="4" placeholder="Enter product description"></textarea>
+                <textarea class="form-control" name="description" id="edit_description" rows="4" placeholder="Entrez une description du produit"></textarea>
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -829,6 +829,78 @@ function clearAllFieldErrors(form) {
     });
 }
 
+// Handle form validation errors
+function handleValidationErrors(form, errors) {
+    // Clear previous errors
+    clearAllFieldErrors(form);
+    
+    // Display new errors
+    Object.keys(errors).forEach(fieldName => {
+        const field = form.querySelector(`[name="${fieldName}"]`);
+        if (field) {
+            field.classList.add('is-invalid');
+            const errorElement = field.parentNode.querySelector('.invalid-feedback');
+            if (errorElement) {
+                errorElement.textContent = errors[fieldName][0]; // Get first error message
+                errorElement.style.display = 'block';
+            }
+        }
+    });
+    
+    // Scroll to first error
+    const firstError = form.querySelector('.is-invalid');
+    if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstError.focus();
+    }
+}
+
+// Enhanced form submission with AJAX
+function submitProductForm(form, isEdit = false) {
+    const formData = new FormData(form);
+    const url = form.action;
+    const method = form.querySelector('input[name="_method"]')?.value || 'POST';
+    
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="material-symbols-rounded me-1">hourglass_empty</i>Sauvegarde en cours...';
+    
+    fetch(url, {
+        method: method,
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Success - close modal and reload page
+            const modal = bootstrap.Modal.getInstance(form.closest('.modal'));
+            modal.hide();
+            location.reload();
+        } else if (data.errors) {
+            // Validation errors
+            handleValidationErrors(form, data.errors);
+        } else {
+            // Other errors
+            alert(data.message || 'Une erreur est survenue');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue lors de la sauvegarde');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
 // Edit product function
 function editProduct(id) {
     fetch(`{{ url('admin/products') }}/${id}/data`)
@@ -900,6 +972,59 @@ function initProductsViewToggle(){
 
 @push('styles')
 <style>
+/* Validation Error Styles */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.invalid-feedback.show {
+    display: block;
+}
+
+/* Form Loading State */
+.form-submitting .form-control {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.form-submitting button[type="submit"] {
+    position: relative;
+}
+
+.form-submitting button[type="submit"]:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Edit and Delete Button Hover Effects */
 .edit-btn {
     color: #6c757d;

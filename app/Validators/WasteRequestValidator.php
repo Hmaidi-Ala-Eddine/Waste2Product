@@ -65,18 +65,6 @@ class WasteRequestValidator
     public static function rules(?WasteRequest $wasteRequest = null): array
     {
         $rules = [
-            'user_id' => [
-                'required', 'integer', 'exists:users,id',
-                function ($attr, $value, $fail) {
-                    $user = User::find($value);
-                    if ($user && $user->role === 'admin') {
-                        $fail('Admin users cannot be assigned to waste requests.');
-                    }
-                    if ($user && !$user->is_active) {
-                        $fail('Selected user is not active.');
-                    }
-                }
-            ],
             'waste_type' => ['required', 'string', Rule::in(array_keys(WasteRequest::getWasteTypes()))],
             'quantity' => ['required', 'numeric', 'min:0.1', 'max:999999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
             'state' => ['required', 'string', Rule::in(TunisiaStates::getStateValues())],
@@ -86,11 +74,17 @@ class WasteRequestValidator
                 'nullable', 'integer', 'exists:users,id',
                 function ($attr, $value, $fail) {
                     if ($value) {
-                        $collector = User::find($value);
-                        if ($collector && $collector->role !== 'collector') {
-                            $fail('Selected user is not a collector.');
+                        // Check if user has a verified collector profile
+                        $collectorProfile = \App\Models\Collector::where('user_id', $value)
+                                                                 ->where('verification_status', 'verified')
+                                                                 ->first();
+                        if (!$collectorProfile) {
+                            $fail('Selected user does not have a verified collector profile.');
                         }
-                        if ($collector && !$collector->is_active) {
+                        
+                        // Check if user account is active
+                        $user = User::find($value);
+                        if ($user && !$user->is_active) {
                             $fail('Selected collector is not active.');
                         }
                     }

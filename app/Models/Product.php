@@ -16,6 +16,7 @@ class Product extends Model
         'category',
         'condition',
         'price',
+        'stock',
         'status',
         'image_path',
     ];
@@ -133,6 +134,7 @@ class Product extends Model
     }
 
     /**
+<<<<<<< HEAD
      * Scope for products with orders.
      */
     public function scopeWithOrders($query)
@@ -315,18 +317,43 @@ class Product extends Model
     }
 
     /**
-     * Get order statistics for this product.
+     * Check if product is in stock.
      */
-    public function getOrderStats(): array
+    public function isInStock(): bool
     {
-        return [
-            'total_orders' => $this->orders()->count(),
-            'pending_orders' => $this->orders()->where('status', 'pending')->count(),
-            'confirmed_orders' => $this->orders()->where('status', 'confirmed')->count(),
-            'delivered_orders' => $this->orders()->where('status', 'delivered')->count(),
-            'cancelled_orders' => $this->orders()->where('status', 'cancelled')->count(),
-            'total_revenue' => $this->total_revenue,
-            'average_order_value' => $this->average_order_value,
-        ];
+        return $this->stock > 0;
+    }
+
+    /**
+     * Check if product is available for purchase.
+     */
+    public function isAvailableForPurchase(): bool
+    {
+        return $this->status === 'available' && $this->isInStock();
+    }
+
+    /**
+     * Decrease stock and update status if out of stock.
+     */
+    public function decreaseStock(int $quantity = 1): void
+    {
+        $this->decrement('stock', $quantity);
+        
+        if ($this->stock <= 0) {
+            $this->update(['status' => 'sold', 'stock' => 0]);
+        }
+    }
+
+    /**
+     * Increase stock.
+     */
+    public function increaseStock(int $quantity = 1): void
+    {
+        $this->increment('stock', $quantity);
+        
+        // If was sold/donated and stock is added, make available again
+        if (in_array($this->status, ['sold', 'donated']) && $this->stock > 0) {
+            $this->update(['status' => 'available']);
+        }
     }
 }

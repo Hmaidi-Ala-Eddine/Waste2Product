@@ -205,16 +205,16 @@
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/13.png') }}" alt="Icon Not Found">
-                                    <h4><a href="{{ route('front.services.details') }}">Waste Collection</a></h4>
+                                    <h4><a href="{{ route('front.services') }}">Waste Collection</a></h4>
                                 </div>
-                                <a href="{{ route('front.services.details') }}"><i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.services') }}"><i class="fas fa-long-arrow-right"></i></a>
                             </div>
                             <div class="overlay text-center">
                                 <div class="content">
                                     <div class="icon">
                                         <img src="{{ asset('assets/front/img/icon/13.png') }}" alt="Icon Not Found">
                                     </div>
-                                    <h4><a href="{{ route('front.services.details') }}">Waste Collection</a></h4>
+                                    <h4><a href="{{ route('front.services') }}">Waste Collection</a></h4>
                                     <p>
                                         Efficient waste collection services from homes, businesses, and industrial sites, ensuring proper sorting and responsible handling of all materials.
                                     </p>
@@ -230,16 +230,16 @@
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
-                                    <h4><a href="{{ route('front.services.details') }}">Material Recovery</a></h4>
+                                    <h4><a href="{{ route('front.services') }}">Material Recovery</a></h4>
                                 </div>
-                                <a href="{{ route('front.services.details') }}"><i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.services') }}"><i class="fas fa-long-arrow-right"></i></a>
                             </div>
                             <div class="overlay text-center">
                                 <div class="content">
                                     <div class="icon">
                                         <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
                                     </div>
-                                    <h4><a href="{{ route('front.services.details') }}">Material Recovery</a></h4>
+                                    <h4><a href="{{ route('front.services') }}">Material Recovery</a></h4>
                                     <p>
                                         Advanced sorting and processing techniques to recover valuable materials from waste streams, maximizing resource recovery and minimizing environmental impact.
                                     </p>
@@ -255,16 +255,16 @@
                             <div class="title">
                                 <div class="top">
                                     <img src="{{ asset('assets/front/img/icon/15.png') }}" alt="Icon Not Found">
-                                    <h4><a href="{{ route('front.services.details') }}">Product Transformation</a></h4>
+                                    <h4><a href="{{ route('front.services') }}">Product Transformation</a></h4>
                                 </div>
-                                <a href="{{ route('front.services.details') }}"><i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.services') }}"><i class="fas fa-long-arrow-right"></i></a>
                             </div>
                             <div class="overlay text-center">
                                 <div class="content">
                                     <div class="icon">
                                         <img src="{{ asset('assets/front/img/icon/14.png') }}" alt="Icon Not Found">
                                     </div>
-                                    <h4><a href="{{ route('front.services.details') }}">Product Transformation</a></h4>
+                                    <h4><a href="{{ route('front.services') }}">Product Transformation</a></h4>
                                     <p>
                                         Creative transformation of waste materials into new, valuable products through innovative design, repair, and upcycling processes.
                                     </p>
@@ -491,7 +491,7 @@
                                 <img src="{{ asset('assets/front/img/banner/imgs/1(1).png') }}" alt="Plastic Upcycling">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="{{ route('front.project.details') }}">Plastic Upcycling Initiative</a></h4>
+                                        <h4><a href="{{ route('front.project') }}">Plastic Upcycling Initiative</a></h4>
                                         <span>Recycling, Innovation</span>
                                         <p>
                                             Transforming plastic waste into durable construction materials, reducing landfill burden while creating valuable building resources.
@@ -506,7 +506,7 @@
                                 <img src="{{ asset('assets/front/img/banner/imgs/2 (1).png') }}" alt="Organic Waste Composting">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="{{ route('front.project.details') }}">Organic Waste Composting</a></h4>
+                                        <h4><a href="{{ route('front.project') }}">Organic Waste Composting</a></h4>
                                         <span>Composting, Agriculture</span>
                                         <p>
                                             Converting organic waste into nutrient-rich compost, supporting sustainable agriculture and reducing methane emissions.
@@ -521,7 +521,7 @@
                                 <img src="{{ asset('assets/front/img/banner/imgs/3 (1).png') }}" alt="E-Waste Recovery">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="{{ route('front.project.details') }}">E-Waste Recovery Program</a></h4>
+                                        <h4><a href="{{ route('front.project') }}">E-Waste Recovery Program</a></h4>
                                         <span>Electronics, Recovery</span>
                                         <p>
                                             Extracting valuable metals and components from electronic waste, preventing toxic materials from harming the environment.
@@ -536,7 +536,7 @@
                                 <img src="{{ asset('assets/front/img/banner/imgs/4 (2).png') }}" alt="Textile Regeneration">
                                 <div class="overlay">
                                     <div class="info">
-                                        <h4><a href="{{ route('front.project.details') }}">Textile Regeneration Project</a></h4>
+                                        <h4><a href="{{ route('front.project') }}">Textile Regeneration Project</a></h4>
                                         <span>Textiles, Circular Economy</span>
                                         <p>
                                             Transforming discarded textiles into new fabrics and products, extending material lifecycles and reducing fashion waste.
@@ -661,7 +661,7 @@
                             <a href="#"><i class="fas fa-envelope"></i></a>
                         </div>
                         <div class="info">
-                            <h4><a href="{{ route('front.team.details') }}">Aleesha Brown</a></h4>
+                            <h4><a href="{{ '#' }}">Aleesha Brown</a></h4>
                             <span>Environmental Director</span>
                         </div>
                     </div>
@@ -673,7 +673,7 @@
                             <a href="#"><i class="fas fa-envelope"></i></a>
                         </div>
                         <div class="info">
-                            <h4><a href="{{ route('front.team.details') }}">Kevin Martin</a></h4>
+                            <h4><a href="{{ '#' }}">Kevin Martin</a></h4>
                             <span>Sustainability Manager</span>
                         </div>
                     </div>
@@ -685,7 +685,7 @@
                             <a href="#"><i class="fas fa-envelope"></i></a>
                         </div>
                         <div class="info">
-                            <h4><a href="{{ route('front.team.details') }}">Sarah Albert</a></h4>
+                            <h4><a href="{{ '#' }}">Sarah Albert</a></h4>
                             <span>Circular Economy Specialist</span>
                         </div>
                     </div>
@@ -793,9 +793,9 @@
                         <div class="content">
                             <div class="info">
                                 <h2 class="blog-title">
-                                    <a href="{{ route('front.blog.single_with_sidebar') }}">Revolutionary Waste-to-Energy Solutions for Modern Cities</a>
+                                    <a href="{{ route('front.blog.standard') }}">Revolutionary Waste-to-Energy Solutions for Modern Cities</a>
                                 </h2>
-                                <a href="{{ route('front.blog.single_with_sidebar') }}" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.blog.standard') }}" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -812,9 +812,9 @@
                         <div class="content">
                             <div class="info">
                                 <h2 class="blog-title">
-                                    <a href="{{ route('front.blog.single_with_sidebar') }}">Circular Economy: Transforming Business Models for Sustainability</a>
+                                    <a href="{{ route('front.blog.standard') }}">Circular Economy: Transforming Business Models for Sustainability</a>
                                 </h2>
-                                <a href="{{ route('front.blog.single_with_sidebar') }}" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
+                                <a href="{{ route('front.blog.standard') }}" class="btn-read-more">Read More <i class="fas fa-long-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>

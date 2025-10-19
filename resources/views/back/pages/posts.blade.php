@@ -105,16 +105,11 @@
             </thead>
             <tbody>
               @forelse($posts as $index => $post)
-                @php
-                  // Cycle through available team images for profile pictures
-                  $avatarImages = ['team-1.jpg', 'team-2.jpg', 'team-3.jpg', 'team-4.jpg', 'team-5.jpg'];
-                  $avatarImage = $avatarImages[$index % count($avatarImages)];
-                @endphp
                 <tr>
                   <td>
                     <div class="d-flex px-2 py-1">
                       <div>
-                        <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $post->user->name }}">
+                        <img src="{{ $post->user->profile_picture_url }}" class="avatar avatar-sm me-3 border-radius-lg" alt="{{ $post->user->name }}" style="object-fit: cover;">
                       </div>
                       <div class="d-flex flex-column justify-content-center">
                         <h6 class="mb-0 text-sm">{{ $post->user->name }}</h6>
@@ -133,12 +128,16 @@
                       <img src="{{ asset('storage/' . $post->image) }}" 
                            class="avatar avatar-lg border-radius-lg" 
                            alt="Post image"
+                           style="object-fit: cover;"
                            loading="lazy"
-                           onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null; this.classList.add('opacity-6');">
+                           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                      <div style="display: none; width: 74px; height: 74px; border-radius: 0.75rem; background: #f8f9fa; align-items: center; justify-content: center; border: 2px dashed #dee2e6;">
+                        <i class="material-symbols-rounded text-secondary">image_not_supported</i>
+                      </div>
                     @else
-                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" 
-                           class="avatar avatar-lg border-radius-lg opacity-6" 
-                           alt="No image uploaded">
+                      <div style="display: flex; width: 74px; height: 74px; border-radius: 0.75rem; background: #f8f9fa; align-items: center; justify-content: center; border: 2px dashed #dee2e6; margin: 0 auto;">
+                        <i class="material-symbols-rounded text-secondary">add_photo_alternate</i>
+                      </div>
                     @endif
                   </td>
                   <td class="align-middle text-center text-sm">
@@ -180,17 +179,18 @@
         <div id="postsGridView" class="d-none px-3 pb-3">
           <div class="row g-3">
             @foreach($posts as $index => $post)
-              @php
-                $avatarImages = ['team-1.jpg','team-2.jpg','team-3.jpg','team-4.jpg','team-5.jpg'];
-                $avatarImage = $avatarImages[$index % count($avatarImages)];
-              @endphp
               <div class="col-12 col-md-6 col-xl-3">
                 <div class="card shadow-sm border-0 h-100 post-card">
                   <div class="ratio ratio-16x9 card-img-top bg-light overflow-hidden">
                     @if($post->image && trim($post->image) !== '')
-                      <img src="{{ asset('storage/' . $post->image) }}" class="object-fit-cover w-100 h-100" alt="post" loading="lazy" onerror="this.src='{{ asset('assets/back/img/' . $avatarImage) }}'; this.onerror=null; this.classList.add('opacity-6');">
+                      <img src="{{ asset('storage/' . $post->image) }}" class="object-fit-cover w-100 h-100" alt="post" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                      <div style="display: none; width: 100%; height: 100%; background: #f8f9fa; align-items: center; justify-content: center;">
+                        <i class="material-symbols-rounded text-secondary" style="font-size: 3rem;">image_not_supported</i>
+                      </div>
                     @else
-                      <img src="{{ asset('assets/back/img/' . $avatarImage) }}" class="object-fit-cover w-100 h-100 opacity-6" alt="post placeholder">
+                      <div style="display: flex; width: 100%; height: 100%; background: #f8f9fa; align-items: center; justify-content: center;">
+                        <i class="material-symbols-rounded text-secondary" style="font-size: 3rem;">add_photo_alternate</i>
+                      </div>
                     @endif
                   </div>
                   <div class="card-body">

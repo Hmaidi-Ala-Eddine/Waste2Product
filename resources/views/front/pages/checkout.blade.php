@@ -2,419 +2,478 @@
 
 @section('title', 'Checkout')
 
-@section('content')
-<!-- Page Title -->
-<section class="page-title" style="background-image: url({{ asset('assets/front/img/banner/page-title.webp') }});">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-content text-center">
-                    <h1 class="title">Checkout</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('front.home') }}">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('front.cart') }}">Cart</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Checkout</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Checkout Section -->
-<section class="checkout-section py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="checkout-form">
-                    <div class="checkout-header mb-4">
-                        <h3>Checkout Information</h3>
-                        <p class="text-muted">Please fill in your details to complete your order</p>
-                    </div>
-
-                    <form id="checkout-form">
-                        @csrf
-                        
-                        <!-- Payment Method -->
-                        <div class="form-section mb-4">
-                            <h5>Payment Method</h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card" checked>
-                                        <label class="form-check-label" for="credit_card">
-                                            <i class="fas fa-credit-card me-2"></i>Credit Card
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
-                                        <label class="form-check-label" for="paypal">
-                                            <i class="fab fa-paypal me-2"></i>PayPal
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
-                                        <label class="form-check-label" for="bank_transfer">
-                                            <i class="fas fa-university me-2"></i>Bank Transfer
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
-                                        <label class="form-check-label" for="cash">
-                                            <i class="fas fa-money-bill-wave me-2"></i>Cash on Delivery
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Shipping Address -->
-                        <div class="form-section mb-4">
-                            <h5>Shipping Address</h5>
-                            <div class="form-group">
-                                <label for="shipping_address" class="form-label">Full Address *</label>
-                                <textarea class="form-control" 
-                                          id="shipping_address" 
-                                          name="shipping_address" 
-                                          rows="3" 
-                                          placeholder="Enter your complete shipping address"
-                                          required></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Additional Notes -->
-                        <div class="form-section mb-4">
-                            <h5>Additional Notes</h5>
-                            <div class="form-group">
-                                <label for="notes" class="form-label">Order Notes (Optional)</label>
-                                <textarea class="form-control" 
-                                          id="notes" 
-                                          name="notes" 
-                                          rows="3" 
-                                          placeholder="Any special instructions or notes for your order"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Terms and Conditions -->
-                        <div class="form-section mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="terms" required>
-                                <label class="form-check-label" for="terms">
-                                    I agree to the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Privacy Policy</a>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="form-section">
-                            <button type="submit" class="btn btn-primary btn-lg w-100" id="checkout-btn">
-                                <i class="fas fa-credit-card me-2"></i>Complete Order
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="col-lg-4">
-                <div class="order-summary">
-                    <div class="summary-card">
-                        <h4>Order Summary</h4>
-                        
-                        <div class="order-items">
-                            @foreach($cartItems as $item)
-                                <div class="order-item">
-                                    <div class="row align-items-center">
-                                        <div class="col-3">
-                                            @if($item->product->image_path && file_exists(public_path('storage/' . $item->product->image_path)))
-                                                <img src="{{ asset('storage/' . $item->product->image_path) }}" 
-                                                     alt="{{ $item->product->name }}" 
-                                                     class="img-fluid rounded">
-                                            @else
-                                                <img src="{{ asset('assets/front/img/products/default-product.jpg') }}" 
-                                                     alt="{{ $item->product->name }}" 
-                                                     class="img-fluid rounded">
-                                            @endif
-                                        </div>
-                                        <div class="col-6">
-                                            <h6 class="item-name">{{ $item->product->name }}</h6>
-                                            <small class="text-muted">Qty: {{ $item->quantity }}</small>
-                                        </div>
-                                        <div class="col-3 text-end">
-                                            <span class="item-price">{{ $item->formatted_total_price }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                        
-                        <hr>
-                        
-                        <div class="summary-details">
-                            <div class="summary-row d-flex justify-content-between">
-                                <span>Subtotal:</span>
-                                <span>${{ number_format($cartTotal, 2) }}</span>
-                            </div>
-                            
-                            <div class="summary-row d-flex justify-content-between">
-                                <span>Shipping:</span>
-                                <span class="text-success">Free</span>
-                            </div>
-                            
-                            <div class="summary-row d-flex justify-content-between">
-                                <span>Tax:</span>
-                                <span>$0.00</span>
-                            </div>
-                            
-                            <hr>
-                            
-                            <div class="summary-row d-flex justify-content-between">
-                                <strong>Total:</strong>
-                                <strong>${{ number_format($cartTotal, 2) }}</strong>
-                            </div>
-                        </div>
-                        
-                        <div class="summary-actions mt-4">
-                            <a href="{{ route('front.cart') }}" class="btn btn-outline-secondary w-100">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Cart
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-@endsection
-
 @push('styles')
 <style>
-.checkout-section {
-    background-color: #f8f9fa;
-    min-height: 60vh;
-}
+    .checkout-wrapper {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding-top: 120px;
+        padding-bottom: 80px;
+    }
 
-.checkout-form {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-}
+    .checkout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
 
-.checkout-header h3 {
-    color: #2c3e50;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
 
-.form-section {
-    padding: 20px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
+    .checkout-header h1 {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
 
-.form-section:last-child {
-    border-bottom: none;
-}
+    .checkout-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+    }
 
-.form-section h5 {
-    color: #4a90e2;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.form-check {
-    margin-bottom: 10px;
-}
-
-.form-check-input:checked {
-    background-color: #4a90e2;
-    border-color: #4a90e2;
-}
-
-.form-check-label {
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.summary-card {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 20px;
-}
-
-.summary-card h4 {
-    color: #2c3e50;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-.order-item {
-    padding: 15px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.order-item:last-child {
-    border-bottom: none;
-}
-
-.order-item img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-}
-
-.item-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.item-price {
-    font-weight: 600;
-    color: #4a90e2;
-}
-
-.summary-row {
-    padding: 8px 0;
-}
-
-.summary-row:last-child {
-    border-bottom: none;
-}
-
-#checkout-btn {
-    background: linear-gradient(135deg, #4a90e2, #5aa3f0);
-    border: none;
-    padding: 15px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-#checkout-btn:hover {
-    background: linear-gradient(135deg, #357abd, #4a90e2);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
-}
-
-#checkout-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
     .checkout-form {
-        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    
-    .summary-card {
-        margin-top: 30px;
-        position: static;
+
+    .form-section {
+        margin-bottom: 30px;
     }
-}
+
+    .form-section h3 {
+        color: #2c3e50;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .payment-method {
+        position: relative;
+    }
+
+    .payment-method input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .payment-method label {
+        display: block;
+        padding: 15px;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .payment-method input[type="radio"]:checked + label {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .payment-method label i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .order-summary {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        height: fit-content;
+        position: sticky;
+        top: 140px;
+    }
+
+    .summary-title {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        color: #666;
+        font-size: 1rem;
+    }
+
+    .summary-value {
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-top: 2px solid #667eea;
+        margin-top: 15px;
+    }
+
+    .total-label {
+        color: #2c3e50;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .total-value {
+        color: #667eea;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .btn-checkout {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-top: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-checkout:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-checkout:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-back {
+        display: inline-block;
+        color: #667eea;
+        text-decoration: none;
+        padding: 10px 20px;
+        border: 2px solid #667eea;
+        border-radius: 25px;
+        font-weight: 600;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .checkout-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .order-summary {
+            position: static;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 @endpush
 
+@section('content')
+<div class="checkout-wrapper">
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1><i class="fas fa-lock"></i> Checkout</h1>
+        </div>
+
+        <div class="checkout-content">
+            <!-- Checkout Form -->
+            <div class="checkout-form">
+                <form id="checkoutForm">
+                    @csrf
+                    
+                    <!-- Shipping Information -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-shipping-fast"></i> Shipping Information</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" name="first_name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" name="last_name" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" name="phone" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Address *</label>
+                            <textarea name="address" class="form-control" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">City *</label>
+                                <input type="text" name="city" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Postal Code *</label>
+                                <input type="text" name="postal_code" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-credit-card"></i> Payment Method</h3>
+                        
+                        <div class="payment-methods">
+                            <div class="payment-method">
+                                <input type="radio" name="payment_method" value="card" id="card" required>
+                                <label for="card">
+                                    <i class="fas fa-credit-card"></i>
+                                    Credit Card
+                                </label>
+                            </div>
+                            
+                            <div class="payment-method">
+                                <input type="radio" name="payment_method" value="paypal" id="paypal" required>
+                                <label for="paypal">
+                                    <i class="fab fa-paypal"></i>
+                                    PayPal
+                                </label>
+                            </div>
+                            
+                            <div class="payment-method">
+                                <input type="radio" name="payment_method" value="cash" id="cash" required>
+                                <label for="cash">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    Cash on Delivery
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Details (shown when card is selected) -->
+                        <div id="cardDetails" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Card Number *</label>
+                                <input type="text" name="card_number" class="form-control" placeholder="1234 5678 9012 3456">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Expiry Date *</label>
+                                    <input type="text" name="card_expiry" class="form-control" placeholder="MM/YY">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">CVV *</label>
+                                    <input type="text" name="card_cvv" class="form-control" placeholder="123">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Cardholder Name *</label>
+                                <input type="text" name="card_name" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" name="terms" required style="margin-right: 10px;">
+                                I agree to the <a href="#" style="color: #667eea;">Terms and Conditions</a> and <a href="#" style="color: #667eea;">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h3 class="summary-title">Order Summary</h3>
+                
+                @foreach($cartItems as $item)
+                <div class="summary-item">
+                    <div>
+                        <div style="font-weight: 600; color: #2c3e50;">{{ $item->product->name }}</div>
+                        <div style="font-size: 0.9rem; color: #666;">Qty: {{ $item->quantity }}</div>
+                    </div>
+                    <div class="summary-value">{{ number_format($item->subtotal, 2) }} TND</div>
+                </div>
+                @endforeach
+                
+                <div class="summary-item">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-value">{{ number_format($subtotal, 2) }} TND</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Tax (19%)</span>
+                    <span class="summary-value">{{ number_format($tax, 2) }} TND</span>
+                </div>
+                
+                <div class="summary-total">
+                    <span class="total-label">Total</span>
+                    <span class="total-value">{{ number_format($total, 2) }} TND</span>
+                </div>
+                
+                <button type="button" class="btn-checkout" onclick="processCheckout()">
+                    <i class="fas fa-lock"></i> Complete Order
+                </button>
+                
+                <a href="{{ route('front.cart') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Cart
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkoutForm = document.getElementById('checkout-form');
-    const checkoutBtn = document.getElementById('checkout-btn');
-    
-    checkoutForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Validate form
-        if (!validateForm()) {
-            return;
+// Show/hide card details based on payment method
+document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const cardDetails = document.getElementById('cardDetails');
+        if (this.value === 'card') {
+            cardDetails.style.display = 'block';
+        } else {
+            cardDetails.style.display = 'none';
         }
-        
-        // Disable button and show loading
-        checkoutBtn.disabled = true;
-        checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-        
-        // Get form data
-        const formData = new FormData(checkoutForm);
-        
-        // Submit form
-        fetch('{{ route("front.checkout.process") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                showNotification('Checkout completed successfully! Redirecting to payment...', 'success');
-                
-                // Redirect to payment page
-                setTimeout(() => {
-                    window.location.href = data.redirect_url;
-                }, 2000);
-            } else {
-                showNotification(data.message, 'error');
-                checkoutBtn.disabled = false;
-                checkoutBtn.innerHTML = '<i class="fas fa-credit-card me-2"></i>Complete Order';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('An error occurred. Please try again.', 'error');
-            checkoutBtn.disabled = false;
-            checkoutBtn.innerHTML = '<i class="fas fa-credit-card me-2"></i>Complete Order';
-        });
     });
 });
 
-function validateForm() {
-    const shippingAddress = document.getElementById('shipping_address').value.trim();
-    const terms = document.getElementById('terms').checked;
+// Process checkout
+function processCheckout() {
+    const form = document.getElementById('checkoutForm');
+    const formData = new FormData(form);
     
-    if (!shippingAddress) {
-        showNotification('Please enter your shipping address', 'error');
-        return false;
+    // Validate form
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
     }
     
-    if (!terms) {
-        showNotification('Please accept the terms and conditions', 'error');
-        return false;
-    }
+    // Disable button
+    const btn = document.querySelector('.btn-checkout');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     
-    return true;
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
-    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    notification.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
+    // Convert FormData to JSON
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
     
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
+    fetch('{{ route("front.checkout.process") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Order placed successfully! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = '{{ route("front.order.success") }}';
+            }, 2000);
+        } else {
+            showNotification(data.message, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Complete Order';
         }
-    }, 5000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred. Please try again.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lock"></i> Complete Order';
+    });
 }
 </script>
 @endpush

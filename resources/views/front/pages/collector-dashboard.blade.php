@@ -256,6 +256,48 @@
     
     .form-control:focus, .form-select:focus {
         }
+    
+    /* Leaderboard Enhancements */
+    .leaderboard-item {
+        transition: all 0.3s ease !important;
+    }
+    
+    .leaderboard-item:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    }
+    
+    .leaderboard-item.my-rank {
+        animation: pulse-green 2s infinite;
+    }
+    
+    @keyframes pulse-green {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        50% {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+    }
+    
+    /* Scrollbar Styling */
+    .leaderboard-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .leaderboard-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .leaderboard-scroll::-webkit-scrollbar-thumb {
+        background: #10b981;
+        border-radius: 10px;
+    }
+    
+    .leaderboard-scroll::-webkit-scrollbar-thumb:hover {
+        background: #059669;
+    }
         
         .dashboard-card {
             padding: 20px;
@@ -268,6 +310,224 @@
         .request-details {
             grid-template-columns: 1fr;
         }
+    }
+
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        top: 100px;
+        right: -400px;
+        background: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        min-width: 320px;
+        transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .toast-notification.show { right: 30px; }
+    .toast-notification.success { border-left: 4px solid #4CAF50; }
+    .toast-notification.error { border-left: 4px solid #f44336; }
+
+    .toast-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .toast-notification.success .toast-icon {
+        background: #e8f5e9;
+        color: #4CAF50;
+    }
+
+    .toast-notification.error .toast-icon {
+        background: #ffebee;
+        color: #f44336;
+    }
+
+    .toast-content { flex: 1; }
+    .toast-message {
+        color: #2c3e50;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        color: #7f8c8d;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .toast-close:hover {
+        background: #f0f0f0;
+        color: #2c3e50;
+    }
+
+    /* Custom Confirmation Modal */
+    .confirm-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .confirm-modal {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        animation: slideUp 0.3s ease;
+        position: relative;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .confirm-modal-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 25px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: white;
+    }
+
+    .confirm-modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    .confirm-modal-message {
+        font-size: 16px;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .confirm-modal-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .confirm-btn {
+        padding: 14px 32px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+
+    .confirm-btn-cancel {
+        background: #e0e0e0;
+        color: #2c3e50;
+    }
+
+    .confirm-btn-cancel:hover {
+        background: #d0d0d0;
+        transform: translateY(-2px);
+    }
+
+    .confirm-btn-ok {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .confirm-btn-ok:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Toggle Collected Button */
+    .btn-toggle-collected {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-toggle-collected:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-toggle-collected i {
+        font-size: 12px;
+    }
+
+    /* Collected items transition */
+    .collected-item {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .collected-item.hidden {
+        max-height: 0;
+        opacity: 0;
+        padding: 0;
+        margin: 0;
+        border: none;
     }
 </style>
 @endpush
@@ -282,6 +542,214 @@
                 Collector Dashboard
             </h2>
             <p>View and accept available waste collection requests in your area</p>
+        </div>
+
+        <!-- Performance Dashboard Row -->
+        <div class="row mb-4">
+            <!-- Performance Stats Cards -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #10b981;">
+                    <div class="mb-3">
+                        <i class="fas fa-trophy" style="font-size: 2.5rem; color: #10b981;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #10b981; font-weight: 700;">{{ $totalCollections }}</h2>
+                    <p class="text-muted mb-0 small">Total Collections</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #3b82f6;">
+                    <div class="mb-3">
+                        <i class="fas fa-calendar-check" style="font-size: 2.5rem; color: #3b82f6;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #3b82f6; font-weight: 700;">{{ $thisMonthCollections }}</h2>
+                    <p class="text-muted mb-0 small">This Month</p>
+                    @if($growthPercentage > 0)
+                        <small class="text-success"><i class="fas fa-arrow-up"></i> +{{ $growthPercentage }}%</small>
+                    @elseif($growthPercentage < 0)
+                        <small class="text-danger"><i class="fas fa-arrow-down"></i> {{ $growthPercentage }}%</small>
+                    @endif
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #f59e0b;">
+                    <div class="mb-3">
+                        <i class="fas fa-weight-hanging" style="font-size: 2.5rem; color: #f59e0b;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #f59e0b; font-weight: 700;">{{ number_format($totalWasteCollected, 1) }}</h2>
+                    <p class="text-muted mb-0 small">Total Waste (kg)</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="dashboard-card text-center" style="border-top-color: #8b5cf6;">
+                    <div class="mb-3">
+                        <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #8b5cf6;"></i>
+                    </div>
+                    <h2 class="mb-1" style="color: #8b5cf6; font-weight: 700;">{{ $successRate }}%</h2>
+                    <p class="text-muted mb-0 small">Success Rate</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance & Leaderboard Row -->
+        <div class="row mb-4">
+            <!-- Performance Details -->
+            <div class="col-lg-6 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-chart-bar me-2"></i>My Performance</h3>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-star" style="font-size: 2rem; color: #fbbf24;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">{{ number_format($averageRating, 1) }}/5.0</h4>
+                                <small class="text-muted">Average Rating</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-medal" style="font-size: 2rem; color: #10b981;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">#{{ $myRank }}</h4>
+                                <small class="text-muted">My Rank</small>
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-cloud" style="font-size: 2rem; color: #06b6d4;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">{{ number_format($co2Saved, 1) }} kg</h4>
+                                <small class="text-muted">CO₂ Saved</small>
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="p-3 bg-light rounded">
+                                <i class="fas fa-tree" style="font-size: 2rem; color: #22c55e;"></i>
+                                <h4 class="mt-2 mb-0" style="color: #1f2937;">{{ number_format($treesSaved, 1) }}</h4>
+                                <small class="text-muted">Trees Saved</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="col-lg-6 mb-4">
+                <div class="dashboard-card">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-trophy me-2"></i>Top Collectors Leaderboard</h3>
+                        <small class="text-muted">Best performers this month</small>
+                    </div>
+                    
+                    <div class="leaderboard-scroll" style="max-height: 450px; overflow-y: auto; padding-right: 5px;">
+                        @foreach($leaderboard as $leader)
+                            <div class="leaderboard-item {{ $leader['id'] == auth()->user()->collector->id ? 'my-rank' : '' }}" 
+                                 style="display: flex; 
+                                        align-items: center; 
+                                        padding: 18px; 
+                                        margin-bottom: 12px; 
+                                        border-radius: 12px; 
+                                        {{ $leader['id'] == auth()->user()->collector->id ? 'background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);' : 'background: #f9fafb; border: 1px solid #e5e7eb;' }}
+                                        transition: all 0.3s ease;
+                                        cursor: default;">
+                                
+                                <!-- Rank Badge -->
+                                <div style="margin-right: 15px; min-width: 50px; text-align: center;">
+                                    @if($leader['rank'] == 1)
+                                        <div style="position: relative;">
+                                            <i class="fas fa-crown" style="font-size: 2.2rem; color: #fbbf24; filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.5));"></i>
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); font-size: 0.75rem;">1</div>
+                                        </div>
+                                    @elseif($leader['rank'] == 2)
+                                        <div style="position: relative;">
+                                            <i class="fas fa-medal" style="font-size: 2rem; color: #c0c0c0; filter: drop-shadow(0 2px 4px rgba(192, 192, 192, 0.5));"></i>
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #666; font-size: 0.7rem;">2</div>
+                                        </div>
+                                    @elseif($leader['rank'] == 3)
+                                        <div style="position: relative;">
+                                            <i class="fas fa-medal" style="font-size: 2rem; color: #cd7f32; filter: drop-shadow(0 2px 4px rgba(205, 127, 50, 0.5));"></i>
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #fff; font-size: 0.7rem;">3</div>
+                                        </div>
+                                    @else
+                                        <div style="width: 45px; 
+                                                    height: 45px; 
+                                                    border-radius: 50%; 
+                                                    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); 
+                                                    display: flex; 
+                                                    align-items: center; 
+                                                    justify-content: center; 
+                                                    font-weight: 800; 
+                                                    color: #6b7280; 
+                                                    font-size: 1.1rem;
+                                                    border: 2px solid #fff;
+                                                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                            {{ $leader['rank'] }}
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                <!-- Collector Info -->
+                                <div style="flex-grow: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <!-- Name & Company -->
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                <strong style="color: #1f2937; font-size: 1.05rem;">{{ $leader['name'] }}</strong>
+                                                @if($leader['id'] == auth()->user()->collector->id)
+                                                    <span class="badge" style="background: #10b981; color: white; font-size: 0.7rem; padding: 3px 8px; border-radius: 8px;">YOU</span>
+                                                @endif
+                                            </div>
+                                            @if($leader['company_name'])
+                                                <div style="color: #6b7280; font-size: 0.85rem; margin-bottom: 6px;">
+                                                    <i class="fas fa-building" style="font-size: 0.75rem; margin-right: 4px;"></i>
+                                                    {{ $leader['company_name'] }}
+                                                </div>
+                                            @endif
+                                            
+                                            <!-- Star Rating with Number -->
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="fas fa-star" style="color: {{ $i <= $leader['rating'] ? '#fbbf24' : '#e5e7eb' }}; font-size: 0.9rem;"></i>
+                                                @endfor
+                                                <span style="color: #fbbf24; font-weight: 700; font-size: 0.95rem; margin-left: 4px;">
+                                                    {{ number_format($leader['rating'], 1) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Collections Badge -->
+                                        <div style="text-align: right;">
+                                            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                                        color: white; 
+                                                        padding: 8px 14px; 
+                                                        border-radius: 10px; 
+                                                        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+                                                        min-width: 80px;">
+                                                <div style="font-size: 1.3rem; font-weight: 800; line-height: 1;">
+                                                    {{ $leader['total_collections'] }}
+                                                </div>
+                                                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; opacity: 0.9;">
+                                                    Collections
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    <!-- Leaderboard Footer -->
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e5e7eb; text-align: center;">
+                        <small style="color: #6b7280;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Rankings updated in real-time based on total collections
+                        </small>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row">
@@ -392,13 +860,18 @@
             <!-- My Accepted Requests -->
             <div class="col-lg-4">
                 <div class="dashboard-card">
-                    <div class="card-header-custom">
+                    <div class="card-header-custom" style="display: flex; justify-content: space-between; align-items: center;">
                         <h3><i class="fas fa-tasks me-2"></i>My Collections</h3>
+                        @if($myRequests->where('status', 'collected')->count() > 0)
+                            <button onclick="toggleCollectedItems()" class="btn-toggle-collected" id="toggleBtn">
+                                <i class="fas fa-eye-slash"></i> Hide Collected
+                            </button>
+                        @endif
                     </div>
                     
                     @if($myRequests->count() > 0)
                         @foreach($myRequests as $request)
-                            <div class="request-item">
+                            <div class="request-item {{ $request->status === 'collected' ? 'collected-item' : '' }}">
                                 <div class="request-header">
                                     <span class="status-badge status-{{ $request->status }}">
                                         {{ $request->status_formatted }}
@@ -435,19 +908,40 @@
         </div>
     </div>
 </div>
+
+<!-- Custom Confirmation Modal -->
+<div id="confirmModal" class="confirm-modal-overlay" style="display: none;">
+    <div class="confirm-modal">
+        <div class="confirm-modal-icon">
+            <i class="fas fa-question-circle"></i>
+        </div>
+        <h3 class="confirm-modal-title" id="confirmTitle">Confirm Action</h3>
+        <p class="confirm-modal-message" id="confirmMessage">Are you sure you want to proceed?</p>
+        <div class="confirm-modal-actions">
+            <button class="confirm-btn confirm-btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+            <button class="confirm-btn confirm-btn-ok" id="confirmOkBtn">OK</button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
 // Accept request
 function acceptRequest(requestId) {
-    if (!confirm('Are you sure you want to accept this collection request?')) {
-        return;
-    }
-    
-    // Show loading state
-    const requestItem = document.getElementById(`request-${requestId}`);
-    const originalContent = requestItem.innerHTML;
+    showConfirmModal(
+        'Accept Collection Request',
+        'Are you sure you want to accept this collection request?',
+        () => {
+            const requestItem = document.getElementById(`request-${requestId}`);
+            const originalContent = requestItem.innerHTML;
+            processAcceptRequest(requestId, requestItem, originalContent);
+        }
+    );
+}
+
+function processAcceptRequest(requestId, requestItem, originalContent) {
     requestItem.innerHTML = '<div class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Accepting...</div>';
     
     fetch(`{{ url('/collector/accept-request') }}/${requestId}`, {
@@ -472,22 +966,27 @@ function acceptRequest(requestId) {
                 window.location.reload();
             }, 2000);
         } else {
-            alert(data.error || 'Failed to accept request');
+            showToast(data.error || 'Failed to accept request', 'error');
             requestItem.innerHTML = originalContent;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.', 'error');
         requestItem.innerHTML = originalContent;
     });
 }
 
 // Complete collection
 function completeCollection(requestId) {
-    if (!confirm('Mark this collection as complete?')) {
-        return;
-    }
+    showConfirmModal(
+        'Mark as Collected',
+        'Mark this collection as complete?',
+        () => processCompleteCollection(requestId)
+    );
+}
+
+function processCompleteCollection(requestId) {
     
     fetch(`{{ url('/collector/complete-collection') }}/${requestId}`, {
         method: 'POST',
@@ -499,16 +998,107 @@ function completeCollection(requestId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(data.message);
-            window.location.reload();
+            showToast(data.message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert(data.error || 'Failed to complete collection');
+            showToast(data.error || 'Failed to complete collection', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.', 'error');
     });
+}
+
+// Toast Notification System
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// Custom Confirmation Modal
+let confirmCallback = null;
+
+function showConfirmModal(title, message, onConfirm) {
+    confirmCallback = onConfirm;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Attach confirm handler
+    document.getElementById('confirmOkBtn').onclick = function() {
+        if (confirmCallback) {
+            const callback = confirmCallback; // Store before closing
+            closeConfirmModal();
+            callback(); // Execute after closing
+        } else {
+            closeConfirmModal();
+        }
+    };
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    confirmCallback = null;
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeConfirmModal();
+    }
+});
+
+// Close modal on overlay click
+document.getElementById('confirmModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeConfirmModal();
+    }
+});
+
+// Toggle Collected Items
+let collectedItemsVisible = true;
+
+function toggleCollectedItems() {
+    const collectedItems = document.querySelectorAll('.collected-item');
+    const toggleBtn = document.getElementById('toggleBtn');
+    
+    collectedItemsVisible = !collectedItemsVisible;
+    
+    collectedItems.forEach(item => {
+        if (collectedItemsVisible) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+    
+    // Update button text and icon
+    if (collectedItemsVisible) {
+        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Collected';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Show Collected';
+    }
 }
 </script>
 @endpush
