@@ -63,7 +63,6 @@
                 <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
                 <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
                 <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
-                <option value="donated" {{ request('status') == 'donated' ? 'selected' : '' }}>Donated</option>
                 <option value="reserved" {{ request('status') == 'reserved' ? 'selected' : '' }}>Reserved</option>
               </select>
             </div>
@@ -149,8 +148,6 @@
                       <span class="badge badge-sm bg-gradient-success">Available</span>
                     @elseif($product->status === 'sold')
                       <span class="badge badge-sm bg-gradient-info">Sold</span>
-                    @elseif($product->status === 'donated')
-                      <span class="badge badge-sm bg-gradient-warning">Donated</span>
                     @else
                       <span class="badge badge-sm bg-gradient-secondary">Reserved</span>
                     @endif
@@ -407,7 +404,6 @@
                 <select class="form-control" name="status" id="edit_status">
                   <option value="available">Available</option>
                   <option value="sold">Sold</option>
-                  <option value="donated">Donated</option>
                   <option value="reserved">Reserved</option>
                 </select>
                 <div class="invalid-feedback"></div>

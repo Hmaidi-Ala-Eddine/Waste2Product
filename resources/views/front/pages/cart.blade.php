@@ -356,7 +356,7 @@
             <!-- Cart Items -->
             <div class="cart-items">
                 @foreach($cartItems as $item)
-                <div class="cart-item" id="cart-item-{{ $item->id }}">
+                <div class="cart-item" id="cart-item-{{ $item->product_id }}">
                     <!-- Item Image -->
                     @if($item->product->image_path)
                         <img src="{{ asset('storage/' . $item->product->image_path) }}" alt="{{ $item->product->name }}" class="item-image">
@@ -379,13 +379,13 @@
                         <div class="item-controls">
                             <!-- Quantity Control -->
                             <div class="quantity-control">
-                                <button class="qty-btn" onclick="changeQuantity({{ $item->id }}, -1)" type="button">-</button>
-                                <input type="number" class="qty-input" id="qty-{{ $item->id }}" value="{{ $item->quantity }}" min="1" max="10" readonly data-current="{{ $item->quantity }}">
-                                <button class="qty-btn" onclick="changeQuantity({{ $item->id }}, 1)" type="button">+</button>
+                                <button class="qty-btn" onclick="changeQuantity({{ $item->product_id }}, -1)" type="button">-</button>
+                                <input type="number" class="qty-input" id="qty-{{ $item->product_id }}" value="{{ $item->quantity }}" min="1" max="10" readonly data-current="{{ $item->quantity }}">
+                                <button class="qty-btn" onclick="changeQuantity({{ $item->product_id }}, 1)" type="button">+</button>
                             </div>
 
                             <!-- Remove Button -->
-                            <button class="remove-btn" onclick="removeItem({{ $item->id }})">
+                            <button class="remove-btn" onclick="removeItem({{ $item->product_id }})">
                                 <i class="fas fa-trash"></i> Remove
                             </button>
                         </div>
@@ -394,7 +394,7 @@
                     <!-- Item Price -->
                     <div class="item-price">
                         <div class="price-label">Price</div>
-                        <div class="price-value" id="item-subtotal-{{ $item->id }}">
+                        <div class="price-value" id="item-subtotal-{{ $item->product_id }}">
                             {{ number_format($item->subtotal, 2) }} TND
                         </div>
                     </div>
@@ -452,8 +452,8 @@
 @push('scripts')
 <script>
 // Change Quantity (wrapper to prevent bugs)
-function changeQuantity(itemId, delta) {
-    const qtyInput = document.getElementById(`qty-${itemId}`);
+function changeQuantity(productId, delta) {
+    const qtyInput = document.getElementById(`qty-${productId}`);
     const currentQty = parseInt(qtyInput.dataset.current) || parseInt(qtyInput.value);
     const newQty = currentQty + delta;
     
@@ -461,19 +461,19 @@ function changeQuantity(itemId, delta) {
         return; // Don't allow invalid quantities
     }
     
-    updateQuantity(itemId, newQty);
+    updateQuantity(productId, newQty);
 }
 
 // Update Quantity with AJAX (No Page Refresh)
-function updateQuantity(itemId, newQty) {
+function updateQuantity(productId, newQty) {
     if (newQty < 1 || newQty > 10) return;
 
     // Show loading state
-    const qtyInput = document.querySelector(`#cart-item-${itemId} .qty-input`);
+    const qtyInput = document.querySelector(`#cart-item-${productId} .qty-input`);
     const originalValue = qtyInput.value;
     qtyInput.style.opacity = '0.5';
 
-    fetch(`/cart/update/${itemId}`, {
+    fetch(`/cart/update/${productId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -485,7 +485,7 @@ function updateQuantity(itemId, newQty) {
     .then(data => {
         if (data.success) {
             // Update item subtotal
-            document.getElementById(`item-subtotal-${itemId}`).textContent = 
+            document.getElementById(`item-subtotal-${productId}`).textContent = 
                 parseFloat(data.subtotal).toFixed(2) + ' TND';
             
             // Update quantity input and data attribute
@@ -534,14 +534,14 @@ function updateCartTotals() {
 }
 
 // Remove Item with smooth animation
-function removeItem(itemId) {
+function removeItem(productId) {
     if (!confirm('Remove this item from cart?')) return;
 
-    const itemElement = document.getElementById(`cart-item-${itemId}`);
+    const itemElement = document.getElementById(`cart-item-${productId}`);
     itemElement.style.opacity = '0.5';
     itemElement.style.pointerEvents = 'none';
 
-    fetch(`/cart/remove/${itemId}`, {
+    fetch(`/cart/remove/${productId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

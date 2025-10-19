@@ -91,6 +91,14 @@ class Order extends Model
     }
 
     /**
+     * Scope for completed orders.
+     */
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    /**
      * Scope for orders with product details.
      */
     public function scopeWithProduct($query)
@@ -160,6 +168,7 @@ class Order extends Model
             'confirmed' => 'info',
             'shipped' => 'primary',
             'delivered' => 'success',
+            'completed' => 'success',
             'cancelled' => 'danger',
             default => 'secondary'
         };
@@ -195,6 +204,14 @@ class Order extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    /**
+     * Check if order is completed.
+     */
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed';
     }
 
     /**

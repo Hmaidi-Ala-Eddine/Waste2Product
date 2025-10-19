@@ -95,7 +95,7 @@ class ProductController extends Controller
                 'category' => 'required|in:furniture,electronics,plastic,textile,metal',
                 'condition' => 'nullable|in:excellent,good,fair,poor',
                 'price' => 'nullable|numeric|min:0',
-                'status' => 'required|in:available,sold,donated,reserved',
+                'status' => 'required|in:available,sold,reserved',
                 'waste_request_id' => 'nullable|exists:waste_requests,id',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ], [
@@ -210,7 +210,7 @@ class ProductController extends Controller
                 'category' => 'required|in:furniture,electronics,plastic,textile,metal',
                 'condition' => 'nullable|in:excellent,good,fair,poor',
                 'price' => 'nullable|numeric|min:0',
-                'status' => 'required|in:available,sold,donated,reserved',
+                'status' => 'required|in:available,sold,reserved',
                 'waste_request_id' => 'nullable|exists:waste_requests,id',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ], [
@@ -313,10 +313,15 @@ class ProductController extends Controller
     public function changeStatus(Request $request, Product $product)
     {
         $request->validate([
-            'status' => 'required|in:available,sold,donated,reserved'
+            'status' => 'required|in:available,sold,reserved'
         ]);
 
-        $product->update(['status' => $request->status]);
+        // Use special method for making available
+        if ($request->status === 'available') {
+            $product->makeAvailable();
+        } else {
+            $product->update(['status' => $request->status]);
+        }
 
         return redirect()->back()
             ->with('success', 'Product status updated successfully.');

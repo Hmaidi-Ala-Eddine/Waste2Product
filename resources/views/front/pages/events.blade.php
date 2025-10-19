@@ -684,12 +684,6 @@ function sharePost(eventId){
         margin-bottom: 10px;
     }
 
-    .pagination {
-        display: flex;
-        justify-content: center;
-        margin-top: 40px;
-    }
-
     /* Toast Notification */
     .toast-notification {
         position: fixed;

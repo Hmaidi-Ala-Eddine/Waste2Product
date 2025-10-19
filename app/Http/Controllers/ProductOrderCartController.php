@@ -89,7 +89,6 @@ class ProductOrderCartController extends Controller
                 'available' => Product::where('status', 'available')->count(),
                 'reserved' => Product::where('status', 'reserved')->count(),
                 'sold' => Product::where('status', 'sold')->count(),
-                'donated' => Product::where('status', 'donated')->count(),
             ],
             'orders' => [
                 'total' => Order::count(),

@@ -19,10 +19,14 @@ class Product extends Model
         'stock',
         'status',
         'image_path',
+        'reserved_by',
+        'reserved_at',
+        'reserved_message',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'reserved_at' => 'datetime',
     ];
 
     /**
@@ -47,14 +51,6 @@ class Product extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
-    }
-
-    /**
-     * Get the cart items for this product.
-     */
-    public function cartItems(): HasMany
-    {
-        return $this->hasMany(Cart::class);
     }
 
     /**
@@ -199,45 +195,6 @@ class Product extends Model
     }
 
     /**
-     * Scope for products with cart items.
-     */
-    public function scopeWithCartItems($query)
-    {
-        return $query->with(['cartItems' => function($q) {
-            $q->with(['user:id,name,email'])
-              ->orderBy('created_at', 'desc');
-        }]);
-    }
-
-    /**
-     * Scope for products with both orders and cart items.
-     */
-    public function scopeWithOrdersAndCart($query)
-    {
-        return $query->with([
-            'orders' => function($q) {
-                $q->with(['buyer:id,name,email'])
-                  ->orderBy('created_at', 'desc');
-            },
-            'cartItems' => function($q) {
-                $q->with(['user:id,name,email'])
-                  ->orderBy('created_at', 'desc');
-            },
-            'user:id,name,email'
-        ]);
-    }
-
-    /**
-     * Scope for best selling products.
-     */
-    public function scopeBestSelling($query, $limit = 10)
-    {
-        return $query->withCount('orders as sales_count')
-                    ->orderBy('sales_count', 'desc')
-                    ->limit($limit);
-    }
-
-    /**
      * Scope for products with highest revenue.
      */
     public function scopeHighestRevenue($query, $limit = 10)
@@ -351,9 +308,45 @@ class Product extends Model
     {
         $this->increment('stock', $quantity);
         
-        // If was sold/donated and stock is added, make available again
-        if (in_array($this->status, ['sold', 'donated']) && $this->stock > 0) {
+        // If was sold and stock is added, make available again
+        if ($this->status === 'sold' && $this->stock > 0) {
             $this->update(['status' => 'available']);
         }
+    }
+
+    /**
+     * Make product available and ensure it has stock
+     */
+    public function makeAvailable(int $stock = 1): void
+    {
+        $this->update([
+            'status' => 'available',
+            'stock' => max($stock, 1), // Ensure at least 1 in stock
+            'reserved_by' => null,
+            'reserved_at' => null,
+            'reserved_message' => null,
+        ]);
+    }
+
+    /**
+     * Boot method to handle automatic stock management
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When status is updated to 'available', ensure stock > 0
+        static::updating(function ($product) {
+            if ($product->isDirty('status') && $product->status === 'available') {
+                // If stock is 0 or null, set it to 1
+                if ($product->stock <= 0) {
+                    $product->stock = 1;
+                }
+                // Clear any reservation data
+                $product->reserved_by = null;
+                $product->reserved_at = null;
+                $product->reserved_message = null;
+            }
+        });
     }
 }

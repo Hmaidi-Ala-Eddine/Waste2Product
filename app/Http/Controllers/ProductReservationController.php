@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\ProductReservation;
 use App\Mail\ProductReservationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -30,18 +29,13 @@ class ProductReservationController extends Controller
             'message.min' => 'Le message doit contenir au moins 10 caractères.',
         ]);
 
-        // Create reservation
-        $reservation = ProductReservation::create([
-            'product_id' => $product->id,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'message' => $request->message,
-            'status' => 'active', // Use existing enum value
+        // Update product with reservation data
+        $product->update([
+            'status' => 'reserved',
+            'reserved_by' => $request->email,
+            'reserved_at' => now(),
+            'reserved_message' => $request->message,
         ]);
-
-        // Change product status to reserved
-        $product->update(['status' => 'reserved']);
 
         // Send email to product owner
         try {
@@ -81,7 +75,13 @@ class ProductReservationController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à effectuer cette action.');
         }
 
-        $product->update(['status' => 'available']);
+        // Clear reservation data and make available
+        $product->update([
+            'status' => 'available',
+            'reserved_by' => null,
+            'reserved_at' => null,
+            'reserved_message' => null,
+        ]);
 
         if (request()->expectsJson() || request()->ajax()) {
             return response()->json([

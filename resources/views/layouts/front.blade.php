@@ -316,6 +316,100 @@
             color: #4CAF50 !important;
             filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.8)) !important;
         }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            padding: 0;
+            list-style: none;
+            gap: 8px;
+        }
+
+        .pagination li {
+            display: inline-block;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 8px 12px;
+            margin: 0 2px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .pagination a:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .pagination .active span {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .pagination .disabled span {
+            background: #f8f9fa;
+            color: #adb5bd;
+            border-color: #e9ecef;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Pagination wrapper */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        /* Responsive pagination */
+        @media (max-width: 768px) {
+            .pagination {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .pagination a,
+            .pagination span {
+                min-width: 36px;
+                height: 36px;
+                font-size: 13px;
+                padding: 6px 10px;
+            }
+        }
+
+        /* Hide pagination icons that might be too large */
+        .pagination i {
+            font-size: 12px !important;
+            line-height: 1 !important;
+        }
+
+        .pagination .fa-chevron-left,
+        .pagination .fa-chevron-right,
+        .pagination .fa-angle-left,
+        .pagination .fa-angle-right {
+            font-size: 10px !important;
+        }
     </style>
     
     @stack('styles')

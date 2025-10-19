@@ -49,7 +49,6 @@
                                     <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
                                     <option value="reserved" {{ request('status') == 'reserved' ? 'selected' : '' }}>Reserved</option>
                                     <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
-                                    <option value="donated" {{ request('status') == 'donated' ? 'selected' : '' }}>Donated</option>
                                 </select>
                             </div>
                             

@@ -281,16 +281,6 @@ Route::get('/api/analytics', [\App\Http\Controllers\ProductOrderCartController::
 Route::get('/api/products-pending-actions', [\App\Http\Controllers\ProductOrderCartController::class, 'productsWithPendingActions'])->name('api.products-pending-actions');
 Route::get('/api/user-cart-orders', [\App\Http\Controllers\ProductOrderCartController::class, 'userCartAndOrders'])->name('api.user-cart-orders');
 
-// Frontend Cart Routes
-Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('front.cart');
-Route::post('/cart/add', [\App\Http\Controllers\CartController::class, 'addItem'])->name('front.cart.add');
-Route::post('/cart/update', [\App\Http\Controllers\CartController::class, 'updateQuantity'])->name('front.cart.update');
-Route::post('/cart/remove', [\App\Http\Controllers\CartController::class, 'removeItem'])->name('front.cart.remove');
-Route::post('/cart/clear', [\App\Http\Controllers\CartController::class, 'clearCart'])->name('front.cart.clear');
-Route::get('/cart/summary', [\App\Http\Controllers\CartController::class, 'getCartSummary'])->name('front.cart.summary');
-Route::get('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('front.checkout');
-Route::post('/checkout/process', [\App\Http\Controllers\CartController::class, 'processCheckout'])->name('front.checkout.process');
-Route::post('/cart/transfer', [\App\Http\Controllers\CartController::class, 'transferToUser'])->name('front.cart.transfer');
 
 // Payment Routes
 Route::get('/payment/{order}', [\App\Http\Controllers\PaymentController::class, 'show'])->name('front.payment.show');
