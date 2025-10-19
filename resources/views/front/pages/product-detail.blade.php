@@ -230,6 +230,16 @@
         box-shadow: 0 8px 25px rgba(158, 158, 158, 0.4);
     }
 
+    .btn-make-available {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .btn-make-available:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    }
+
     .btn-back {
         background: white;
         color: #667eea;
@@ -447,11 +457,27 @@
                                     <i class="fas fa-shopping-cart"></i>
                                     <span>Add to Cart</span>
                                 </button>
-                                <button class="btn-action btn-reserve" onclick="reserveProduct({{ $product->id }}, this)">
+                                <button class="btn-action btn-reserve" onclick="openReservationModal({{ $product->id }})">
                                     <i class="fas fa-bookmark"></i>
                                     <span>Reserve</span>
                                 </button>
                             </div>
+                        @elseif($product->status === 'reserved' && auth()->id() === $product->user_id)
+                            <div class="product-actions">
+                                <button class="btn-action btn-disabled" disabled>
+                                    <i class="fas fa-times-circle"></i>
+                                    <span>Reserved</span>
+                                </button>
+                                <button class="btn-action btn-make-available" onclick="makeProductAvailable({{ $product->id }}, this)">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Make Available</span>
+                                </button>
+                            </div>
+                        @elseif($product->status === 'reserved')
+                            <button class="btn-action btn-disabled" disabled>
+                                <i class="fas fa-bookmark"></i>
+                                <span>Reserved</span>
+                            </button>
                         @else
                             <button class="btn-action btn-disabled" disabled>
                                 <i class="fas fa-times-circle"></i>
@@ -464,9 +490,60 @@
                             <span>Login to Purchase</span>
                         </a>
                     @endauth
-                </div>
-            </div>
         </div>
+    </div>
+</div>
+
+<!-- Reservation Modal -->
+<div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <h5 class="modal-title" id="reservationModalLabel">
+                    <i class="fas fa-bookmark me-2"></i>Réserver ce produit
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reservationForm">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Prénom *</label>
+                                <input type="text" class="form-control" name="first_name" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" class="form-control" name="last_name" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message *</label>
+                        <textarea class="form-control" name="message" rows="4" placeholder="Expliquez pourquoi vous souhaitez réserver ce produit..." required></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                        <i class="fas fa-paper-plane me-1"></i>Envoyer la demande
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
         <!-- Related Products -->
         @if($relatedProducts->count() > 0)
@@ -558,26 +635,98 @@ function addToCart(productId, buttonElement) {
     });
 }
 
-// Reserve Product
-function reserveProduct(productId, buttonElement) {
-    if (!confirm('Do you want to reserve this product?')) return;
+// Reserve Product - Open Modal
+function openReservationModal(productId) {
+    document.getElementById('reservationForm').action = `/products/${productId}/reservation`;
+    const modal = new bootstrap.Modal(document.getElementById('reservationModal'));
+    modal.show();
+}
 
-    buttonElement.disabled = true;
-    const originalHTML = buttonElement.innerHTML;
-    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Reserving...</span>';
-
-    fetch(`/products/${productId}/reserve`, {
+// Submit Reservation Form
+document.getElementById('reservationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Envoi en cours...';
+    
+    fetch(form.action, {
         method: 'POST',
+        body: formData,
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('Product reserved successfully!', 'success');
-            setTimeout(() => location.reload(), 1000);
+            showToast(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('reservationModal'));
+            modal.hide();
+            form.reset();
+            // Reload page to show updated status
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else if (data.errors) {
+            // Handle validation errors
+            clearFormErrors(form);
+            Object.keys(data.errors).forEach(fieldName => {
+                const field = form.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    field.classList.add('is-invalid');
+                    const errorElement = field.parentNode.querySelector('.invalid-feedback');
+                    if (errorElement) {
+                        errorElement.textContent = data.errors[fieldName][0];
+                        errorElement.style.display = 'block';
+                    }
+                }
+            });
+        } else {
+            showToast(data.message || 'Une erreur est survenue', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Une erreur est survenue lors de l\'envoi', 'error');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+// Make Product Available (for owners)
+function makeProductAvailable(productId, buttonElement) {
+    if (!confirm('Êtes-vous sûr de vouloir remettre ce produit en disponible ?')) {
+        return;
+    }
+    
+    buttonElement.disabled = true;
+    const originalHTML = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+    
+    fetch(`/products/${productId}/make-available`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
         } else {
             showToast(data.message, 'error');
             buttonElement.disabled = false;
@@ -586,9 +735,22 @@ function reserveProduct(productId, buttonElement) {
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Failed to reserve product', 'error');
+        showToast('Une erreur est survenue', 'error');
         buttonElement.disabled = false;
         buttonElement.innerHTML = originalHTML;
+    });
+}
+
+// Clear form errors
+function clearFormErrors(form) {
+    const fields = form.querySelectorAll('.form-control');
+    fields.forEach(field => {
+        field.classList.remove('is-invalid');
+        const errorElement = field.parentNode.querySelector('.invalid-feedback');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+            errorElement.textContent = '';
+        }
     });
 }
 </script>

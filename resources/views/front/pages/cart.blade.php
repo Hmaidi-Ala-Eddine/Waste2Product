@@ -19,55 +19,60 @@
     .cart-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 30px;
+        padding: 0 20px;
     }
 
     .cart-header {
         text-align: center;
-        margin-bottom: 50px;
+        margin-bottom: 40px;
     }
 
     .cart-header h1 {
-        font-size: 42px;
-        font-weight: 800;
         color: #2c3e50;
-        margin-bottom: 12px;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
     }
 
     .cart-content {
         display: grid;
-        grid-template-columns: 1fr 400px;
+        grid-template-columns: 1fr 350px;
         gap: 30px;
+        margin-bottom: 30px;
     }
 
     .cart-items {
         background: white;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .cart-item {
         display: flex;
-        gap: 20px;
-        padding: 20px;
-        border: 2px solid #f0f0f0;
-        border-radius: 12px;
-        margin-bottom: 20px;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #eee;
         transition: all 0.3s ease;
     }
 
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
     .cart-item:hover {
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 0 -20px;
     }
 
     .item-image {
-        width: 120px;
-        height: 120px;
+        width: 80px;
+        height: 80px;
         object-fit: cover;
         border-radius: 10px;
-        background: #f5f7fa;
+        margin-right: 20px;
     }
 
     .item-details {
@@ -75,280 +80,265 @@
     }
 
     .item-name {
-        font-size: 18px;
-        font-weight: 700;
+        font-size: 1.2rem;
+        font-weight: 600;
         color: #2c3e50;
         margin-bottom: 8px;
     }
 
     .item-meta {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
     }
 
     .item-badge {
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-right: 8px;
     }
 
     .badge-category {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
     }
 
     .item-seller {
-        font-size: 13px;
-        color: #7f8c8d;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
     }
 
     .item-controls {
         display: flex;
         align-items: center;
         gap: 15px;
-        margin-top: 12px;
     }
 
     .quantity-control {
         display: flex;
         align-items: center;
-        gap: 10px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 4px;
+        background: #f8f9fa;
+        border-radius: 25px;
+        padding: 5px;
     }
 
     .qty-btn {
-        width: 32px;
-        height: 32px;
+        width: 35px;
+        height: 35px;
         border: none;
-        background: #f5f7fa;
-        color: #2c3e50;
-        font-weight: 700;
-        border-radius: 6px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
         transition: all 0.3s ease;
     }
 
     .qty-btn:hover {
-        background: #667eea;
-        color: white;
+        background: #5a6fd8;
+        transform: scale(1.1);
     }
 
     .qty-input {
         width: 50px;
         text-align: center;
         border: none;
-        font-weight: 700;
+        background: transparent;
+        font-weight: 600;
         color: #2c3e50;
     }
 
     .remove-btn {
-        padding: 8px 16px;
-        background: #ffebee;
-        color: #c62828;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        color: white;
         border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 13px;
+        padding: 8px 16px;
+        border-radius: 20px;
         cursor: pointer;
+        font-size: 0.9rem;
         transition: all 0.3s ease;
     }
 
     .remove-btn:hover {
-        background: #c62828;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
     }
 
     .item-price {
         text-align: right;
+        min-width: 120px;
     }
 
     .price-label {
-        font-size: 12px;
-        color: #7f8c8d;
-        margin-bottom: 4px;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 5px;
     }
 
     .price-value {
-        font-size: 24px;
-        font-weight: 800;
-        color: #667eea;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2c3e50;
     }
 
     .cart-summary {
         background: white;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         height: fit-content;
         position: sticky;
-        top: 100px;
+        top: 140px;
     }
 
     .summary-title {
-        font-size: 20px;
-        font-weight: 700;
         color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 700;
         margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
+        text-align: center;
     }
 
     .summary-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        font-size: 15px;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .summary-row:last-of-type {
+        border-bottom: none;
     }
 
     .summary-label {
-        color: #7f8c8d;
+        color: #666;
+        font-size: 1rem;
     }
 
     .summary-value {
-        font-weight: 700;
         color: #2c3e50;
+        font-weight: 600;
+        font-size: 1rem;
     }
 
     .summary-total {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 2px solid #f0f0f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 20px 0;
+        border-top: 2px solid #667eea;
+        margin-top: 15px;
     }
 
     .total-label {
-        font-size: 18px;
-        font-weight: 700;
         color: #2c3e50;
+        font-size: 1.3rem;
+        font-weight: 700;
     }
 
     .total-value {
-        font-size: 28px;
-        font-weight: 800;
         color: #667eea;
+        font-size: 1.5rem;
+        font-weight: 700;
     }
 
     .checkout-btn {
+        display: block;
         width: 100%;
-        padding: 16px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 16px;
-        cursor: pointer;
+        text-decoration: none;
+        padding: 15px 20px;
+        border-radius: 25px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 1.1rem;
         margin-top: 20px;
         transition: all 0.3s ease;
-        text-decoration: none;
-        display: block;
-        text-align: center;
     }
 
     .checkout-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         color: white;
+        text-decoration: none;
     }
 
     .continue-shopping {
-        width: 100%;
-        padding: 12px;
-        background: white;
-        color: #667eea;
-        border: 2px solid #667eea;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: all 0.3s ease;
-        text-decoration: none;
         display: block;
+        width: 100%;
+        background: transparent;
+        color: #667eea;
+        text-decoration: none;
+        padding: 12px 20px;
+        border: 2px solid #667eea;
+        border-radius: 25px;
         text-align: center;
+        font-weight: 600;
+        margin-top: 15px;
+        transition: all 0.3s ease;
     }
 
     .continue-shopping:hover {
-        background: #f5f7fa;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
     }
 
     .empty-cart {
         text-align: center;
-        padding: 80px 20px;
+        padding: 60px 20px;
         background: white;
-        border-radius: 16px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .empty-cart i {
-        font-size: 80px;
-        color: #e0e0e0;
+        font-size: 4rem;
+        color: #ccc;
         margin-bottom: 20px;
     }
 
     .empty-cart h3 {
-        font-size: 24px;
         color: #2c3e50;
-        margin-bottom: 10px;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
     }
 
     .empty-cart p {
-        color: #7f8c8d;
+        color: #666;
+        font-size: 1.1rem;
         margin-bottom: 30px;
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 768px) {
         .cart-content {
             grid-template-columns: 1fr;
+            gap: 20px;
         }
-
+        
         .cart-summary {
             position: static;
         }
-    }
-
-    @media (max-width: 768px) {
+        
         .cart-item {
             flex-direction: column;
+            text-align: center;
         }
-
+        
         .item-image {
-            width: 100%;
-            height: 200px;
+            margin-right: 0;
+            margin-bottom: 15px;
         }
-
-        .item-price {
-            text-align: left;
-        }
-    }
-
-    /* Animations */
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
+        
+        .item-controls {
+            justify-content: center;
         }
     }
 </style>
@@ -366,7 +356,7 @@
             <!-- Cart Items -->
             <div class="cart-items">
                 @foreach($cartItems as $item)
-                <div class="cart-item" id="cart-item-{{ $item->id }}">
+                <div class="cart-item" id="cart-item-{{ $item->product_id }}">
                     <!-- Item Image -->
                     @if($item->product->image_path)
                         <img src="{{ asset('storage/' . $item->product->image_path) }}" alt="{{ $item->product->name }}" class="item-image">
@@ -389,13 +379,13 @@
                         <div class="item-controls">
                             <!-- Quantity Control -->
                             <div class="quantity-control">
-                                <button class="qty-btn" onclick="changeQuantity({{ $item->id }}, -1)" type="button">-</button>
-                                <input type="number" class="qty-input" id="qty-{{ $item->id }}" value="{{ $item->quantity }}" min="1" max="10" readonly data-current="{{ $item->quantity }}">
-                                <button class="qty-btn" onclick="changeQuantity({{ $item->id }}, 1)" type="button">+</button>
+                                <button class="qty-btn" onclick="changeQuantity({{ $item->product_id }}, -1)" type="button">-</button>
+                                <input type="number" class="qty-input" id="qty-{{ $item->product_id }}" value="{{ $item->quantity }}" min="1" max="10" readonly data-current="{{ $item->quantity }}">
+                                <button class="qty-btn" onclick="changeQuantity({{ $item->product_id }}, 1)" type="button">+</button>
                             </div>
 
                             <!-- Remove Button -->
-                            <button class="remove-btn" onclick="removeItem({{ $item->id }})">
+                            <button class="remove-btn" onclick="removeItem({{ $item->product_id }})">
                                 <i class="fas fa-trash"></i> Remove
                             </button>
                         </div>
@@ -404,7 +394,7 @@
                     <!-- Item Price -->
                     <div class="item-price">
                         <div class="price-label">Price</div>
-                        <div class="price-value" id="item-subtotal-{{ $item->id }}">
+                        <div class="price-value" id="item-subtotal-{{ $item->product_id }}">
                             {{ number_format($item->subtotal, 2) }} TND
                         </div>
                     </div>
@@ -462,8 +452,8 @@
 @push('scripts')
 <script>
 // Change Quantity (wrapper to prevent bugs)
-function changeQuantity(itemId, delta) {
-    const qtyInput = document.getElementById(`qty-${itemId}`);
+function changeQuantity(productId, delta) {
+    const qtyInput = document.getElementById(`qty-${productId}`);
     const currentQty = parseInt(qtyInput.dataset.current) || parseInt(qtyInput.value);
     const newQty = currentQty + delta;
     
@@ -471,19 +461,19 @@ function changeQuantity(itemId, delta) {
         return; // Don't allow invalid quantities
     }
     
-    updateQuantity(itemId, newQty);
+    updateQuantity(productId, newQty);
 }
 
 // Update Quantity with AJAX (No Page Refresh)
-function updateQuantity(itemId, newQty) {
+function updateQuantity(productId, newQty) {
     if (newQty < 1 || newQty > 10) return;
 
     // Show loading state
-    const qtyInput = document.querySelector(`#cart-item-${itemId} .qty-input`);
+    const qtyInput = document.querySelector(`#cart-item-${productId} .qty-input`);
     const originalValue = qtyInput.value;
     qtyInput.style.opacity = '0.5';
 
-    fetch(`/cart/update/${itemId}`, {
+    fetch(`/cart/update/${productId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -495,7 +485,7 @@ function updateQuantity(itemId, newQty) {
     .then(data => {
         if (data.success) {
             // Update item subtotal
-            document.getElementById(`item-subtotal-${itemId}`).textContent = 
+            document.getElementById(`item-subtotal-${productId}`).textContent = 
                 parseFloat(data.subtotal).toFixed(2) + ' TND';
             
             // Update quantity input and data attribute
@@ -507,7 +497,7 @@ function updateQuantity(itemId, newQty) {
             updateCartTotals();
             
             // Show success feedback
-            showMiniToast('Cart updated!');
+            showNotification('Cart updated!');
         } else {
             qtyInput.value = originalValue;
             qtyInput.dataset.current = originalValue;
@@ -518,6 +508,7 @@ function updateQuantity(itemId, newQty) {
     .catch(error => {
         console.error('Error:', error);
         qtyInput.value = originalValue;
+        qtyInput.dataset.current = originalValue;
         qtyInput.style.opacity = '1';
         alert('Failed to update cart');
     });
@@ -542,28 +533,15 @@ function updateCartTotals() {
     document.getElementById('total').textContent = total.toFixed(2) + ' TND';
 }
 
-// Mini toast notification
-function showMiniToast(message) {
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:100px;right:30px;background:#4CAF50;color:white;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;animation:slideIn 0.3s ease;';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 2000);
-}
-
 // Remove Item with smooth animation
-function removeItem(itemId) {
+function removeItem(productId) {
     if (!confirm('Remove this item from cart?')) return;
 
-    const itemElement = document.getElementById(`cart-item-${itemId}`);
+    const itemElement = document.getElementById(`cart-item-${productId}`);
     itemElement.style.opacity = '0.5';
     itemElement.style.pointerEvents = 'none';
 
-    fetch(`/cart/remove/${itemId}`, {
+    fetch(`/cart/remove/${productId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -595,7 +573,7 @@ function removeItem(itemId) {
                     location.reload();
                 } else {
                     updateCartTotals();
-                    showMiniToast('Item removed from cart');
+                    showNotification('Item removed from cart');
                 }
             }, 300);
         } else {
@@ -610,6 +588,37 @@ function removeItem(itemId) {
         itemElement.style.pointerEvents = 'auto';
         alert('Failed to remove item');
     });
+}
+
+// Clear cart
+function clearCart() {
+    console.log('clearCart called');
+    
+    if (confirm('Are you sure you want to clear your entire cart?')) {
+        fetch('/cart/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Clear response:', data);
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred', 'error');
+        });
+    }
 }
 </script>
 @endpush

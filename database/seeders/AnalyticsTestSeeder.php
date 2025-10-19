@@ -97,7 +97,7 @@ class AnalyticsTestSeeder extends Seeder
             'category' => 'metal',
             'condition' => 'good',
             'price' => null, // Free product
-            'status' => 'donated',
+            'status' => 'sold',
         ]);
         $product2->created_at = $today;
         $product2->updated_at = $today;

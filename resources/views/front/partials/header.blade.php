@@ -84,7 +84,16 @@
                                     @endif
                                 </a>
                             </li>
+                        @else
+                            <!-- Cart Icon for guests -->
+                            <li class="icon-item">
+                                <a href="{{ route('front.login') }}" class="icon-link" title="Login to access cart">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </a>
+                            </li>
+                        @endauth
                             
+                        @auth
                             <li class="profile-dropdown-item dropdown">
                                 <a href="#" class="profile-toggle" data-toggle="dropdown" aria-expanded="false">
                                     <img src="{{ auth()->user()->profile_picture_url }}" alt="{{ auth()->user()->name }}" class="profile-avatar">
@@ -117,7 +126,7 @@
                             </li>
                         @else
                             <li class="login-item">
-                                <a href="{{ url('/login') }}" class="login-link">
+                                <a href="{{ route('front.login') }}" class="login-link">
                                     <i class="fas fa-sign-in-alt"></i>
                                     <span>Login</span>
                                 </a>
@@ -141,3 +150,20 @@
         <div class="overlay-screen"></div>
     </nav>
 </header>
+
+
+<style>
+/* Simple Cart Icon Styling */
+.cart-link {
+    color: #333;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s ease;
+    padding: 5px;
+}
+
+.cart-link:hover {
+    color: #4a90e2;
+    text-decoration: none;
+}
+</style>

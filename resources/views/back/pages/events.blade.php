@@ -160,7 +160,7 @@
   </div>
 </div>
 
-<!-- Add New Event Modal -->
+<!-- Add Event Modal -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -170,14 +170,11 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="addEventForm" method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data">
+      <form action="{{ route('admin.events.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="modal-body p-4">
           <div class="row">
-            <!-- Event Information -->
             <div class="col-md-6">
-              <h6 class="text-dark font-weight-bold mb-3 text-uppercase">Event Information</h6>
-              
               <div class="mb-3">
                 <label class="form-label text-dark">Subject *</label>
                 <input type="text" class="form-control border" name="subject" required placeholder="Enter event subject" style="background-color: #f8f9fa;">
@@ -196,10 +193,7 @@
               </div>
             </div>
             
-            <!-- Details & Media -->
             <div class="col-md-6">
-              <h6 class="text-dark font-weight-bold mb-3 text-uppercase">Details & Media</h6>
-              
               <div class="mb-3">
                 <label class="form-label text-dark">Event Image</label>
                 <div class="custom-file-upload">
@@ -212,12 +206,12 @@
                 </div>
                 <small class="text-muted d-block mt-2">Optional - Max 2MB (JPG, PNG, GIF)</small>
               </div>
-              
-              <div class="mb-3">
-                <label class="form-label text-dark">Description</label>
-                <textarea class="form-control border" name="description" rows="7" placeholder="Enter event description, agenda, location details..." style="background-color: #f8f9fa;"></textarea>
-              </div>
             </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label text-dark">Description</label>
+            <textarea class="form-control border" name="description" rows="4" placeholder="Enter event description" style="background-color: #f8f9fa;"></textarea>
           </div>
         </div>
         <div class="modal-footer bg-light">
@@ -248,10 +242,7 @@
         @method('PUT')
         <div class="modal-body p-4">
           <div class="row">
-            <!-- Event Information -->
             <div class="col-md-6">
-              <h6 class="text-dark font-weight-bold mb-3 text-uppercase">Event Information</h6>
-              
               <div class="mb-3">
                 <label class="form-label text-dark">Subject *</label>
                 <input type="text" class="form-control border" name="subject" id="edit_subject" required placeholder="Enter event subject" style="background-color: #f8f9fa;">
@@ -270,10 +261,7 @@
               </div>
             </div>
             
-            <!-- Details & Media -->
             <div class="col-md-6">
-              <h6 class="text-dark font-weight-bold mb-3 text-uppercase">Details & Media</h6>
-              
               <div class="mb-3">
                 <label class="form-label text-dark">Event Image</label>
                 <div class="custom-file-upload">
@@ -285,14 +273,14 @@
                   <div id="edit_event_file_name" class="file-name-display"></div>
                 </div>
                 <small class="text-muted d-block mt-2">Leave empty to keep current image</small>
-                <div id="current_image_preview" class="mt-2"></div>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label text-dark">Description</label>
-                <textarea class="form-control border" name="description" id="edit_description" rows="7" placeholder="Enter event description, agenda, location details..." style="background-color: #f8f9fa;"></textarea>
+                <div id="edit_current_image_preview" class="mt-2"></div>
               </div>
             </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label text-dark">Description</label>
+            <textarea class="form-control border" name="description" id="edit_description" rows="4" placeholder="Enter event description" style="background-color: #f8f9fa;"></textarea>
           </div>
         </div>
         <div class="modal-footer bg-light">
@@ -317,7 +305,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete the event "<strong id="deleteEventSubject"></strong>"?</p>
+        <p>Are you sure you want to delete the event "<strong id="deleteEventTitle"></strong>"?</p>
         <p class="text-danger">This action cannot be undone.</p>
       </div>
       <div class="modal-footer">
@@ -331,7 +319,6 @@
     </div>
   </div>
 </div>
-
 @endsection
 
 @push('styles')
@@ -468,13 +455,13 @@ function editEvent(id) {
     fetch(`/admin/events/${id}/data`)
         .then(response => response.json())
         .then(event => {
-            document.getElementById('edit_subject').value = event.subject;
-            document.getElementById('edit_date_time').value = event.date_time.replace(' ', 'T').substring(0, 16);
-            document.getElementById('edit_description').value = event.description || '';
             document.getElementById('edit_author_id').value = event.author_id;
+            document.getElementById('edit_subject').value = event.subject;
+            document.getElementById('edit_date_time').value = event.date_time ? new Date(event.date_time).toISOString().slice(0, 16) : '';
+            document.getElementById('edit_description').value = event.description || '';
             
             // Show current image if exists
-            const imagePreview = document.getElementById('current_image_preview');
+            const imagePreview = document.getElementById('edit_current_image_preview');
             if (event.image) {
                 imagePreview.innerHTML = `<img src="${event.image_url}" alt="Current image" style="max-width: 200px; border-radius: 8px;">`;
             } else {
@@ -491,7 +478,7 @@ function editEvent(id) {
 
 // Delete event function
 function deleteEvent(id, subject) {
-    document.getElementById('deleteEventSubject').textContent = subject;
+    document.getElementById('deleteEventTitle').textContent = subject;
     document.getElementById('deleteEventForm').action = `/admin/events/${id}`;
     
     const modal = new bootstrap.Modal(document.getElementById('deleteEventModal'));
