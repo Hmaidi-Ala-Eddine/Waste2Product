@@ -556,6 +556,10 @@
         font-size: 15px;
     }
 
+    .pagination {
+        margin-top: 40px;
+    }
+
     /* Image Lightbox */
     .image-lightbox {
         display: none;

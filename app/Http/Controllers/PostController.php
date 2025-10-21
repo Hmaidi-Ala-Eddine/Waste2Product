@@ -260,26 +260,14 @@ class PostController extends Controller
      */
     public function toggleLike(Post $post): JsonResponse
     {
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json([ 'success' => false, 'message' => 'Unauthenticated' ], 401);
-        }
-
-        // Toggle like
-        if ($post->likes()->where('user_id', $user->id)->exists()) {
-            $post->likes()->detach($user->id);
-            $post->decrement('likes');
-            $liked = false;
-        } else {
-            $post->likes()->attach($user->id);
-            $post->increment('likes');
-            $liked = true;
-        }
+        // This is a simplified implementation
+        // In a real application, you might want to track which users liked which posts
+        $post->incrementLikes();
 
         return response()->json([
             'success' => true,
+            'message' => 'Post liked!',
             'likes' => $post->likes,
-            'liked' => $liked,
         ]);
     }
 

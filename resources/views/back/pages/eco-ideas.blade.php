@@ -4,33 +4,39 @@
 @section('page-title', 'Eco Ideas')
 
 @section('content')
-<div class="container-fluid py-4">
-  <div class="row">
-    <div class="col-12">
-      <div class="card my-4">
-        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-          <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
-            <h6 class="text-white text-capitalize ps-3">Eco Ideas Management</h6>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card my-4">
+      <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+        <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
+          <div class="d-flex justify-content-between align-items-center px-3">
+            <h6 class="text-white text-capitalize mb-0">Eco Ideas Management</h6>
+            <div class="text-white">
+              <small>Total: {{ $ecoIdeas->total() }} Ideas</small>
+            </div>
           </div>
         </div>
+      </div>
+      
+      <!-- Search and Filter Section -->
+      <div class="card-body px-3 pt-3 pb-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="mb-0 text-dark">Search & Filter Ideas</h6>
+          <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addIdeaModal">
+            <i class="material-symbols-rounded me-1">add</i>Add New Idea
+          </button>
+        </div>
         
-        <!-- Search Section -->
-        <div class="card-body px-3 pt-3 pb-0">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0 text-dark">Search & Manage Eco Ideas</h6>
-            <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addIdeaModal">
-              <i class="material-symbols-rounded me-1">add</i>Add New Eco Idea
-            </button>
-          </div>
-          
-          <form method="GET" action="{{ route('admin.eco-ideas') }}" class="row g-3 mb-3">
-            <div class="col-md-3">
-              <div class="input-group input-group-outline">
-                <label class="form-label">Search ideas...</label>
-                <input type="text" class="form-control" name="search" value="{{ request('search') }}">
-              </div>
+        <form method="GET" action="{{ route('admin.eco-ideas') }}" class="row g-3 mb-3">
+          <div class="col-md-3">
+            <div class="input-group input-group-outline">
+              <label class="form-label">Search ideas...</label>
+              <input type="text" class="form-control" name="search" value="{{ request('search') }}">
             </div>
-            <div class="col-md-2">
+          </div>
+          <div class="col-md-2">
+            <div class="input-group input-group-outline">
               <select class="form-control" name="waste_type">
                 <option value="all" {{ request('waste_type') == 'all' ? 'selected' : '' }}>All Waste Types</option>
                 @foreach(\App\Models\EcoIdea::getWasteTypes() as $key => $value)
@@ -38,7 +44,9 @@
                 @endforeach
               </select>
             </div>
-            <div class="col-md-2">
+          </div>
+          <div class="col-md-2">
+            <div class="input-group input-group-outline">
               <select class="form-control" name="difficulty">
                 <option value="all" {{ request('difficulty') == 'all' ? 'selected' : '' }}>All Difficulty</option>
                 @foreach(\App\Models\EcoIdea::getDifficulties() as $key => $value)
@@ -46,7 +54,9 @@
                 @endforeach
               </select>
             </div>
-            <div class="col-md-2">
+          </div>
+          <div class="col-md-2">
+            <div class="input-group input-group-outline">
               <select class="form-control" name="status">
                 <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
                 @foreach(\App\Models\EcoIdea::getStatuses() as $key => $value)
@@ -54,132 +64,132 @@
                 @endforeach
               </select>
             </div>
-            <div class="col-md-2">
-              <button type="submit" class="btn bg-gradient-dark mb-0 w-100">
-                <i class="material-symbols-rounded me-1">search</i>Search
-              </button>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn bg-gradient-dark mb-0 w-100">
+              <i class="material-symbols-rounded me-1">search</i>Search
+            </button>
+          </div>
+          <div class="col-md-1">
+            <a href="{{ route('admin.eco-ideas') }}" class="btn btn-outline-secondary mb-0 w-100">
+              <i class="material-symbols-rounded me-1">refresh</i>
+            </a>
+          </div>
+        </form>
+        
+        @if(request()->hasAny(['search', 'waste_type', 'difficulty', 'status']))
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <small class="text-muted">
+                Showing {{ $ecoIdeas->count() }} of {{ $ecoIdeas->total() }} results
+                @if(request('search'))
+                  for "<strong>{{ request('search') }}</strong>"
+                @endif
+              </small>
             </div>
-            <div class="col-md-1">
-              <a href="{{ route('admin.eco-ideas') }}" class="btn btn-outline-secondary mb-0 w-100">
-                <i class="material-symbols-rounded me-1">refresh</i>
-              </a>
-            </div>
-          </form>
-          
-          @if(request()->hasAny(['search', 'waste_type', 'difficulty', 'status']))
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ route('admin.eco-ideas') }}" class="btn btn-outline-secondary btn-sm">
+              <i class="material-symbols-rounded me-1">clear</i>Clear Filters
+            </a>
+          </div>
+        @endif
+      </div>
+      
+      <div class="card-body px-0 pb-2">
+        <div class="table-responsive p-0">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">IMAGE</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">TITLE</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">WASTE</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">DIFFICULTY</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">STATUS</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TEAM</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">CREATOR</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($ecoIdeas as $idea)
+                <tr>
+                  <td class="align-middle text-center">
+                    @if($idea->image)
+                      <img src="{{ $idea->image_url }}" alt="{{ $idea->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                    @else
+                      <div style="width: 50px; height: 50px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="material-symbols-rounded text-secondary" style="font-size: 24px;">image</i>
+                      </div>
+                    @endif
+                  </td>
+                  <td>
+                    <div class="d-flex px-2 py-1">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ $idea->title }}</h6>
+                        <p class="text-xs text-secondary mb-0">{{ Str::limit($idea->description, 50) }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    <span class="badge badge-sm bg-gradient-info">{{ $idea->waste_type_formatted }}</span>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    <span class="badge badge-sm {{ $idea->difficulty_badge_class }}">{{ $idea->difficulty_formatted }}</span>
+                  </td>
+                  <td class="align-middle text-center text-sm">
+                    <span class="badge badge-sm {{ $idea->status_badge_class }}">{{ $idea->status_formatted }}</span>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span class="text-secondary text-xs font-weight-bold">{{ $idea->team_size_needed ?? 'N/A' }}</span>
+                  </td>
+                  <td>
+                    <div class="d-flex px-2 py-1 justify-content-center">
+                      <div>
+                        <img src="{{ $idea->creator->profile_picture_url }}" class="avatar avatar-sm me-2 border-radius-lg" alt="{{ $idea->creator->name }}" style="object-fit: cover;">
+                      </div>
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ $idea->creator->name }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle text-center">
+                    <a href="javascript:;" class="text-secondary font-weight-bold text-xs me-2 action-edit" 
+                       onclick="editIdea({{ $idea->id }})" 
+                       data-toggle="tooltip" data-original-title="Edit idea">
+                      Edit
+                    </a>
+                    <a href="javascript:;" class="text-secondary font-weight-bold text-xs action-delete" 
+                       onclick="deleteIdea({{ $idea->id }}, '{{ $idea->title }}')" 
+                       data-toggle="tooltip" data-original-title="Delete idea">
+                      Delete
+                    </a>
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="8" class="text-center py-4">
+                    <p class="text-secondary mb-0">No ideas found</p>
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination Section -->
+        @if($ecoIdeas->hasPages())
+          <div class="card-footer px-3 py-3">
+            <div class="d-flex justify-content-between align-items-center">
               <div>
                 <small class="text-muted">
-                  Showing {{ $ecoIdeas->count() }} of {{ $ecoIdeas->total() }} results
-                  @if(request('search'))
-                    for "<strong>{{ request('search') }}</strong>"
-                  @endif
+                  Showing {{ $ecoIdeas->firstItem() }} to {{ $ecoIdeas->lastItem() }} of {{ $ecoIdeas->total() }} results
                 </small>
               </div>
-              <a href="{{ route('admin.eco-ideas') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="material-symbols-rounded me-1">clear</i>Clear Filters
-              </a>
-            </div>
-          @endif
-        </div>
-        
-        <div class="card-body px-0 pb-2">
-          <div class="table-responsive p-0">
-            <table class="table align-items-center mb-0">
-              <thead>
-                <tr>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">IMAGE</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">TITLE</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">WASTE</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">DIFFICULTY</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">STATUS</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TEAM</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">CREATOR</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                @forelse($ecoIdeas as $idea)
-                  <tr>
-                    <td class="align-middle text-center">
-                      @if($idea->image)
-                        <img src="{{ $idea->image_url }}" alt="{{ $idea->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
-                      @else
-                        <div style="width: 50px; height: 50px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                          <i class="material-symbols-rounded text-secondary" style="font-size: 24px;">image</i>
-                        </div>
-                      @endif
-                    </td>
-                    <td>
-                      <div class="d-flex px-2 py-1">
-                        <div class="d-flex flex-column justify-content-center">
-                          <h6 class="mb-0 text-sm">{{ $idea->title }}</h6>
-                          <p class="text-xs text-secondary mb-0">{{ Str::limit($idea->description, 50) }}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="align-middle text-center text-sm">
-                      <span class="badge badge-sm bg-gradient-info">{{ $idea->waste_type_formatted }}</span>
-                    </td>
-                    <td class="align-middle text-center text-sm">
-                      <span class="badge badge-sm {{ $idea->difficulty_badge_class }}">{{ $idea->difficulty_formatted }}</span>
-                    </td>
-                    <td class="align-middle text-center text-sm">
-                      <span class="badge badge-sm {{ $idea->status_badge_class }}">{{ $idea->status_formatted }}</span>
-                    </td>
-                    <td class="align-middle text-center">
-                      <span class="text-secondary text-xs font-weight-bold">{{ $idea->team_size_needed ?? 'N/A' }}</span>
-                    </td>
-                    <td>
-                      <div class="d-flex px-2 py-1 justify-content-center">
-                        <div>
-                          <img src="{{ $idea->creator->profile_picture_url }}" class="avatar avatar-sm me-2 border-radius-lg" alt="{{ $idea->creator->name }}" style="object-fit: cover;">
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                          <h6 class="mb-0 text-sm">{{ $idea->creator->name }}</h6>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="align-middle text-center">
-                      <a href="javascript:;" class="text-secondary font-weight-bold text-xs me-2 action-edit" 
-                         onclick="editIdea({{ $idea->id }})" 
-                         data-toggle="tooltip" data-original-title="Edit idea">
-                        Edit
-                      </a>
-                      <a href="javascript:;" class="text-secondary font-weight-bold text-xs action-delete" 
-                         onclick="deleteIdea({{ $idea->id }}, '{{ $idea->title }}')" 
-                         data-toggle="tooltip" data-original-title="Delete idea">
-                        Delete
-                      </a>
-                    </td>
-                  </tr>
-                @empty
-                  <tr>
-                    <td colspan="8" class="text-center py-4">
-                      <p class="text-secondary mb-0">No eco ideas found</p>
-                    </td>
-                  </tr>
-                @endforelse
-              </tbody>
-            </table>
-          </div>
-        
-          <!-- Pagination Section -->
-          @if($ecoIdeas->hasPages())
-            <div class="card-footer px-3 py-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <small class="text-muted">
-                    Showing {{ $ecoIdeas->firstItem() }} to {{ $ecoIdeas->lastItem() }} of {{ $ecoIdeas->total() }} results
-                  </small>
-                </div>
-                <div>
-                  {{ $ecoIdeas->links('back.partials.pagination') }}
-                </div>
+              <div>
+                {{ $ecoIdeas->links('back.partials.pagination') }}
               </div>
             </div>
-          @endif
-        </div>
+          </div>
+        @endif
       </div>
     </div>
   </div>
@@ -195,11 +205,11 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="{{ route('admin.eco-ideas.store') }}" method="POST" enctype="multipart/form-data">
+      <form id="addIdeaForm" method="POST" action="{{ route('admin.eco-ideas.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="modal-body p-4">
           <div class="row">
-            <!-- Idea Information -->
+            <!-- Basic Information -->
             <div class="col-md-6">
               <h6 class="text-dark font-weight-bold mb-3 text-uppercase">Idea Information</h6>
               
@@ -446,6 +456,7 @@
     </div>
   </div>
 </div>
+
 @endsection
 
 @push('styles')

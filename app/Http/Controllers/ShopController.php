@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductReservation;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +80,7 @@ class ShopController extends Controller
         // Get cart product IDs for logged-in user
         $cartProductIds = [];
         if (auth()->check()) {
-            $cartProductIds = auth()->user()->getCartItems()->pluck('product_id')->toArray();
+            $cartProductIds = auth()->user()->cartItems()->pluck('product_id')->toArray();
         }
 
         return view('front.pages.shop', compact('products', 'categories', 'conditions', 'cartProductIds'));
@@ -117,13 +118,16 @@ class ShopController extends Controller
             ], 400);
         }
 
-        // Update product status to reserved
-        $product->update([
-            'status' => 'reserved',
-            'reserved_by' => Auth::user()->email,
+        // Create reservation record
+        ProductReservation::create([
+            'user_id' => Auth::id(),
+            'product_id' => $product->id,
+            'status' => 'active',
             'reserved_at' => now(),
-            'reserved_message' => 'Réservé par ' . Auth::user()->name,
         ]);
+
+        // Update product status to reserved
+        $product->update(['status' => 'reserved']);
 
         return response()->json([
             'success' => true,
@@ -141,9 +145,9 @@ class ShopController extends Controller
             ->orderBy('ordered_at', 'desc')
             ->get();
 
-        $reservations = Product::with(['user'])
-            ->where('status', 'reserved')
-            ->where('reserved_by', Auth::user()->email)
+        $reservations = ProductReservation::with(['product.user'])
+            ->where('user_id', Auth::id())
+            ->where('status', 'active')
             ->orderBy('reserved_at', 'desc')
             ->get();
 

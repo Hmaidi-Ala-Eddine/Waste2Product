@@ -436,6 +436,12 @@
         margin-bottom: 10px;
     }
 
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
     /* Admin Add Product Button */
     .admin-controls {
         display: flex;
@@ -639,6 +645,7 @@
                             <option value="all">All Status</option>
                             <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
                             <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
+                            <option value="donated" {{ request('status') == 'donated' ? 'selected' : '' }}>Donated</option>
                             <option value="reserved" {{ request('status') == 'reserved' ? 'selected' : '' }}>Reserved</option>
                         </select>
                     </div>
