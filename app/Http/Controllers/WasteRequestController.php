@@ -393,4 +393,69 @@ class WasteRequestController extends Controller
         \App\Models\Collector::where('id', $collectorId)
             ->update(['rating' => round($averageRating, 2)]);
     }
+
+    /**
+     * Generate AI-powered analytics report for waste requests
+     */
+    public function generateAIReport()
+    {
+        try {
+            $groqService = app(\App\Services\GroqService::class);
+            
+            // Gather analytics data
+            $data = [
+                'summary' => [
+                    'total' => WasteRequest::count(),
+                    'pending' => WasteRequest::where('status', 'pending')->count(),
+                    'accepted' => WasteRequest::where('status', 'accepted')->count(),
+                    'collected' => WasteRequest::where('status', 'collected')->count(),
+                    'cancelled' => WasteRequest::where('status', 'cancelled')->count(),
+                    'total_weight' => WasteRequest::sum('quantity'),
+                ],
+                'by_type' => WasteRequest::selectRaw('waste_type, COUNT(*) as count, SUM(quantity) as total_kg')
+                    ->groupBy('waste_type')
+                    ->get()
+                    ->pluck('count', 'waste_type')
+                    ->toArray(),
+                'by_status' => WasteRequest::selectRaw('status, COUNT(*) as count')
+                    ->groupBy('status')
+                    ->get()
+                    ->pluck('count', 'status')
+                    ->toArray(),
+                'by_location' => WasteRequest::selectRaw('state, COUNT(*) as count')
+                    ->groupBy('state')
+                    ->orderByDesc('count')
+                    ->limit(10)
+                    ->get()
+                    ->pluck('count', 'state')
+                    ->toArray(),
+                'top_collectors' => WasteRequest::selectRaw('collector_id, COUNT(*) as collections')
+                    ->whereNotNull('collector_id')
+                    ->groupBy('collector_id')
+                    ->orderByDesc('collections')
+                    ->limit(10)
+                    ->with('collector:id,name')
+                    ->get()
+                    ->map(function($item) {
+                        return [
+                            'collector' => $item->collector->name ?? 'Unknown',
+                            'collections' => $item->collections
+                        ];
+                    })
+                    ->toArray(),
+            ];
+
+            // Generate AI report
+            $result = $groqService->generateWasteRequestsReport($data);
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            \Log::error('AI Report generation failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate report. Please try again.'
+            ], 500);
+        }
+    }
 }

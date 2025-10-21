@@ -80,6 +80,7 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::delete('/waste-requests/{id}', [\App\Http\Controllers\WasteRequestController::class, 'destroy'])->name('waste-requests.delete');
     Route::post('/waste-requests/{id}/assign-collector', [\App\Http\Controllers\WasteRequestController::class, 'assignCollector'])->name('waste-requests.assign-collector');
     Route::post('/waste-requests/{id}/update-status', [\App\Http\Controllers\WasteRequestController::class, 'updateStatus'])->name('waste-requests.update-status');
+    Route::post('/waste-requests/ai-report', [\App\Http\Controllers\WasteRequestController::class, 'generateAIReport'])->name('waste-requests.ai-report');
     
     // Collectors Management routes
     Route::get('/collectors', [\App\Http\Controllers\CollectorController::class, 'index'])->name('collectors');
@@ -89,6 +90,7 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::put('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'update'])->name('collectors.update');
     Route::delete('/collectors/{id}', [\App\Http\Controllers\CollectorController::class, 'destroy'])->name('collectors.delete');
     Route::post('/collectors/{id}/update-status', [\App\Http\Controllers\CollectorController::class, 'updateStatus'])->name('collectors.update-status');
+    Route::post('/collectors/ai-report', [\App\Http\Controllers\CollectorController::class, 'generateAIReport'])->name('collectors.ai-report');
     
     // Events Management routes
     Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
@@ -279,6 +281,31 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('front.checkout');
     Route::post('/checkout', [\App\Http\Controllers\CartController::class, 'processCheckout'])->name('front.checkout.process');
     Route::get('/order/success', [\App\Http\Controllers\CartController::class, 'orderSuccess'])->name('front.order.success');
+});
+
+// AI Chatbot Routes (Public Access)
+Route::prefix('chatbot')->name('chatbot.')->group(function () {
+    Route::post('/message', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('message');
+    Route::post('/clear', [\App\Http\Controllers\ChatbotController::class, 'clearHistory'])->name('clear');
+    Route::get('/history', [\App\Http\Controllers\ChatbotController::class, 'getHistory'])->name('history');
+    Route::get('/quick-replies', [\App\Http\Controllers\ChatbotController::class, 'getQuickReplies'])->name('quick-replies');
+    Route::get('/health', [\App\Http\Controllers\ChatbotController::class, 'health'])->name('health');
+    
+    // AI Waste Helper Routes
+    Route::post('/detect-waste-type', [\App\Http\Controllers\ChatbotController::class, 'detectWasteType'])->name('detect-waste-type');
+    Route::post('/enhance-description', [\App\Http\Controllers\ChatbotController::class, 'enhanceDescription'])->name('enhance-description');
+    
+    // Debug route
+    Route::get('/test', function() {
+        return response()->json([
+            'success' => true,
+            'message' => 'Chatbot routes are working!',
+            'config' => [
+                'api_key_set' => config('services.groq.api_key') ? 'Yes' : 'No',
+                'model' => config('services.groq.chatbot_model'),
+            ]
+        ]);
+    })->name('test');
 });
 
 // Fallback 404 for unknown routes

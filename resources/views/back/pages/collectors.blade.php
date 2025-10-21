@@ -23,9 +23,14 @@
       <div class="card-body px-3 pt-3 pb-0">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="mb-0 text-dark">Search & Filter Collectors</h6>
-          <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addCollectorModal">
-            <i class="material-symbols-rounded me-1">person_add</i>Add New Collector
-          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn bg-gradient-info" id="generateCollectorAIReportBtn">
+              <i class="material-symbols-rounded me-1">auto_awesome</i>Generate AI Report
+            </button>
+            <button type="button" class="btn bg-gradient-success" data-bs-toggle="modal" data-bs-target="#addCollectorModal">
+              <i class="material-symbols-rounded me-1">person_add</i>Add New Collector
+            </button>
+          </div>
         </div>
         
         <form method="GET" action="{{ route('admin.collectors') }}" class="row g-3 mb-3">
@@ -924,7 +929,239 @@ select.form-control.is-valid {
 .table tbody tr:hover {
     background: rgba(249, 250, 251, 0.8);
 }
+
+/* AI Report Styling */
+.report-content {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 3rem;
+    max-height: 650px;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #1a202c;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.report-content h1,
+.report-content h2,
+.report-content h3 {
+    color: #2d3748;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.report-content strong {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.report-content hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+    margin: 2rem 0;
+    opacity: 0.3;
+}
+
+.report-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.report-content ul li {
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.report-content ul li:before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.report-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.report-content::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.report-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    border: 2px solid #f1f5f9;
+}
+
+.report-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
 </style>
 @endpush
+
+@push('scripts')
+<script>
+// AI Report Generation for Collectors
+document.getElementById('generateCollectorAIReportBtn').addEventListener('click', async function() {
+    const modal = new bootstrap.Modal(document.getElementById('collectorAIReportModal'));
+    modal.show();
+    
+    const loadingState = document.getElementById('collectorReportLoadingState');
+    const reportContent = document.getElementById('collectorReportContent');
+    const downloadBtn = document.getElementById('downloadCollectorReportBtn');
+    
+    // Show loading
+    loadingState.style.display = 'block';
+    reportContent.style.display = 'none';
+    downloadBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/admin/collectors/ai-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Convert markdown-style formatting to HTML
+            let htmlReport = convertMarkdownToHtml(data.report);
+            reportContent.innerHTML = htmlReport;
+            reportContent.style.display = 'block';
+            loadingState.style.display = 'none';
+            downloadBtn.disabled = false;
+            
+            // Store report for download
+            downloadBtn.dataset.report = htmlReport;
+            downloadBtn.dataset.reportTitle = 'Collectors Report';
+        } else {
+            reportContent.textContent = 'Error: ' + (data.message || 'Failed to generate report');
+            reportContent.style.display = 'block';
+            loadingState.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        reportContent.textContent = 'Error: Failed to generate report. Please try again.';
+        reportContent.style.display = 'block';
+        loadingState.style.display = 'none';
+    }
+});
+
+// Markdown to HTML converter
+function convertMarkdownToHtml(text) {
+    let html = text;
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    html = html.replace(/^(═{3,}|─{3,}|•{3,})$/gm, '<hr>');
+    html = html.replace(/\n/g, '<br>');
+    return html;
+}
+
+// Download Collector Report as PDF
+document.getElementById('downloadCollectorReportBtn').addEventListener('click', function() {
+    const reportHtml = this.dataset.report;
+    const reportTitle = this.dataset.reportTitle || 'Collectors Report';
+    if (!reportHtml) return;
+    
+    const pdfContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                @page { margin: 40px; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    font-size: 11pt;
+                    line-height: 1.6;
+                    color: #2d3748;
+                    padding: 30px;
+                }
+                .header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    margin-bottom: 30px;
+                    text-align: center;
+                }
+                .header h1 { font-size: 28pt; font-weight: 700; margin-bottom: 10px; }
+                .header .meta { font-size: 10pt; opacity: 0.9; }
+                h1, h2, h3 { color: #667eea; font-weight: 700; margin-top: 25px; margin-bottom: 12px; page-break-after: avoid; }
+                h1 { font-size: 24pt; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
+                h2 { font-size: 18pt; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+                h3 { font-size: 14pt; }
+                strong { color: #667eea; font-weight: 700; }
+                hr { border: none; height: 2px; background: linear-gradient(90deg, #667eea, #764ba2, #667eea); margin: 20px 0; opacity: 0.3; }
+                br { display: block; content: ""; margin: 6px 0; }
+                .footer { position: fixed; bottom: 20px; left: 40px; right: 40px; text-align: center; font-size: 9pt; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+                .page-number:before { content: "Page " counter(page); }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🚀 ${reportTitle}</h1>
+                <div class="meta">Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })} | Waste2Product Tunisia</div>
+            </div>
+            <div class="content">${reportHtml}</div>
+            <div class="footer">
+                <div class="page-number"></div>
+                <div>© ${new Date().getFullYear()} Waste2Product Tunisia - AI-Powered Analytics</div>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 100); }, 500);
+});
+</script>
+@endpush
+
+<!-- AI Report Modal for Collectors -->
+<div class="modal fade" id="collectorAIReportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 900px;">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-info">
+        <h5 class="modal-title text-white">
+          <i class="material-symbols-rounded me-2">auto_awesome</i>AI-Generated Collectors Report
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="collectorReportLoadingState" class="text-center py-5">
+          <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Generating report...</span>
+          </div>
+          <p class="mt-3 text-muted">AI is analyzing data and generating your comprehensive report...</p>
+        </div>
+        <div id="collectorReportContent" class="report-content" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn bg-gradient-success" id="downloadCollectorReportBtn" disabled>
+          <i class="material-symbols-rounded me-1">picture_as_pdf</i>Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 @endsection

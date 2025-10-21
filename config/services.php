@@ -40,4 +40,11 @@ return [
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+        'chatbot_model' => env('GROQ_CHATBOT_MODEL', 'llama-3.3-70b-versatile'),
+        'analysis_model' => env('GROQ_ANALYSIS_MODEL', 'llama-3.1-8b-instant'),
+    ],
+
 ];
