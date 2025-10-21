@@ -87,8 +87,9 @@
 
         <h2>Informations du demandeur</h2>
         <div class="reservation-info">
-            <p><strong>Nom:</strong> {{ $reservationData['first_name'] }} {{ $reservationData['last_name'] }}</p>
+            <p><strong>Nom:</strong> {{ $reservationData['name'] }}</p>
             <p><strong>Email:</strong> <a href="mailto:{{ $reservationData['email'] }}">{{ $reservationData['email'] }}</a></p>
+            <p><strong>Téléphone:</strong> {{ $reservationData['phone'] }}</p>
             <p><strong>Date de demande:</strong> {{ now()->format('d/m/Y à H:i') }}</p>
         </div>
 
