@@ -32,6 +32,7 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Services</a>
                         <ul class="dropdown-menu">
+                            <li><a href="{{ route('front.eco-ideas') }}"><i class="fas fa-lightbulb me-2"></i>Eco Ideas</a></li>
                             <li><a href="{{ route('front.shop') }}"><i class="fas fa-box me-2"></i>Products</a></li>
                             <li><a href="{{ route('front.events') }}"><i class="fas fa-calendar-alt me-2"></i>Events</a></li>
                             <li><a href="{{ route('front.posts') }}"><i class="fas fa-newspaper me-2"></i>Posts</a></li>

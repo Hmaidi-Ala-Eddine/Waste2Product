@@ -98,13 +98,23 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::put('/events/{id}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{id}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
     
-    // Eco Ideas Management routes
-    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'index'])->name('eco-ideas');
-    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'store'])->name('eco-ideas.store');
+    // Eco Ideas admin pages (from reference project)
+    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminIndex'])->name('eco-ideas');
     Route::get('/eco-ideas/creators', [\App\Http\Controllers\EcoIdeaController::class, 'getCreators'])->name('eco-ideas.creators');
-    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'getData'])->name('eco-ideas.data');
-    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'update'])->name('eco-ideas.update');
-    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'destroy'])->name('eco-ideas.delete');
+    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminStore'])->name('eco-ideas.store');
+    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'adminGetData'])->name('eco-ideas.data');
+    Route::get('/eco-ideas/{id}/team', [\App\Http\Controllers\EcoIdeaController::class, 'getTeamData'])->name('eco-ideas.team');
+    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminUpdate'])->name('eco-ideas.update');
+    Route::put('/eco-ideas/{id}/verify', [\App\Http\Controllers\EcoIdeaController::class, 'verifyProject'])->name('eco-ideas.verify');
+    Route::put('/eco-ideas/{id}/verification', [\App\Http\Controllers\EcoIdeaController::class, 'updateVerification'])->name('eco-ideas.verification.update');
+    Route::delete('/eco-ideas/{id}/verification', [\App\Http\Controllers\EcoIdeaController::class, 'deleteVerification'])->name('eco-ideas.verification.delete');
+    Route::post('/eco-ideas/{id}/remove-verification', [\App\Http\Controllers\EcoIdeaController::class, 'removeVerification'])->name('eco-ideas.remove-verification');
+    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminDestroy'])->name('eco-ideas.delete');
+
+    // Team Management routes (admin)
+    Route::delete('/eco-idea-teams/{id}', [\App\Http\Controllers\EcoIdeaTeamController::class, 'destroy'])->name('eco-idea-teams.delete');
+    Route::post('/eco-idea-applications/{id}/accept', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'accept'])->name('eco-idea-applications.accept');
+    Route::post('/eco-idea-applications/{id}/reject', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'reject'])->name('eco-idea-applications.reject');
     
     // Posts Management routes
     Route::get('/posts', [\App\Http\Controllers\PostController::class, 'index'])->name('posts');
@@ -224,6 +234,39 @@ Route::middleware('auth')->group(function () {
     Route::post('/posts/{post}/like', [\App\Http\Controllers\PostController::class, 'like'])->name('front.posts.like');
     Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getPostWithComments'])->name('front.posts.comments');
     Route::post('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'addComment'])->name('front.posts.add-comment');
+});
+
+// Frontend Eco Ideas Routes - Public viewing, Auth required for interactions
+Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'frontendIndex'])->name('front.eco-ideas');
+Route::get('/eco-ideas/{ecoIdea}', [\App\Http\Controllers\EcoIdeaController::class, 'frontendShow'])->name('front.eco-ideas.show');
+
+// Eco Ideas interaction routes (Authenticated Users Only)
+Route::middleware('auth')->group(function () {
+    Route::post('/eco-ideas/{ecoIdea}/like', [\App\Http\Controllers\EcoIdeaController::class, 'likeIdea'])->name('front.eco-ideas.like');
+    Route::post('/eco-ideas/{ecoIdea}/apply', [\App\Http\Controllers\EcoIdeaController::class, 'applyToIdea'])->name('front.eco-ideas.apply');
+    Route::post('/eco-ideas/{ecoIdea}/review', [\App\Http\Controllers\EcoIdeaController::class, 'addReview'])->name('front.eco-ideas.review');
+    Route::delete('/eco-ideas/review/{interaction}/delete', [\App\Http\Controllers\EcoIdeaController::class, 'deleteReview'])->name('front.eco-ideas.review.delete');
+    
+    // Eco Ideas Dashboard & Project Management
+    Route::get('/eco-ideas-dashboard', [\App\Http\Controllers\EcoIdeaController::class, 'dashboard'])->name('front.eco-ideas.dashboard');
+    Route::post('/eco-ideas-dashboard/create', [\App\Http\Controllers\EcoIdeaController::class, 'createFromDashboard'])->name('front.eco-ideas.dashboard.create');
+    Route::get('/eco-ideas-dashboard/{ecoIdea}/manage', [\App\Http\Controllers\EcoIdeaController::class, 'manageProject'])->name('front.eco-ideas.dashboard.manage');
+    Route::put('/eco-ideas-dashboard/{ecoIdea}/update', [\App\Http\Controllers\EcoIdeaController::class, 'updateFromDashboard'])->name('front.eco-ideas.dashboard.update');
+    Route::delete('/eco-ideas-dashboard/{ecoIdea}/delete', [\App\Http\Controllers\EcoIdeaController::class, 'deleteFromDashboard'])->name('front.eco-ideas.dashboard.delete');
+    
+    // Application Management
+    Route::get('/eco-ideas-dashboard/{ecoIdea}/applications', [\App\Http\Controllers\EcoIdeaController::class, 'getApplications'])->name('front.eco-ideas.dashboard.applications');
+    Route::post('/eco-ideas-dashboard/applications/{application}/accept', [\App\Http\Controllers\EcoIdeaController::class, 'acceptApplication'])->name('front.eco-ideas.dashboard.applications.accept');
+    Route::post('/eco-ideas-dashboard/applications/{application}/reject', [\App\Http\Controllers\EcoIdeaController::class, 'rejectApplication'])->name('front.eco-ideas.dashboard.applications.reject');
+    
+    // Team Management
+    Route::delete('/eco-ideas-dashboard/team/{teamMember}/remove', [\App\Http\Controllers\EcoIdeaController::class, 'removeTeamMember'])->name('front.eco-ideas.dashboard.team.remove');
+    
+    // Task Management
+    Route::get('/eco-ideas-dashboard/{ecoIdea}/tasks', [\App\Http\Controllers\EcoIdeaController::class, 'getTasks'])->name('front.eco-ideas.dashboard.tasks');
+    Route::post('/eco-ideas-dashboard/{ecoIdea}/tasks', [\App\Http\Controllers\EcoIdeaController::class, 'createTask'])->name('front.eco-ideas.dashboard.tasks.create');
+    Route::put('/eco-ideas-dashboard/tasks/{task}/update', [\App\Http\Controllers\EcoIdeaController::class, 'updateTask'])->name('front.eco-ideas.dashboard.tasks.update');
+    Route::delete('/eco-ideas-dashboard/tasks/{task}/delete', [\App\Http\Controllers\EcoIdeaController::class, 'deleteTask'])->name('front.eco-ideas.dashboard.tasks.delete');
 });
 
 // Frontend Events Routes - Public viewing, Auth required for interactions
