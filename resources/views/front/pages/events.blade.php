@@ -737,7 +737,7 @@
     <div class="events-container">
         <!-- Events Header -->
         <div class="events-header">
-            <h1>Community Events</h1>
+            <h1>Community Event</h1>
             <p>Join our community events and make a difference</p>
         </div>
 

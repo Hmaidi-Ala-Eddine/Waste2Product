@@ -127,6 +127,18 @@ class UserController extends BaseController
         } catch (\Throwable $e) {
             // Mail failure should not crash account creation in this dev flow; log and continue
             logger()->error('Failed to send verification email: ' . $e->getMessage());
+
+            // Also log the verification URL so developers can complete verification when SMTP fails
+            $msg = sprintf("[ %s ] Verification URL for %s: %s", now()->toDateTimeString(), $user->email, $verifyUrl);
+            logger()->info($msg);
+
+            try {
+                // Append URL to a dedicated file inside storage/logs for easy access
+                $file = storage_path('logs/verification_urls.log');
+                file_put_contents($file, $msg . PHP_EOL, FILE_APPEND | LOCK_EX);
+            } catch (\Throwable $_) {
+                // ignore file write failures
+            }
         }
 
         if ($request->wantsJson()) {
