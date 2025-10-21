@@ -510,4 +510,76 @@ class CollectorController extends Controller
             'message' => 'Collection marked as complete!',
         ]);
     }
+
+    /**
+     * Generate AI-powered analytics report for collectors
+     */
+    public function generateAIReport()
+    {
+        try {
+            $groqService = app(\App\Services\GroqService::class);
+            
+            // Gather analytics data
+            $data = [
+                'summary' => [
+                    'total' => Collector::count(),
+                    'verified' => Collector::where('verification_status', 'verified')->count(),
+                    'pending' => Collector::where('verification_status', 'pending')->count(),
+                    'suspended' => Collector::where('verification_status', 'suspended')->count(),
+                    'avg_rating' => round(Collector::where('verification_status', 'verified')->avg('rating'), 2),
+                    'total_collections' => Collector::sum('total_collections'),
+                ],
+                'by_status' => Collector::selectRaw('verification_status, COUNT(*) as count')
+                    ->groupBy('verification_status')
+                    ->get()
+                    ->pluck('count', 'verification_status')
+                    ->toArray(),
+                'by_vehicle' => Collector::selectRaw('vehicle_type, COUNT(*) as count')
+                    ->groupBy('vehicle_type')
+                    ->get()
+                    ->pluck('count', 'vehicle_type')
+                    ->toArray(),
+                'top_rated' => Collector::where('verification_status', 'verified')
+                    ->orderByDesc('rating')
+                    ->limit(10)
+                    ->with('user:id,name')
+                    ->get()
+                    ->map(function($collector) {
+                        return [
+                            'name' => $collector->user->name ?? 'Unknown',
+                            'company' => $collector->company_name,
+                            'rating' => $collector->rating,
+                            'collections' => $collector->total_collections
+                        ];
+                    })
+                    ->toArray(),
+                'most_active' => Collector::where('verification_status', 'verified')
+                    ->orderByDesc('total_collections')
+                    ->limit(10)
+                    ->with('user:id,name')
+                    ->get()
+                    ->map(function($collector) {
+                        return [
+                            'name' => $collector->user->name ?? 'Unknown',
+                            'company' => $collector->company_name,
+                            'collections' => $collector->total_collections,
+                            'rating' => $collector->rating
+                        ];
+                    })
+                    ->toArray(),
+            ];
+
+            // Generate AI report
+            $result = $groqService->generateCollectorsReport($data);
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            \Log::error('Collector AI Report generation failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate report. Please try again.'
+            ], 500);
+        }
+    }
 }

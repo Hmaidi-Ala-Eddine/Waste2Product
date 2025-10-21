@@ -255,6 +255,126 @@
         color: #f39c12 !important;
     }
     
+    /* AI Helper Styles */
+    .ai-helper-box {
+        background: linear-gradient(135deg, #667eea10 0%, #764ba220 100%);
+        border: 2px dashed #667eea;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 8px;
+    }
+
+    .btn-ai-detect {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-ai-detect:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-ai-detect:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .ai-result {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        animation: slideDown 0.3s ease;
+    }
+
+    .ai-result.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .ai-result.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .ai-result strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 1rem;
+    }
+
+    .ai-suggestion {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        margin-top: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .ai-suggestion:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .description-enhancer-wrapper {
+        position: relative;
+    }
+
+    .btn-enhance {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: linear-gradient(135deg, #4EA685 0%, #57B894 100%);
+        color: white;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .btn-enhance:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(78, 166, 133, 0.4);
+    }
+
+    .btn-enhance:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     /* Toast Notifications */
     .toast-notification {
         position: fixed;
@@ -377,6 +497,25 @@
                     <form id="wasteRequestForm" method="POST" action="{{ route('front.waste-requests.store') }}">
                         @csrf
                         
+                        <!-- AI Waste Type Detector -->
+                        <div class="form-group">
+                            <label for="ai_waste_description">🤖 AI Waste Type Helper</label>
+                            <div class="ai-helper-box">
+                                <input type="text" id="ai_waste_description" class="form-control" 
+                                       placeholder="Describe your waste... e.g., 'old laptop and chargers'" 
+                                       maxlength="200">
+                                <button type="button" id="detectWasteBtn" class="btn-ai-detect">
+                                    <span class="btn-text">
+                                        <i class="fas fa-magic"></i> Detect Type
+                                    </span>
+                                    <span class="btn-loader" style="display:none;">
+                                        <i class="fas fa-spinner fa-spin"></i> Detecting...
+                                    </span>
+                                </button>
+                                <div id="aiDetectionResult" class="ai-result" style="display:none;"></div>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="waste_type">Waste Type *</label>
                             <select name="waste_type" id="waste_type" class="form-select" required>
@@ -420,8 +559,18 @@
 
                         <div class="form-group">
                             <label for="description">Additional Notes</label>
-                            <textarea name="description" id="description" class="form-control" rows="3" 
-                                      placeholder="Any additional information about your waste...">{{ old('description') }}</textarea>
+                            <div class="description-enhancer-wrapper">
+                                <textarea name="description" id="description" class="form-control" rows="3" 
+                                          placeholder="Any additional information about your waste...">{{ old('description') }}</textarea>
+                                <button type="button" id="enhanceDescBtn" class="btn-enhance" title="Enhance with AI">
+                                    <span class="btn-text">
+                                        <i class="fas fa-sparkles"></i> Enhance with AI
+                                    </span>
+                                    <span class="btn-loader" style="display:none;">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn-submit">
@@ -635,7 +784,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             case 'description':
                 if (value && value.length > 2000) return setInvalid(field, 'Description cannot exceed 2000 characters');
-                if (value && !/^[a-zA-Z0-9\s\.,\-\!\?\(\)]*$/.test(value)) return setInvalid(field, 'Description contains invalid characters');
+                // Allow most common characters including quotes, apostrophes, colons, etc for AI-enhanced descriptions
+                if (value && !/^[a-zA-Z0-9\s\.,\-\!\?\(\)\"\'\:\;\/\&\%\@\#\*\+\=\[\]\{\}]*$/.test(value)) return setInvalid(field, 'Description contains invalid characters');
                 if (value) return setValid(field);
                 return true;
                 
@@ -811,6 +961,142 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.remove();
         }, 3000);
     }
+
+    // ============ AI WASTE TYPE DETECTOR ============
+    const aiWasteInput = document.getElementById('ai_waste_description');
+    const detectBtn = document.getElementById('detectWasteBtn');
+    const aiResult = document.getElementById('aiDetectionResult');
+    const wasteTypeSelect = document.getElementById('waste_type');
+
+    detectBtn.addEventListener('click', async function() {
+        const description = aiWasteInput.value.trim();
+        
+        if (!description || description.length < 3) {
+            showToast('Please describe your waste (at least 3 characters)', 'error');
+            return;
+        }
+
+        // Show loading state
+        detectBtn.disabled = true;
+        detectBtn.querySelector('.btn-text').style.display = 'none';
+        detectBtn.querySelector('.btn-loader').style.display = 'inline-block';
+        aiResult.style.display = 'none';
+
+        try {
+            const response = await fetch('/chatbot/detect-waste-type', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ description })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success result
+                aiResult.className = 'ai-result success';
+                aiResult.innerHTML = `
+                    <strong>✨ AI Detected: ${data.label}</strong>
+                    <div class="ai-suggestion" data-type="${data.type}">
+                        <i class="fas fa-check-circle"></i>
+                        Click to select "${data.label}"
+                    </div>
+                `;
+                aiResult.style.display = 'block';
+
+                // Add click handler to suggestion
+                aiResult.querySelector('.ai-suggestion').addEventListener('click', function() {
+                    wasteTypeSelect.value = this.dataset.type;
+                    validateField(wasteTypeSelect);
+                    showToast(`Waste type set to "${data.label}"`, 'success');
+                    aiResult.style.display = 'none';
+                    aiWasteInput.value = '';
+                });
+            } else {
+                // Show error result
+                aiResult.className = 'ai-result error';
+                aiResult.innerHTML = `<strong>⚠️ ${data.message || 'Could not detect waste type'}</strong>`;
+                aiResult.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('AI Detection error:', error);
+            showToast('AI detection failed. Please try again.', 'error');
+        } finally {
+            // Reset button state
+            detectBtn.disabled = false;
+            detectBtn.querySelector('.btn-text').style.display = 'inline-block';
+            detectBtn.querySelector('.btn-loader').style.display = 'none';
+        }
+    });
+
+    // ============ AI DESCRIPTION ENHANCER ============
+    const descriptionField = document.getElementById('description');
+    const enhanceBtn = document.getElementById('enhanceDescBtn');
+
+    enhanceBtn.addEventListener('click', async function() {
+        const description = descriptionField.value.trim();
+        
+        if (!description || description.length < 3) {
+            showToast('Please write a description first (at least 3 characters)', 'error');
+            return;
+        }
+
+        // Show loading state
+        enhanceBtn.disabled = true;
+        enhanceBtn.querySelector('.btn-text').style.display = 'none';
+        enhanceBtn.querySelector('.btn-loader').style.display = 'inline-block';
+
+        try {
+            const wasteType = wasteTypeSelect.value || null;
+            const quantityValue = quantity.value ? parseFloat(quantity.value) : null;
+            const stateValue = state.value || null;
+            const stateText = state.value ? state.options[state.selectedIndex].text : null;
+
+            const response = await fetch('/chatbot/enhance-description', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ 
+                    description,
+                    waste_type: wasteType,
+                    quantity: quantityValue,
+                    state: stateText
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Replace description with enhanced version
+                descriptionField.value = data.enhanced;
+                
+                // Trigger validation to clear red border
+                validateField(descriptionField);
+                
+                showToast('✨ Description enhanced by AI!', 'success');
+                
+                // Add visual feedback
+                descriptionField.style.background = '#d4edda';
+                setTimeout(() => {
+                    descriptionField.style.background = '';
+                }, 2000);
+            } else {
+                showToast(data.message || 'Could not enhance description', 'error');
+            }
+        } catch (error) {
+            console.error('AI Enhancement error:', error);
+            showToast('AI enhancement failed. Please try again.', 'error');
+        } finally {
+            // Reset button state
+            enhanceBtn.disabled = false;
+            enhanceBtn.querySelector('.btn-text').style.display = 'inline-block';
+            enhanceBtn.querySelector('.btn-loader').style.display = 'none';
+        }
+    });
 });
 </script>
 @endpush
