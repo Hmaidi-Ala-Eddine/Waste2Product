@@ -43,8 +43,8 @@ class AdminController extends Controller
                                                       ->sum('quantity');
         
         // ============ REVENUE FROM PRODUCTS & ORDERS ============
-        $totalRevenue = \App\Models\Product::where('status', 'sold')->sum('price');
-        $thisMonthRevenue = \App\Models\Product::where('status', 'sold')
+        $totalRevenue = \App\Models\Product::whereIn('status', ['sold', 'donated'])->sum('price');
+        $thisMonthRevenue = \App\Models\Product::whereIn('status', ['sold', 'donated'])
                                                ->whereMonth('updated_at', now()->month)
                                                ->sum('price');
         
@@ -66,7 +66,7 @@ class AdminController extends Controller
         // ============ PRODUCT STATUS ============
         $availableProducts = \App\Models\Product::where('status', 'available')->count();
         $soldProducts = \App\Models\Product::where('status', 'sold')->count();
-        $donatedProducts = 0; // No longer used
+        $donatedProducts = \App\Models\Product::where('status', 'donated')->count();
         $reservedProducts = \App\Models\Product::where('status', 'reserved')->count();
         
         // ============ TOP PERFORMERS ============
@@ -94,7 +94,7 @@ class AdminController extends Controller
         // ============ TOP PRODUCTS ============
         // Top 5 most sold products
         $topProducts = \App\Models\Product::with('user')
-                                          ->where('status', 'sold')
+                                          ->whereIn('status', ['sold', 'donated'])
                                           ->orderBy('price', 'desc')
                                           ->take(5)
                                           ->get();
@@ -159,7 +159,7 @@ class AdminController extends Controller
         
         // ============ CONVERSION RATES ============
         $collectionRate = $totalWasteRequests > 0 ? round(($collectedRequests / $totalWasteRequests) * 100, 1) : 0;
-        $productSaleRate = $totalProducts > 0 ? round(($soldProducts / $totalProducts) * 100, 1) : 0;
+        $productSaleRate = $totalProducts > 0 ? round((($soldProducts + $donatedProducts) / $totalProducts) * 100, 1) : 0;
         
         return view('back.dashboard', compact(
             // Core Stats

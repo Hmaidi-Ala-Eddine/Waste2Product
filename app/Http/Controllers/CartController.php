@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class CartController extends Controller
      */
     public function index()
     {
-        $cartItems = Auth::user()->getCartItems();
+        $cartItems = Auth::user()->cartItems()->with('product.user')->get();
         $subtotal = $cartItems->sum('subtotal');
         $tax = $subtotal * 0.19; // 19% TVA
         $total = $subtotal + $tax;
@@ -38,8 +39,22 @@ class CartController extends Controller
             ], 400);
         }
 
-        // Add to cart using new JSON method
-        Auth::user()->addToCart($productId, $request->get('quantity', 1));
+        // Check if user already has this product in cart
+        $cartItem = CartItem::where('user_id', Auth::id())
+                            ->where('product_id', $productId)
+                            ->first();
+
+        if ($cartItem) {
+            // Update quantity
+            $cartItem->increment('quantity', $request->get('quantity', 1));
+        } else {
+            // Create new cart item
+            CartItem::create([
+                'user_id' => Auth::id(),
+                'product_id' => $productId,
+                'quantity' => $request->get('quantity', 1),
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -51,22 +66,22 @@ class CartController extends Controller
     /**
      * Update cart item quantity
      */
-    public function update(Request $request, $productId)
+    public function update(Request $request, $id)
     {
+        $cartItem = CartItem::where('id', $id)
+                            ->where('user_id', Auth::id())
+                            ->firstOrFail();
+
         $request->validate([
             'quantity' => 'required|integer|min:1|max:10'
         ]);
 
-        Auth::user()->updateCartItem($productId, $request->quantity);
-
-        // Get updated item for response
-        $cartItems = Auth::user()->getCartItems();
-        $updatedItem = $cartItems->firstWhere('product_id', $productId);
+        $cartItem->update(['quantity' => $request->quantity]);
 
         return response()->json([
             'success' => true,
             'message' => 'Cart updated successfully!',
-            'subtotal' => $updatedItem ? $updatedItem->subtotal : 0,
+            'subtotal' => $cartItem->subtotal,
             'cart_total' => Auth::user()->cart_total
         ]);
     }
@@ -74,9 +89,13 @@ class CartController extends Controller
     /**
      * Remove item from cart
      */
-    public function remove($productId)
+    public function remove($id)
     {
-        Auth::user()->removeFromCart($productId);
+        $cartItem = CartItem::where('id', $id)
+                            ->where('user_id', Auth::id())
+                            ->firstOrFail();
+
+        $cartItem->delete();
 
         return response()->json([
             'success' => true,
@@ -90,7 +109,7 @@ class CartController extends Controller
      */
     public function clear()
     {
-        Auth::user()->clearCart();
+        Auth::user()->cartItems()->delete();
 
         return redirect()->route('front.shop')->with('success', 'Cart cleared successfully!');
     }
@@ -100,7 +119,7 @@ class CartController extends Controller
      */
     public function checkout()
     {
-        $cartItems = Auth::user()->getCartItems();
+        $cartItems = Auth::user()->cartItems()->with('product.user')->get();
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('front.cart')->with('error', 'Your cart is empty!');
@@ -118,78 +137,35 @@ class CartController extends Controller
      */
     public function processCheckout(Request $request)
     {
-        // Handle JSON data from AJAX requests
-        if ($request->expectsJson() || $request->ajax()) {
-            $data = $request->json()->all();
-            // Merge JSON data into request for validation
-            $request->merge($data);
-        }
-
         $request->validate([
             'payment_method' => 'required|in:card,paypal,cash',
             'card_number' => 'required_if:payment_method,card',
             'card_expiry' => 'required_if:payment_method,card',
             'card_cvv' => 'required_if:payment_method,card',
             'card_name' => 'required_if:payment_method,card',
-            'address' => 'required|string',
-            'city' => 'required|string',
-            'postal_code' => 'required|string',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-        ], [
-            'payment_method.required' => 'Le mode de paiement est obligatoire.',
-            'payment_method.in' => 'Le mode de paiement sélectionné n\'est pas valide.',
-            'card_number.required_if' => 'Le numéro de carte est obligatoire pour les paiements par carte.',
-            'card_expiry.required_if' => 'La date d\'expiration est obligatoire pour les paiements par carte.',
-            'card_cvv.required_if' => 'Le CVV est obligatoire pour les paiements par carte.',
-            'card_name.required_if' => 'Le nom du titulaire est obligatoire pour les paiements par carte.',
-            'address.required' => 'L\'adresse est obligatoire.',
-            'city.required' => 'La ville est obligatoire.',
-            'postal_code.required' => 'Le code postal est obligatoire.',
-            'first_name.required' => 'Le prénom est obligatoire.',
-            'last_name.required' => 'Le nom est obligatoire.',
-            'email.required' => 'L\'email est obligatoire.',
-            'email.email' => 'L\'email doit être valide.',
-            'phone.required' => 'Le téléphone est obligatoire.',
+            'billing_address' => 'required|string',
+            'billing_city' => 'required|string',
+            'billing_postal_code' => 'required|string',
         ]);
 
-        $cartItems = Auth::user()->getCartItems();
+        $cartItems = Auth::user()->cartItems()->with('product')->get();
 
         if ($cartItems->isEmpty()) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Votre panier est vide !'
-                ], 400);
-            }
             return redirect()->route('front.cart')->with('error', 'Your cart is empty!');
         }
 
         DB::beginTransaction();
 
         try {
-            // Generate transaction ID
-            $transactionId = 'TXN_' . time() . '_' . Auth::id();
-            
             // Create orders for each product
             foreach ($cartItems as $item) {
-                $order = Order::create([
+                Order::create([
                     'user_id' => Auth::id(),
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
                     'total_price' => $item->subtotal,
-                    'status' => 'completed', // ✅ Changed to completed for paid orders
+                    'status' => 'pending',
                     'payment_method' => $request->payment_method,
-                    'payment_status' => 'completed', // ✅ Payment completed
-                    'transaction_id' => $transactionId,
-                    'gateway' => $this->getGatewayName($request->payment_method),
-                    'gateway_response' => $this->generateGatewayResponse($request),
-                    'payment_notes' => 'Payment completed successfully via ' . $request->payment_method,
-                    'payment_processed_at' => now(),
-                    'shipping_address' => $this->formatShippingAddress($request),
-                    'order_notes' => 'Order placed via checkout process',
                     'ordered_at' => now(),
                 ]);
 
@@ -198,30 +174,14 @@ class CartController extends Controller
             }
 
             // Clear cart
-            Auth::user()->clearCart();
+            Auth::user()->cartItems()->delete();
 
             DB::commit();
-
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Commande passée avec succès !'
-                ]);
-            }
 
             return redirect()->route('front.order.success')->with('success', 'Order placed successfully!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            \Log::error('Checkout processing error: ' . $e->getMessage());
-            
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Une erreur est survenue lors du traitement de la commande. Veuillez réessayer.'
-                ], 500);
-            }
             
             return redirect()->back()
                 ->withInput()
@@ -235,61 +195,5 @@ class CartController extends Controller
     public function orderSuccess()
     {
         return view('front.pages.order-success');
-    }
-
-    /**
-     * Get gateway name based on payment method
-     */
-    private function getGatewayName(string $paymentMethod): string
-    {
-        return match($paymentMethod) {
-            'card' => 'Credit Card Gateway',
-            'paypal' => 'PayPal Gateway',
-            'cash' => 'Cash on Delivery',
-            default => 'Unknown Gateway'
-        };
-    }
-
-    /**
-     * Generate gateway response data
-     */
-    private function generateGatewayResponse(Request $request): array
-    {
-        $response = [
-            'method' => $request->payment_method,
-            'processed_at' => now()->toISOString(),
-            'amount' => $request->input('total_amount', 0),
-            'currency' => 'TND',
-            'status' => 'success'
-        ];
-
-        // Add card-specific data if payment method is card
-        if ($request->payment_method === 'card') {
-            $response['card'] = [
-                'last_four' => substr($request->card_number, -4),
-                'expiry' => $request->card_expiry,
-                'holder_name' => $request->card_name
-            ];
-        }
-
-        return $response;
-    }
-
-    /**
-     * Format shipping address from request data
-     */
-    private function formatShippingAddress(Request $request): string
-    {
-        $address = [
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'city' => $request->city,
-            'postal_code' => $request->postal_code
-        ];
-
-        return json_encode($address, JSON_PRETTY_PRINT);
     }
 }

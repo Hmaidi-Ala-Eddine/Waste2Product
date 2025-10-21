@@ -56,8 +56,8 @@
 
         /* Navbar Menu Items - Always visible */
         .navbar-nav > li > a {
-            color: #2c3e50 !important; /* make navbar links black/dark */
-            text-shadow: none; /* remove white text shadow */
+            color: white !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             font-weight: 500;
             transition: color 0.3s ease;
         }
@@ -316,100 +316,6 @@
             color: #4CAF50 !important;
             filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.8)) !important;
         }
-
-        /* Pagination Styles */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 40px 0;
-            padding: 0;
-            list-style: none;
-            gap: 8px;
-        }
-
-        .pagination li {
-            display: inline-block;
-        }
-
-        .pagination a,
-        .pagination span {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            height: 40px;
-            padding: 8px 12px;
-            margin: 0 2px;
-            border: 1px solid #e1e8ed;
-            border-radius: 8px;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .pagination a:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .pagination .active span {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .pagination .disabled span {
-            background: #f8f9fa;
-            color: #adb5bd;
-            border-color: #e9ecef;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        /* Pagination wrapper */
-        .pagination-wrapper {
-            display: flex;
-            justify-content: center;
-            margin: 40px 0;
-        }
-
-        /* Responsive pagination */
-        @media (max-width: 768px) {
-            .pagination {
-                flex-wrap: wrap;
-                gap: 4px;
-            }
-            
-            .pagination a,
-            .pagination span {
-                min-width: 36px;
-                height: 36px;
-                font-size: 13px;
-                padding: 6px 10px;
-            }
-        }
-
-        /* Hide pagination icons that might be too large */
-        .pagination i {
-            font-size: 12px !important;
-            line-height: 1 !important;
-        }
-
-        .pagination .fa-chevron-left,
-        .pagination .fa-chevron-right,
-        .pagination .fa-angle-left,
-        .pagination .fa-angle-right {
-            font-size: 10px !important;
-        }
     </style>
     
     @stack('styles')
@@ -526,84 +432,6 @@
                 }, 4000); // 4 seconds
             });
         });
-
-        // Global notification system
-        function showNotification(message, type = 'info') {
-            // Remove existing notifications
-            const existingNotifications = document.querySelectorAll('.global-notification');
-            existingNotifications.forEach(notification => notification.remove());
-
-            const notification = document.createElement('div');
-            notification.className = `global-notification ${type}`;
-            notification.innerHTML = `
-                <div class="notification-content">
-                    <div class="notification-icon">
-                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                    </div>
-                    <div class="notification-message">${message}</div>
-                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            
-            // Add styles
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10000;
-                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                max-width: 400px;
-                animation: slideInRight 0.3s ease;
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Auto remove after 4 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 4000);
-        }
-
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOutRight {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-            .notification-content {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .notification-icon {
-                font-size: 18px;
-            }
-            .notification-message {
-                flex: 1;
-                font-weight: 500;
-            }
-            .notification-close {
-                background: none;
-                border: none;
-                color: white;
-                cursor: pointer;
-                padding: 0;
-                font-size: 14px;
-            }
-        `;
-        document.head.appendChild(style);
     </script>
     @stack('scripts')
 </body>

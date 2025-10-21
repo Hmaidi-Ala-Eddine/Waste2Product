@@ -88,41 +88,22 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'category' => 'required|in:furniture,electronics,plastic,textile,metal',
-                'condition' => 'nullable|in:excellent,good,fair,poor',
-                'price' => 'nullable|numeric|min:0',
-                'status' => 'required|in:available,sold,reserved',
-                'waste_request_id' => 'nullable|exists:waste_requests,id',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ], [
-                'name.required' => 'Le nom du produit est obligatoire.',
-                'name.string' => 'Le nom du produit doit être une chaîne de caractères.',
-                'name.max' => 'Le nom du produit ne peut pas dépasser 255 caractères.',
-                'description.string' => 'La description doit être une chaîne de caractères.',
-                'category.required' => 'La catégorie est obligatoire.',
-                'category.in' => 'La catégorie sélectionnée n\'est pas valide.',
-                'condition.in' => 'L\'état sélectionné n\'est pas valide.',
-                'price.numeric' => 'Le prix doit être un nombre.',
-                'price.min' => 'Le prix ne peut pas être négatif.',
-                'status.required' => 'Le statut est obligatoire.',
-                'status.in' => 'Le statut sélectionné n\'est pas valide.',
-                'waste_request_id.exists' => 'La demande de déchets sélectionnée n\'existe pas.',
-                'image.image' => 'Le fichier doit être une image.',
-                'image.mimes' => 'L\'image doit être au format JPEG, PNG, JPG ou GIF.',
-                'image.max' => 'L\'image ne peut pas dépasser 2MB.',
-            ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|min:10',
+            'category' => 'required|in:furniture,electronics,plastic,textile,metal',
+            'condition' => 'nullable|in:excellent,good,fair,poor',
+            'price' => 'nullable|numeric|min:0',
+            'status' => 'required|in:available,sold,donated,reserved',
+            'user_id' => 'required|exists:users,id',
+            'waste_request_id' => 'nullable|exists:waste_requests,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
         $data = $request->only([
             'user_id', 'name', 'description', 'category', 
             'condition', 'price', 'status', 'waste_request_id'
         ]);
-        
-        // Assign the authenticated user as the product owner
-        $data['user_id'] = auth()->id();
         
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -133,7 +114,7 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
-        if ($request->expectsJson() || $request->ajax()) {
+        if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Product created successfully!',
@@ -143,26 +124,6 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product created successfully!');
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $e->errors()
-                ], 422);
-            }
-            throw $e;
-        } catch (\Exception $e) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Une erreur est survenue lors de la création du produit'
-                ], 500);
-            }
-            return redirect()->back()
-                ->with('error', 'Une erreur est survenue lors de la création du produit');
-        }
     }
 
     /**
@@ -203,41 +164,22 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'category' => 'required|in:furniture,electronics,plastic,textile,metal',
-                'condition' => 'nullable|in:excellent,good,fair,poor',
-                'price' => 'nullable|numeric|min:0',
-                'status' => 'required|in:available,sold,reserved',
-                'waste_request_id' => 'nullable|exists:waste_requests,id',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ], [
-                'name.required' => 'Le nom du produit est obligatoire.',
-                'name.string' => 'Le nom du produit doit être une chaîne de caractères.',
-                'name.max' => 'Le nom du produit ne peut pas dépasser 255 caractères.',
-                'description.string' => 'La description doit être une chaîne de caractères.',
-                'category.required' => 'La catégorie est obligatoire.',
-                'category.in' => 'La catégorie sélectionnée n\'est pas valide.',
-                'condition.in' => 'L\'état sélectionné n\'est pas valide.',
-                'price.numeric' => 'Le prix doit être un nombre.',
-                'price.min' => 'Le prix ne peut pas être négatif.',
-                'status.required' => 'Le statut est obligatoire.',
-                'status.in' => 'Le statut sélectionné n\'est pas valide.',
-                'waste_request_id.exists' => 'La demande de déchets sélectionnée n\'existe pas.',
-                'image.image' => 'Le fichier doit être une image.',
-                'image.mimes' => 'L\'image doit être au format JPEG, PNG, JPG ou GIF.',
-                'image.max' => 'L\'image ne peut pas dépasser 2MB.',
-            ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|min:10',
+            'category' => 'required|in:furniture,electronics,plastic,textile,metal',
+            'condition' => 'nullable|in:excellent,good,fair,poor',
+            'price' => 'nullable|numeric|min:0',
+            'status' => 'required|in:available,sold,donated,reserved',
+            'user_id' => 'required|exists:users,id',
+            'waste_request_id' => 'nullable|exists:waste_requests,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
         $data = $request->only([
             'user_id', 'name', 'description', 'category', 
             'condition', 'price', 'status', 'waste_request_id'
         ]);
-        
-        // Assign the authenticated user as the product owner
-        $data['user_id'] = auth()->id();
         
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -252,7 +194,7 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        if ($request->expectsJson() || $request->ajax()) {
+        if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully!',
@@ -262,26 +204,6 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product updated successfully!');
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $e->errors()
-                ], 422);
-            }
-            throw $e;
-        } catch (\Exception $e) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Une erreur est survenue lors de la mise à jour du produit'
-                ], 500);
-            }
-            return redirect()->back()
-                ->with('error', 'Une erreur est survenue lors de la mise à jour du produit');
-        }
     }
 
     /**
@@ -313,15 +235,10 @@ class ProductController extends Controller
     public function changeStatus(Request $request, Product $product)
     {
         $request->validate([
-            'status' => 'required|in:available,sold,reserved'
+            'status' => 'required|in:available,sold,donated,reserved'
         ]);
 
-        // Use special method for making available
-        if ($request->status === 'available') {
-            $product->makeAvailable();
-        } else {
-            $product->update(['status' => $request->status]);
-        }
+        $product->update(['status' => $request->status]);
 
         return redirect()->back()
             ->with('success', 'Product status updated successfully.');

@@ -113,28 +113,6 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::get('/posts/{post}/data', [\App\Http\Controllers\PostController::class, 'getData'])->name('posts.data');
     Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
-
-    // Eco Ideas admin pages
-    Route::get('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminIndex'])->name('eco-ideas');
-    Route::post('/eco-ideas', [\App\Http\Controllers\EcoIdeaController::class, 'adminStore'])->name('eco-ideas.store');
-    Route::get('/eco-ideas/{id}/data', [\App\Http\Controllers\EcoIdeaController::class, 'adminGetData'])->name('eco-ideas.data');
-    Route::get('/eco-ideas/{id}/team', [\App\Http\Controllers\EcoIdeaController::class, 'getTeamData'])->name('eco-ideas.team');
-    Route::put('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminUpdate'])->name('eco-ideas.update');
-    Route::put('/eco-ideas/{id}/verify', [\App\Http\Controllers\EcoIdeaController::class, 'verifyProject'])->name('eco-ideas.verify');
-    Route::delete('/eco-ideas/{id}', [\App\Http\Controllers\EcoIdeaController::class, 'adminDestroy'])->name('eco-ideas.delete');
-    
-    // Team Management routes
-    Route::delete('/eco-idea-teams/{id}', [\App\Http\Controllers\EcoIdeaTeamController::class, 'destroy'])->name('eco-idea-teams.delete');
-    Route::post('/eco-idea-applications/{id}/accept', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'accept'])->name('eco-idea-applications.accept');
-    Route::post('/eco-idea-applications/{id}/reject', [\App\Http\Controllers\EcoIdeaApplicationController::class, 'reject'])->name('eco-idea-applications.reject');
-    
-    // Events Management routes
-    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events');
-    Route::post('/events', [\App\Http\Controllers\EventController::class, 'store'])->name('events.store');
-    Route::get('/events/users', [\App\Http\Controllers\EventController::class, 'getUsers'])->name('events.users');
-    Route::get('/events/{event}/data', [\App\Http\Controllers\EventController::class, 'getData'])->name('events.data');
-    Route::put('/events/{event}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{event}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
     
     // Analytics Management routes
     Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
@@ -267,57 +245,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [\App\Http\Controllers\ShopController::class, 'myOrders'])->name('front.my-orders');
 });
 
-    // Product Status Management Routes
-    Route::post('/products/{product}/mark-sold', [\App\Http\Controllers\ProductStatusController::class, 'markAsSold'])->name('front.products.mark-sold');
-    Route::post('/products/{product}/mark-available', [\App\Http\Controllers\ProductStatusController::class, 'markAsAvailable'])->name('front.products.mark-available');
-    Route::get('/products/{product}/status-history', [\App\Http\Controllers\ProductStatusController::class, 'getStatusHistory'])->name('front.products.status-history');
-
-// Product-Order-Cart Jointures Routes
-Route::get('/api/products-orders-cart', [\App\Http\Controllers\ProductOrderCartController::class, 'productsWithOrdersAndCart'])->name('api.products-orders-cart');
-Route::get('/api/products-in-cart-not-ordered', [\App\Http\Controllers\ProductOrderCartController::class, 'productsInCartNotOrdered'])->name('api.products-in-cart-not-ordered');
-Route::get('/api/products-ordered-but-in-cart', [\App\Http\Controllers\ProductOrderCartController::class, 'productsOrderedButInCart'])->name('api.products-ordered-but-in-cart');
-Route::get('/api/cart-items-to-orders', [\App\Http\Controllers\ProductOrderCartController::class, 'cartItemsToOrders'])->name('api.cart-items-to-orders');
-Route::get('/api/analytics', [\App\Http\Controllers\ProductOrderCartController::class, 'analytics'])->name('api.analytics');
-Route::get('/api/products-pending-actions', [\App\Http\Controllers\ProductOrderCartController::class, 'productsWithPendingActions'])->name('api.products-pending-actions');
-Route::get('/api/user-cart-orders', [\App\Http\Controllers\ProductOrderCartController::class, 'userCartAndOrders'])->name('api.user-cart-orders');
-
-
-// Payment Routes
-Route::get('/payment/{order}', [\App\Http\Controllers\PaymentController::class, 'show'])->name('front.payment.show');
-Route::post('/payment/{order}/process', [\App\Http\Controllers\PaymentController::class, 'process'])->name('front.payment.process');
-Route::get('/payment/{order}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('front.payment.success');
-Route::get('/payment/{order}/failure', [\App\Http\Controllers\PaymentController::class, 'failure'])->name('front.payment.failure');
-
-// Frontend Products Routes (Public)
-Route::get('/products', [\App\Http\Controllers\ProductController::class, 'frontendIndex'])->name('front.products');
-Route::get('/products/{product}/data', [\App\Http\Controllers\ProductController::class, 'getData'])->name('front.products.data');
-Route::post('/products/{product}/contact', [\App\Http\Controllers\ProductController::class, 'contact'])->name('front.products.contact');
-Route::post('/products/{product}/reserve', [\App\Http\Controllers\ProductController::class, 'reserve'])->name('front.products.reserve');
-Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('front.products.show');
-
-// Product Reservation Routes
-Route::post('/products/{product}/reservation', [\App\Http\Controllers\ProductReservationController::class, 'store'])->name('front.products.reservation');
-Route::post('/products/{product}/make-available', [\App\Http\Controllers\ProductReservationController::class, 'makeAvailable'])->name('front.products.make-available');
-
-// Product-Order Jointure Routes (API)
-Route::prefix('api')->group(function () {
-    Route::get('/products-with-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithOrderStats'])->name('api.products.with-orders');
-    Route::get('/best-selling-products', [\App\Http\Controllers\ProductOrderController::class, 'bestSellingProducts'])->name('api.products.best-selling');
-    Route::get('/highest-revenue-products', [\App\Http\Controllers\ProductOrderController::class, 'highestRevenueProducts'])->name('api.products.highest-revenue');
-    Route::get('/products-pending-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithPendingOrders'])->name('api.products.pending-orders');
-    Route::get('/products-without-orders', [\App\Http\Controllers\ProductOrderController::class, 'productsWithoutOrders'])->name('api.products.without-orders');
-    Route::get('/products/{product}/orders', [\App\Http\Controllers\ProductOrderController::class, 'productWithOrders'])->name('api.products.orders');
-    Route::get('/sales-analytics', [\App\Http\Controllers\ProductOrderController::class, 'salesAnalytics'])->name('api.sales.analytics');
-    Route::get('/complex-join-example', [\App\Http\Controllers\ProductOrderController::class, 'complexJoinExample'])->name('api.join.example');
-    Route::get('/admin-dashboard-data', [\App\Http\Controllers\ProductOrderController::class, 'adminDashboardData'])->name('api.admin.dashboard');
-});
-
-// Eco entities CRUD kept here as requested, but exclude 'web' middleware to avoid CSRF in Postman
-Route::prefix('api')
-    ->withoutMiddleware('web')
-    ->group(function () {
-        Route::apiResource('eco-ideas', App\Http\Controllers\EcoIdeaController::class);
-    });
 // Frontend Waste Requests Routes (Authenticated Users Only)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', function () {

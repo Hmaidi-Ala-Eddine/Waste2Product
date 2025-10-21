@@ -52,21 +52,9 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ request()->routeIs('admin.events') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.events') }}">
-            <i class="material-symbols-rounded opacity-5">event</i>
-            <span class="nav-link-text ms-1">Events</span>
-          </a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link {{ request()->routeIs('admin.products*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.products.index') }}">
             <i class="material-symbols-rounded opacity-5">inventory</i>
             <span class="nav-link-text ms-1">Products</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ request()->routeIs('admin.eco-ideas*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('admin.eco-ideas') }}">
-            <i class="material-symbols-rounded opacity-5">lightbulb</i>
-            <span class="nav-link-text ms-1">Eco Ideas</span>
           </a>
         </li>
         <li class="nav-item">
