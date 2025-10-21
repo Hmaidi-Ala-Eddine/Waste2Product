@@ -245,7 +245,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/eco-ideas/{ecoIdea}/like', [\App\Http\Controllers\EcoIdeaController::class, 'likeIdea'])->name('front.eco-ideas.like');
     Route::post('/eco-ideas/{ecoIdea}/apply', [\App\Http\Controllers\EcoIdeaController::class, 'applyToIdea'])->name('front.eco-ideas.apply');
     Route::post('/eco-ideas/{ecoIdea}/review', [\App\Http\Controllers\EcoIdeaController::class, 'addReview'])->name('front.eco-ideas.review');
-    Route::delete('/eco-ideas/review/{interaction}/delete', [\App\Http\Controllers\EcoIdeaController::class, 'deleteReview'])->name('front.eco-ideas.review.delete');
+    Route::delete('/eco-ideas/review/{interaction}', [\App\Http\Controllers\EcoIdeaController::class, 'deleteReview'])->name('front.eco-ideas.review.delete');
     
     // Eco Ideas Dashboard & Project Management
     Route::get('/eco-ideas-dashboard', [\App\Http\Controllers\EcoIdeaController::class, 'dashboard'])->name('front.eco-ideas.dashboard');
@@ -267,6 +267,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/eco-ideas-dashboard/{ecoIdea}/tasks', [\App\Http\Controllers\EcoIdeaController::class, 'createTask'])->name('front.eco-ideas.dashboard.tasks.create');
     Route::put('/eco-ideas-dashboard/tasks/{task}/update', [\App\Http\Controllers\EcoIdeaController::class, 'updateTask'])->name('front.eco-ideas.dashboard.tasks.update');
     Route::delete('/eco-ideas-dashboard/tasks/{task}/delete', [\App\Http\Controllers\EcoIdeaController::class, 'deleteTask'])->name('front.eco-ideas.dashboard.tasks.delete');
+    
+    // Chat Room
+    Route::get('/eco-ideas-dashboard/{ecoIdea}/messages', [\App\Http\Controllers\EcoIdeaController::class, 'getMessages'])->name('front.eco-ideas.dashboard.messages');
+    Route::post('/eco-ideas-dashboard/{ecoIdea}/messages', [\App\Http\Controllers\EcoIdeaController::class, 'sendMessage'])->name('front.eco-ideas.dashboard.messages.send');
 });
 
 // Frontend Events Routes - Public viewing, Auth required for interactions

@@ -5,18 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\EcoIdea;
+use App\Models\User;
 
-class EcoIdeaTeam extends Model
+class EcoIdeaMessage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'eco_idea_id',
         'user_id',
-        'role',
-        'specialization',
-        'responsibilities',
-        'status',
+        'message',
     ];
 
     public function ecoIdea(): BelongsTo
@@ -28,13 +27,4 @@ class EcoIdeaTeam extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function application()
-    {
-        return $this->hasOne(EcoIdeaApplication::class, 'user_id', 'user_id')
-                    ->whereColumn('eco_idea_applications.eco_idea_id', 'eco_idea_teams.eco_idea_id');
-    }
 }
-
-
-

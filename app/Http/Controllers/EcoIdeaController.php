@@ -349,6 +349,7 @@ class EcoIdeaController extends Controller
         if (auth()->check()) {
             $hasApplied = $ecoIdea->applications()
                 ->where('user_id', auth()->id())
+                ->where('status', 'pending')
                 ->exists();
         }
 
@@ -381,10 +382,11 @@ class EcoIdeaController extends Controller
 
         $existingApplication = $ecoIdea->applications()
             ->where('user_id', auth()->id())
+            ->where('status', 'pending')
             ->first();
 
         if ($existingApplication) {
-            return back()->with('error', 'You have already applied for this idea.');
+            return back()->with('error', 'You have already applied for this idea. Please wait for a response.');
         }
 
         if ($ecoIdea->project_status !== 'recruiting' && $ecoIdea->project_status !== 'idea') {
@@ -397,12 +399,27 @@ class EcoIdeaController extends Controller
             $resumePath = $request->file('resume')->store('resumes', 'public');
         }
 
-        $ecoIdea->applications()->create([
-            'user_id' => auth()->id(),
-            'application_message' => $data['application_message'],
-            'resume_path' => $resumePath,
-            'status' => 'pending',
-        ]);
+        // Check if user has any previous application (rejected, removed, etc.)
+        $previousApplication = $ecoIdea->applications()
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($previousApplication) {
+            // Update existing application instead of creating new one
+            $previousApplication->update([
+                'application_message' => $data['application_message'],
+                'resume_path' => $resumePath,
+                'status' => 'pending',
+            ]);
+        } else {
+            // Create new application for first-time applicants
+            $ecoIdea->applications()->create([
+                'user_id' => auth()->id(),
+                'application_message' => $data['application_message'],
+                'resume_path' => $resumePath,
+                'status' => 'pending',
+            ]);
+        }
 
         return back()->with('success', 'Your application has been submitted successfully!');
     }
@@ -460,9 +477,8 @@ class EcoIdeaController extends Controller
     /**
      * Delete a review (Only eco idea owner can delete reviews on their project)
      */
-    public function deleteReview($interactionId)
+    public function deleteReview(\App\Models\EcoIdeaInteraction $interaction)
     {
-        $interaction = \App\Models\EcoIdeaInteraction::findOrFail($interactionId);
         $ecoIdea = $interaction->ecoIdea;
 
         // Check if current user is the eco idea owner
@@ -574,6 +590,13 @@ class EcoIdeaController extends Controller
             },
             'tasks.assignedUser'
         ]);
+
+        // Manually attach application data to each team member
+        foreach ($ecoIdea->team as $teamMember) {
+            $teamMember->application = $ecoIdea->applications()
+                ->where('user_id', $teamMember->user_id)
+                ->first();
+        }
 
         return view('front.pages.eco-ideas-manage', compact('ecoIdea', 'isCreator'));
     }
@@ -700,9 +723,15 @@ class EcoIdeaController extends Controller
             abort(403);
         }
 
+        // Update their application status to 'rejected' so they can reapply
+        $ecoIdea->applications()
+            ->where('user_id', $teamMember->user_id)
+            ->where('status', 'accepted')
+            ->update(['status' => 'rejected']);
+
         $teamMember->delete();
 
-        return back()->with('success', 'Team member removed successfully.');
+        return back()->with('success', 'Team member removed successfully. They can now reapply if needed.');
     }
 
     /**
@@ -819,5 +848,54 @@ class EcoIdeaController extends Controller
         $task->delete();
 
         return response()->json(['message' => 'Task deleted successfully']);
+    }
+
+    /**
+     * Get chat messages for an eco idea
+     */
+    public function getMessages(EcoIdea $ecoIdea)
+    {
+        // Check if user is the creator OR a team member
+        $isCreator = $ecoIdea->creator_id === auth()->id();
+        $isTeamMember = $ecoIdea->team()->where('user_id', auth()->id())->exists();
+        
+        if (!$isCreator && !$isTeamMember) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $messages = $ecoIdea->messages()
+            ->with('user')
+            ->latest()
+            ->take(50)
+            ->get()
+            ->reverse()
+            ->values();
+
+        return response()->json($messages);
+    }
+
+    /**
+     * Send a chat message
+     */
+    public function sendMessage(Request $request, EcoIdea $ecoIdea)
+    {
+        // Check if user is the creator OR a team member
+        $isCreator = $ecoIdea->creator_id === auth()->id();
+        $isTeamMember = $ecoIdea->team()->where('user_id', auth()->id())->exists();
+        
+        if (!$isCreator && !$isTeamMember) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $message = $ecoIdea->messages()->create([
+            'user_id' => auth()->id(),
+            'message' => $data['message'],
+        ]);
+
+        return response()->json($message->load('user'));
     }
 }
