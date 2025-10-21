@@ -751,10 +751,10 @@
                             </div>
                             @auth
                                 @if($ecoIdea->creator_id === auth()->id())
-                                    <form action="{{ route('front.eco-ideas.review.delete', $review->id) }}" method="POST" style="margin-left: auto;">
+                                    <form id="delete-form-{{ $review->id }}" action="{{ route('front.eco-ideas.review.delete', $review->id) }}" method="POST" style="margin-left: auto;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Delete this review?')" 
+                                        <button type="button" onclick="showDeleteConfirm({{ $review->id }})" 
                                                 class="delete-review-btn"
                                                 style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                                             <i class="fas fa-trash"></i> Delete
@@ -792,10 +792,70 @@
         @endauth
     </div>
 </div>
+
+<!-- Custom Delete Confirmation Modal -->
+<div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalFadeIn 0.3s ease;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                <i class="fas fa-trash-alt" style="font-size: 32px; color: #ef4444;"></i>
+            </div>
+            <h3 style="font-size: 22px; font-weight: 700; color: #1f2937; margin: 0 0 10px 0;">Delete this review?</h3>
+            <p style="color: #6b7280; font-size: 14px; margin: 0; line-height: 1.5;">This action cannot be undone.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="closeDeleteConfirm()" style="flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; color: #374151; transition: all 0.2s;">
+                Cancel
+            </button>
+            <button onclick="confirmDelete()" style="flex: 1; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+</style>
+
 @endsection
 
 @push('scripts')
 <script>
+    let currentDeleteFormId = null;
+
+    function showDeleteConfirm(reviewId) {
+        currentDeleteFormId = 'delete-form-' + reviewId;
+        document.getElementById('deleteConfirmModal').style.display = 'flex';
+    }
+
+    function closeDeleteConfirm() {
+        document.getElementById('deleteConfirmModal').style.display = 'none';
+        currentDeleteFormId = null;
+    }
+
+    function confirmDelete() {
+        if (currentDeleteFormId) {
+            document.getElementById(currentDeleteFormId).submit();
+        }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteConfirm();
+        }
+    });
+
     function likeIdeaDetails(ideaId, buttonElement) {
         fetch(`/eco-ideas/${ideaId}/like`, {
             method: 'POST',

@@ -74,6 +74,11 @@ class EcoIdea extends Model
         return $this->hasMany(EcoIdeaTask::class);
     }
 
+    public function messages(): HasMany
+    {
+        return $this->hasMany(EcoIdeaMessage::class);
+    }
+
     public function certificates(): HasMany
     {
         return $this->hasMany(EcoIdeaCertificate::class);

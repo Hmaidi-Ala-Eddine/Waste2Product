@@ -44,7 +44,9 @@
     .task-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .task-column { background: #f9fafb; border-radius: 12px; padding: 15px; min-height: 400px; }
     .column-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #e5e7eb; }
-    .task-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+    .task-list { min-height: 300px; padding: 10px; border-radius: 8px; transition: background 0.2s ease; }
+    .task-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); cursor: grab; transition: all 0.2s ease; word-wrap: break-word; overflow-wrap: break-word; }
+    .task-card:active { cursor: grabbing; }
     .priority-high { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
     .priority-medium { background: #fed7aa; color: #9a3412; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
     .priority-low { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
@@ -54,7 +56,15 @@
     .form-textarea { min-height: 100px; }
     .submit-btn { padding: 14px 28px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
     .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
-    @media (max-width: 768px) { .sidebar { position: static; width: 100%; } .main-content { margin-left: 0; } .task-board { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { 
+        .sidebar { position: static; width: 100%; } 
+        .main-content { margin-left: 0; } 
+        .task-board { grid-template-columns: 1fr; } 
+        .stats-grid { grid-template-columns: 1fr 1fr !important; }
+    }
+    @media (max-width: 1024px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
 </style>
 @endpush
 
@@ -66,18 +76,19 @@
             <span class="project-status status-{{ $ecoIdea->project_status }}">{{ ucfirst(str_replace('_', ' ', $ecoIdea->project_status)) }}</span>
         </div>
         <div style="padding: 20px 0;">
-            <a class="nav-item active" data-section="overview"><i class="fas fa-chart-line"></i><span>Overview</span></a>
+            <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-chart-line"></i><span>Overview</span></a>
             @if($isCreator)
-                <a class="nav-item" data-section="applications"><i class="fas fa-user-clock"></i><span>Applications</span>
+                <a href="#" class="nav-item" data-section="applications"><i class="fas fa-user-clock"></i><span>Applications</span>
                     @if($ecoIdea->applications->where('status', 'pending')->count() > 0)
                         <span class="nav-badge">{{ $ecoIdea->applications->where('status', 'pending')->count() }}</span>
                     @endif
                 </a>
             @endif
-            <a class="nav-item" data-section="team"><i class="fas fa-users"></i><span>Team Members</span></a>
-            <a class="nav-item" data-section="tasks"><i class="fas fa-tasks"></i><span>Task Board</span></a>
+            <a href="#" class="nav-item" data-section="team"><i class="fas fa-users"></i><span>Team Members</span></a>
+            <a href="#" class="nav-item" data-section="tasks"><i class="fas fa-tasks"></i><span>Task Board</span></a>
+            <a href="#" class="nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat Room</span></a>
             @if($isCreator)
-                <a class="nav-item" data-section="settings"><i class="fas fa-cog"></i><span>Settings</span></a>
+                <a href="#" class="nav-item" data-section="settings"><i class="fas fa-cog"></i><span>Settings</span></a>
             @endif
         </div>
         <div style="padding: 0 25px;"><a href="{{ route('front.eco-ideas.dashboard') }}" class="btn-sm" style="display: block; text-align: center; background: #e5e7eb; color: #1a202c; text-decoration: none;"><i class="fas fa-arrow-left"></i> Back</a></div>
@@ -93,9 +104,199 @@
             <div class="section">
                 <div class="stats-grid">
                     <div class="stat-card" style="background: #f0fdf4;"><i class="fas fa-user-clock stat-icon" style="color: #10b981;"></i><div class="stat-value">{{ $ecoIdea->applications->where('status', 'pending')->count() }}</div><div class="stat-label">Pending Applications</div></div>
-                    <div class="stat-card" style="background: #eff6ff;"><i class="fas fa-users stat-icon" style="color: #3b82f6;"></i><div class="stat-value">{{ $ecoIdea->team->count() }}</div><div class="stat-label">Team Members</div></div>
+                    <div class="stat-card" style="background: #eff6ff;"><i class="fas fa-users stat-icon" style="color: #3b82f6;"></i><div class="stat-value">{{ $ecoIdea->team->count() + 1 }}</div><div class="stat-label">Team Members</div></div>
                     <div class="stat-card" style="background: #fef3c7;"><i class="fas fa-tasks stat-icon" style="color: #f59e0b;"></i><div class="stat-value">{{ $ecoIdea->tasks->count() }}</div><div class="stat-label">Total Tasks</div></div>
                     <div class="stat-card" style="background: #fce7f3;"><i class="fas fa-heart stat-icon" style="color: #ec4899;"></i><div class="stat-value">{{ $ecoIdea->upvotes ?? 0 }}</div><div class="stat-label">Upvotes</div></div>
+                </div>
+                
+                @php
+                    $todoCount = $ecoIdea->tasks->where('status', 'todo')->count();
+                    $inProgressCount = $ecoIdea->tasks->where('status', 'in_progress')->count();
+                    $reviewCount = $ecoIdea->tasks->where('status', 'review')->count();
+                    $completedCount = $ecoIdea->tasks->where('status', 'completed')->count();
+                    $totalTasks = $ecoIdea->tasks->count();
+                    $completionPercent = $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100) : 0;
+                @endphp
+                
+                <!-- Task Progress Section -->
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #1f2937;"><i class="fas fa-chart-pie" style="color: #10b981;"></i> Task Progress Overview</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+                        <!-- Left: Progress Bars -->
+                        <div style="background: white; border-radius: 16px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: 700; color: #1f2937;"><i class="fas fa-check-circle" style="color: #10b981;"></i> Overall Completion</span>
+                                    <span style="font-weight: 800; color: #10b981;">{{ $completionPercent }}%</span>
+                                </div>
+                                <div style="background: #e5e7eb; border-radius: 999px; height: 12px; overflow: hidden;">
+                                    <div style="background: linear-gradient(90deg, #10b981 0%, #059669 100%); height: 100%; width: {{ $completionPercent }}%; transition: width 0.5s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);"></div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
+                                <!-- To Do -->
+                                <div style="padding: 15px; background: #fef3c7; border-radius: 12px; border-left: 4px solid #f59e0b;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 13px; font-weight: 700; color: #92400e;">TO DO</span>
+                                        <span style="font-size: 18px; font-weight: 800; color: #f59e0b;">{{ $todoCount }}</span>
+                                    </div>
+                                    <div style="background: #fde68a; border-radius: 999px; height: 6px; overflow: hidden;">
+                                        <div style="background: #f59e0b; height: 100%; width: {{ $totalTasks > 0 ? round(($todoCount / $totalTasks) * 100) : 0 }}%; transition: width 0.5s ease;"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- In Progress -->
+                                <div style="padding: 15px; background: #dbeafe; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 13px; font-weight: 700; color: #1e40af;">IN PROGRESS</span>
+                                        <span style="font-size: 18px; font-weight: 800; color: #3b82f6;">{{ $inProgressCount }}</span>
+                                    </div>
+                                    <div style="background: #93c5fd; border-radius: 999px; height: 6px; overflow: hidden;">
+                                        <div style="background: #3b82f6; height: 100%; width: {{ $totalTasks > 0 ? round(($inProgressCount / $totalTasks) * 100) : 0 }}%; transition: width 0.5s ease;"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Review -->
+                                <div style="padding: 15px; background: #fce7f3; border-radius: 12px; border-left: 4px solid #ec4899;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 13px; font-weight: 700; color: #9f1239;">REVIEW</span>
+                                        <span style="font-size: 18px; font-weight: 800; color: #ec4899;">{{ $reviewCount }}</span>
+                                    </div>
+                                    <div style="background: #f9a8d4; border-radius: 999px; height: 6px; overflow: hidden;">
+                                        <div style="background: #ec4899; height: 100%; width: {{ $totalTasks > 0 ? round(($reviewCount / $totalTasks) * 100) : 0 }}%; transition: width 0.5s ease;"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Completed -->
+                                <div style="padding: 15px; background: #d1fae5; border-radius: 12px; border-left: 4px solid #10b981;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 13px; font-weight: 700; color: #065f46;">COMPLETED</span>
+                                        <span style="font-size: 18px; font-weight: 800; color: #10b981;">{{ $completedCount }}</span>
+                                    </div>
+                                    <div style="background: #6ee7b7; border-radius: 999px; height: 6px; overflow: hidden;">
+                                        <div style="background: #10b981; height: 100%; width: {{ $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100) : 0 }}%; transition: width 0.5s ease;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Activity Chart -->
+                        <div style="background: white; border-radius: 16px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 15px; color: #1f2937;"><i class="fas fa-chart-line" style="color: #3b82f6;"></i> Recent Activity</h4>
+                            
+                            @php
+                                $recentTasks = $ecoIdea->tasks()->orderBy('created_at', 'desc')->take(7)->get()->reverse();
+                                $tasksByDate = $recentTasks->groupBy(fn($t) => $t->created_at->format('M d'));
+                                $maxCount = max($tasksByDate->map->count()->toArray() ?: [1]);
+                                
+                                // Prepare data for line chart
+                                $chartData = [];
+                                foreach ($tasksByDate as $date => $tasks) {
+                                    $chartData[] = [
+                                        'date' => $date,
+                                        'count' => $tasks->count()
+                                    ];
+                                }
+                            @endphp
+                            
+                            @if(count($chartData) > 0)
+                                <div style="position: relative; height: 180px; padding: 10px; background: linear-gradient(to bottom, #f0f9ff 0%, #ffffff 100%); border-radius: 12px; overflow: hidden;">
+                                    <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0;">
+                                        <defs>
+                                            <!-- Gradient for line -->
+                                            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                                <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                                <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                                            </linearGradient>
+                                            <!-- Gradient for area fill -->
+                                            <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.3" />
+                                                <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.05" />
+                                            </linearGradient>
+                                        </defs>
+                                        
+                                        @php
+                                            $width = 100;
+                                            $height = 150;
+                                            $padding = 15;
+                                            $chartWidth = $width - ($padding * 2);
+                                            $chartHeight = $height - ($padding * 2);
+                                            $pointCount = count($chartData);
+                                            $xStep = $chartWidth / max($pointCount - 1, 1);
+                                            
+                                            // Build path for line
+                                            $linePath = '';
+                                            $areaPath = '';
+                                            $points = [];
+                                            
+                                            foreach ($chartData as $index => $data) {
+                                                $x = $padding + ($index * $xStep);
+                                                $y = $padding + ($chartHeight - (($data['count'] / $maxCount) * $chartHeight));
+                                                
+                                                $points[] = ['x' => $x, 'y' => $y, 'count' => $data['count']];
+                                                
+                                                if ($index === 0) {
+                                                    $linePath .= "M {$x} {$y}";
+                                                    $areaPath .= "M {$x} " . ($padding + $chartHeight) . " L {$x} {$y}";
+                                                } else {
+                                                    $linePath .= " L {$x} {$y}";
+                                                    $areaPath .= " L {$x} {$y}";
+                                                }
+                                            }
+                                            
+                                            // Close area path
+                                            $lastX = $padding + (($pointCount - 1) * $xStep);
+                                            $areaPath .= " L {$lastX} " . ($padding + $chartHeight) . " Z";
+                                        @endphp
+                                        
+                                        <!-- Grid lines -->
+                                        @for($i = 0; $i <= 4; $i++)
+                                            @php
+                                                $gridY = $padding + ($i * ($chartHeight / 4));
+                                            @endphp
+                                            <line x1="{{ $padding }}%" y1="{{ $gridY }}%" x2="{{ 100 - $padding }}%" y2="{{ $gridY }}%" stroke="#e5e7eb" stroke-width="0.5" stroke-dasharray="2,2" />
+                                        @endfor
+                                        
+                                        <!-- Area fill -->
+                                        <path d="{{ $areaPath }}" fill="url(#areaGradient)" />
+                                        
+                                        <!-- Line -->
+                                        <path d="{{ $linePath }}" fill="none" stroke="url(#lineGradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));" />
+                                        
+                                        <!-- Points -->
+                                        @foreach($points as $point)
+                                            <circle cx="{{ $point['x'] }}%" cy="{{ $point['y'] }}%" r="5" fill="white" stroke="#3b82f6" stroke-width="3">
+                                                <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" />
+                                            </circle>
+                                            <circle cx="{{ $point['x'] }}%" cy="{{ $point['y'] }}%" r="3" fill="#3b82f6" />
+                                        @endforeach
+                                    </svg>
+                                    
+                                    <!-- Date labels -->
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 100%; padding: 0 {{ $padding }}%;">
+                                        @foreach($chartData as $data)
+                                            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                                <div style="font-size: 13px; font-weight: 800; color: #3b82f6; background: white; padding: 2px 8px; border-radius: 999px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">{{ $data['count'] }}</div>
+                                                <div style="font-size: 10px; font-weight: 600; color: #6b7280; margin-top: 5px;">{{ $data['date'] }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <div style="display: flex; align-items: center; justify-content: center; height: 180px; background: #f9fafb; border-radius: 12px;">
+                                    <div style="text-align: center; color: #9ca3af;">
+                                        <i class="fas fa-chart-line" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                                        <p style="font-size: 13px; margin: 0;">No task activity yet</p>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <p style="font-size: 12px; color: #6b7280; margin-top: 12px; text-align: center;"><i class="fas fa-info-circle"></i> Tasks created per day</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -139,22 +340,44 @@
         <!-- Team -->
         <div class="content-section" id="team-section">
             <div class="section">
-                <h2 class="section-title"><i class="fas fa-users"></i>Active Members ({{ $ecoIdea->team->count() }})</h2>
-                @if($ecoIdea->team->count() > 0)
-                    <div class="team-grid">
-                        @foreach($ecoIdea->team as $member)
-                            <div class="team-member-card">
-                                <div class="member-header"><div class="applicant-avatar">{{ strtoupper(substr($member->user->name, 0, 1)) }}</div><div><h4 style="margin:0;">{{ $member->user->name }}</h4><span style="font-size:13px; color:#10b981; font-weight:600;">{{ ucfirst($member->role ?? 'Member') }}</span></div></div>
-                                <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">Joined {{ $member->joined_at ? $member->joined_at->diffForHumans() : 'recently' }}</p>
-                                @if($isCreator)
-                                    <form action="{{ route('front.eco-ideas.dashboard.team.remove', $member) }}" method="POST" onsubmit="return confirm('Remove this member?');">@csrf @method('DELETE')<button type="submit" class="btn-remove"><i class="fas fa-user-minus"></i> Remove</button></form>
-                                @endif
+                <h2 class="section-title"><i class="fas fa-users"></i>Active Members ({{ $ecoIdea->team->count() + 1 }})</h2>
+                <div class="team-grid">
+                    <!-- Owner Card -->
+                    <div class="team-member-card" style="border: 2px solid #10b981; position: relative;">
+                        <div style="position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);"><i class="fas fa-crown"></i> OWNER</div>
+                        <div class="member-header">
+                            <div class="applicant-avatar" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">{{ strtoupper(substr($ecoIdea->creator->name, 0, 1)) }}</div>
+                            <div>
+                                <h4 style="margin:0;">{{ $ecoIdea->creator->name }}</h4>
+                                <span style="font-size:13px; color:#10b981; font-weight:600;">Project Creator</span>
                             </div>
-                        @endforeach
+                        </div>
+                        <p style="font-size:13px; color:#6b7280; margin-bottom:12px;"><i class="fas fa-envelope"></i> {{ $ecoIdea->creator->email }}</p>
+                        @if($isCreator)
+                            <button onclick="viewMemberDetails('{{ $ecoIdea->creator->id }}', '{{ $ecoIdea->creator->name }}', '{{ $ecoIdea->creator->email }}', 'Owner', 'Project Creator', null)" style="width: 100%; background: #10b981; color: white; padding: 8px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"><i class="fas fa-eye"></i> View Details</button>
+                        @endif
                     </div>
-                @else
-                    <div class="empty-state"><i class="fas fa-users-slash" style="font-size:48px; margin-bottom:15px;"></i><p>No team members yet</p></div>
-                @endif
+                    
+                    <!-- Team Members -->
+                    @foreach($ecoIdea->team as $member)
+                        <div class="team-member-card">
+                            <div class="member-header">
+                                <div class="applicant-avatar">{{ strtoupper(substr($member->user->name, 0, 1)) }}</div>
+                                <div>
+                                    <h4 style="margin:0;">{{ $member->user->name }}</h4>
+                                    <span style="font-size:13px; color:#10b981; font-weight:600;">{{ ucfirst($member->role ?? 'Member') }}</span>
+                                </div>
+                            </div>
+                            <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">Joined {{ $member->joined_at ? $member->joined_at->diffForHumans() : 'recently' }}</p>
+                            @if($isCreator)
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="viewMemberDetails('{{ $member->user->id }}', '{{ $member->user->name }}', '{{ $member->user->email }}', '{{ ucfirst($member->role ?? 'Member') }}', '{{ $member->joined_at ? $member->joined_at->diffForHumans() : 'recently' }}', '{{ $member->application->resume_path ?? '' }}')" style="flex: 1; background: #3b82f6; color: white; padding: 8px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"><i class="fas fa-eye"></i> View</button>
+                                    <form action="{{ route('front.eco-ideas.dashboard.team.remove', $member) }}" method="POST" style="flex: 1;" onsubmit="return confirm('Remove this member?');">@csrf @method('DELETE')<button type="submit" class="btn-remove" style="margin: 0;"><i class="fas fa-user-minus"></i> Remove</button></form>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
 
@@ -306,6 +529,48 @@
             </div>
         </div>
 
+        <!-- Chat Room -->
+        <div class="content-section" id="chat-section">
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-comments"></i> Team Chat Room</h2>
+                
+                <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+                    <!-- Chat Messages Container -->
+                    <div id="chatMessages" style="height: 500px; overflow-y: auto; padding: 20px; background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);">
+                        <div style="text-align: center; color: #9ca3af; padding: 40px;">
+                            <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
+                            <p style="font-size: 14px;">Loading messages...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div style="border-top: 2px solid #e5e7eb; padding: 20px; background: white;">
+                        <form id="chatForm" style="display: flex; gap: 12px; align-items: center;">
+                            @csrf
+                            <input 
+                                type="text" 
+                                id="chatInput" 
+                                placeholder="Type your message..." 
+                                style="flex: 1; padding: 14px 20px; border: 2px solid #e5e7eb; border-radius: 999px; font-size: 14px; outline: none; transition: all 0.2s ease;"
+                                required
+                                maxlength="1000"
+                            />
+                            <button 
+                                type="submit" 
+                                style="padding: 14px 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 999px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 8px;"
+                            >
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <p style="font-size: 12px; color: #6b7280; margin-top: 12px; text-align: center;">
+                    <i class="fas fa-info-circle"></i> Only team members can view and send messages
+                </p>
+            </div>
+        </div>
+
         <!-- Settings -->
         @if($isCreator)
         <div class="content-section" id="settings-section">
@@ -331,7 +596,7 @@
 
 <!-- Create Task Modal -->
 <div class="modal" id="createTaskModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; word-wrap: break-word; overflow-wrap: break-word;">
         <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-plus-circle" style="color: #10b981;"></i> Create New Task</h3>
         <form id="createTaskForm">
             @csrf
@@ -388,7 +653,7 @@
 
 <!-- View Task Modal -->
 <div class="modal" id="viewTaskModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; word-wrap: break-word; overflow-wrap: break-word;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="font-size: 24px; font-weight: 800; margin: 0;"><i class="fas fa-eye" style="color: #3b82f6;"></i> Task Details</h3>
             <button onclick="closeViewTaskModal()" style="background: none; border: none; font-size: 24px; color: #6b7280; cursor: pointer;">&times;</button>
@@ -404,9 +669,27 @@
 <!-- Toast Notification Container -->
 <div id="toastContainer" style="position: fixed; top: 100px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;"></div>
 
+<!-- Member Details Modal -->
+<div class="modal" id="memberDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; word-wrap: break-word; overflow-wrap: break-word;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 22px; font-weight: 800; margin: 0;"><i class="fas fa-user-circle" style="color: #3b82f6;"></i> Member Details</h3>
+            <button onclick="closeMemberDetailsModal()" style="background: none; border: none; font-size: 24px; color: #6b7280; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div id="memberDetailsContent" style="margin-top: 20px;">
+            <!-- Content will be dynamically loaded -->
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="closeMemberDetailsModal()" style="width: 100%; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- Edit Task Modal -->
 <div class="modal" id="editTaskModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%;">
+    <div style="background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; word-wrap: break-word; overflow-wrap: break-word;">
         <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-edit" style="color: #3b82f6;"></i> Edit Task</h3>
         <form id="editTaskForm">
             @csrf
@@ -523,16 +806,51 @@ if (!document.getElementById('toastAnimations')) {
     document.head.appendChild(style);
 }
 
-// Navigation
-document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function() {
+// Navigation with Chat Support
+let chatRefreshInterval = null;
+
+console.log('Navigation script loading...');
+
+const navItems = document.querySelectorAll('.nav-item');
+console.log('Found nav items:', navItems.length);
+
+navItems.forEach(item => {
+    console.log('Attaching listener to:', item.dataset.section);
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Nav item clicked:', this.dataset.section);
+        
+        // Switch active nav item
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         this.classList.add('active');
+        
+        // Switch active section
         const section = this.dataset.section;
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(section + '-section').classList.add('active');
+        const targetSection = document.getElementById(section + '-section');
+        if (targetSection) {
+            targetSection.classList.add('active');
+            console.log('✅ Switched to section:', section);
+        } else {
+            console.error('❌ Section not found:', section + '-section');
+        }
+        
+        // Clear existing chat refresh interval
+        if (chatRefreshInterval) {
+            clearInterval(chatRefreshInterval);
+            chatRefreshInterval = null;
+        }
+        
+        // If chat section is opened, load messages and start auto-refresh
+        if (section === 'chat') {
+            loadChatMessages();
+            chatRefreshInterval = setInterval(loadChatMessages, 3000);
+        }
     });
 });
+
+console.log('Navigation initialized successfully!');
 
 // Modal functions
 function openCreateTaskModal() {
@@ -557,7 +875,16 @@ function openEditTaskModal(taskId) {
                 document.getElementById('editTaskPriority').value = task.priority;
                 document.getElementById('editTaskStatus').value = task.status;
                 document.getElementById('editTaskAssignedTo').value = task.assigned_to || '';
-                document.getElementById('editTaskDueDate').value = task.due_date || '';
+                
+                // Format date properly for HTML date input (YYYY-MM-DD)
+                if (task.due_date) {
+                    const date = new Date(task.due_date);
+                    const formattedDate = date.toISOString().split('T')[0];
+                    document.getElementById('editTaskDueDate').value = formattedDate;
+                } else {
+                    document.getElementById('editTaskDueDate').value = '';
+                }
+                
                 document.getElementById('editTaskModal').style.display = 'flex';
             }
         });
@@ -573,7 +900,6 @@ document.getElementById('createTaskForm').addEventListener('submit', function(e)
     const formData = new FormData(this);
     const button = this.querySelector('button[type="submit"]');
     button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
     
     fetch(`/eco-ideas-dashboard/${ecoIdeaId}/tasks`, {
         method: 'POST',
@@ -597,13 +923,13 @@ document.getElementById('createTaskForm').addEventListener('submit', function(e)
         showToast('✨ Task created successfully!', 'success');
         closeCreateTaskModal();
         this.reset();
+        button.disabled = false;
         // Reload tasks without page refresh
         refreshTaskBoard();
     })
     .catch(err => {
         showToast('❌ Error: ' + err.message, 'error');
         button.disabled = false;
-        button.innerHTML = 'Create Task';
     });
 });
 
@@ -669,8 +995,8 @@ function openViewTaskModal(taskId) {
                 const assignedUser = task.assigned_user ? task.assigned_user.name : 'Unassigned';
                 const content = `
                     <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 15px;">
-                        <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 15px;">${task.title}</h4>
-                        <p style="color: #6b7280; line-height: 1.6;">${task.description || 'No description'}</p>
+                        <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 15px; word-wrap: break-word; word-break: break-word;">${task.title}</h4>
+                        <p style="color: #6b7280; line-height: 1.6; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${task.description || 'No description'}</p>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div style="background: #f0fdf4; padding: 15px; border-radius: 10px;">
@@ -687,7 +1013,7 @@ function openViewTaskModal(taskId) {
                         </div>
                         <div style="background: #fce7f3; padding: 15px; border-radius: 10px;">
                             <div style="font-size: 12px; color: #ec4899; font-weight: 700; margin-bottom: 5px;">DUE DATE</div>
-                            <div style="font-size: 16px; font-weight: 700;">${task.due_date || 'No due date'}</div>
+                            <div style="font-size: 16px; font-weight: 700;">${task.due_date ? new Date(task.due_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'No due date'}</div>
                         </div>
                     </div>
                 `;
@@ -763,9 +1089,6 @@ function updateTaskBoardDOM(tasks) {
         const column = list.closest('.task-column');
         column.querySelector('.task-count').textContent = statusTasks.length;
     });
-    
-    // Re-initialize drag and drop for new tasks
-    initializeDragAndDrop();
 }
 
 // Search and Filter
@@ -827,11 +1150,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Drag over - on task lists
+    // Drag over - MUST prevent default to allow drop
     taskBoard.addEventListener('dragover', function(e) {
-        if (e.target.classList.contains('task-list') || e.target.closest('.task-list')) {
-            e.preventDefault();
-            const list = e.target.classList.contains('task-list') ? e.target : e.target.closest('.task-list');
+        e.preventDefault(); // CRITICAL: Must always preventDefault to allow drop
+        
+        const list = e.target.classList.contains('task-list') ? e.target : e.target.closest('.task-list');
+        
+        if (list) {
             list.style.background = '#f0fdf4';
         }
     });
@@ -908,6 +1233,170 @@ document.getElementById('editTaskModal').addEventListener('click', function(e) {
 
 document.getElementById('viewTaskModal').addEventListener('click', function(e) {
     if (e.target === this) closeViewTaskModal();
+});
+
+// Member Details Modal Functions
+function viewMemberDetails(userId, name, email, role, joined, resumePath) {
+    const content = `
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 12px; padding: 20px; margin-bottom: 20px; color: white; text-align: center;">
+            <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 36px; font-weight: 800; color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                ${name.charAt(0).toUpperCase()}
+            </div>
+            <h4 style="margin: 0; font-size: 22px; font-weight: 800;">${name}</h4>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">${role}</p>
+        </div>
+        
+        <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <i class="fas fa-envelope" style="color: #3b82f6; width: 20px;"></i>
+                    <span style="font-weight: 700; color: #1f2937;">Email</span>
+                </div>
+                <p style="margin: 0; color: #6b7280; padding-left: 30px;">${email}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <i class="fas fa-user-tag" style="color: #10b981; width: 20px;"></i>
+                    <span style="font-weight: 700; color: #1f2937;">Role</span>
+                </div>
+                <p style="margin: 0; color: #6b7280; padding-left: 30px;">${role}</p>
+            </div>
+            
+            ${role !== 'Owner' ? `
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <i class="fas fa-calendar-alt" style="color: #f59e0b; width: 20px;"></i>
+                    <span style="font-weight: 700; color: #1f2937;">Joined</span>
+                </div>
+                <p style="margin: 0; color: #6b7280; padding-left: 30px;">${joined}</p>
+            </div>
+            ` : ''}
+        </div>
+        
+        ${resumePath && resumePath.trim() !== '' ? `
+        <div style="background: #fef3c7; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #f59e0b;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-file-pdf" style="color: #f59e0b; font-size: 20px;"></i>
+                <span style="font-weight: 700; color: #92400e;">Resume Available</span>
+            </div>
+            <a href="/storage/${resumePath}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #f59e0b; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; transition: all 0.2s ease;">
+                <i class="fas fa-download"></i> View Resume (PDF)
+            </a>
+        </div>
+        ` : role !== 'Owner' ? `
+        <div style="background: #f3f4f6; border-radius: 12px; padding: 15px; text-align: center; color: #6b7280;">
+            <i class="fas fa-file-slash" style="font-size: 24px; margin-bottom: 8px;"></i>
+            <p style="margin: 0; font-size: 13px;">No resume uploaded</p>
+        </div>
+        ` : ''}
+    `;
+    
+    document.getElementById('memberDetailsContent').innerHTML = content;
+    document.getElementById('memberDetailsModal').style.display = 'flex';
+}
+
+function closeMemberDetailsModal() {
+    document.getElementById('memberDetailsModal').style.display = 'none';
+}
+
+document.getElementById('memberDetailsModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMemberDetailsModal();
+});
+
+// ========== CHAT ROOM FUNCTIONALITY ==========
+
+// Load chat messages
+function loadChatMessages() {
+    fetch(`/eco-ideas-dashboard/${ecoIdeaId}/messages`)
+        .then(res => res.json())
+        .then(messages => {
+            const container = document.getElementById('chatMessages');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #9ca3af; padding: 40px;">
+                        <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
+                        <p style="font-size: 14px;">No messages yet. Start the conversation!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            const currentUserId = {{ auth()->id() }};
+            
+            messages.forEach(msg => {
+                const isOwn = msg.user_id === currentUserId;
+                const messageEl = document.createElement('div');
+                messageEl.style.cssText = `
+                    display: flex;
+                    gap: 12px;
+                    margin-bottom: 20px;
+                    align-items: flex-start;
+                    ${isOwn ? 'flex-direction: row-reverse;' : ''}
+                `;
+                
+                const avatarColor = isOwn ? '#10b981' : '#3b82f6';
+                const bgColor = isOwn ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#f3f4f6';
+                const textColor = isOwn ? 'white' : '#1f2937';
+                const alignment = isOwn ? 'flex-end' : 'flex-start';
+                
+                messageEl.innerHTML = `
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: ${avatarColor}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0;">
+                        ${msg.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style="flex: 1; max-width: 70%; display: flex; flex-direction: column; align-items: ${alignment};">
+                        <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 4px; ${isOwn ? 'text-align: right;' : ''}">
+                            ${msg.user.name}
+                        </div>
+                        <div style="background: ${bgColor}; color: ${textColor}; padding: 12px 16px; border-radius: 16px; ${isOwn ? 'border-bottom-right-radius: 4px;' : 'border-bottom-left-radius: 4px;'} word-wrap: break-word; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            ${msg.message}
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
+                            ${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(messageEl);
+            });
+            
+            // Auto scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        })
+        .catch(err => {
+            console.error('Error loading messages:', err);
+        });
+}
+
+// Send message
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    fetch(`/eco-ideas-dashboard/${ecoIdeaId}/messages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        input.value = '';
+        loadChatMessages(); // Reload messages
+    })
+    .catch(err => {
+        console.error('Error sending message:', err);
+        showToast('❌ Failed to send message', 'error');
+    });
 });
 </script>
 @endpush
