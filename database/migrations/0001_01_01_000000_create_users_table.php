@@ -34,6 +34,7 @@ return new class extends Migration
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->integer('last_activity')->index();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

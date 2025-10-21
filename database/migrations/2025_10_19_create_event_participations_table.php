@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('event_participations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('event_id')->constrained()->onDelete('cascade');
+            $table->foreignId('event_id'); // No foreign key constraint as per schema
             $table->timestamps();
-
-            // Ensure a user can only participate once per event
+            
             $table->unique(['user_id', 'event_id']);
+            $table->index('user_id');
+            $table->index('event_id');
         });
     }
 

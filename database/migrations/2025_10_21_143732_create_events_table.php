@@ -6,22 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('subject');
-            $table->text('description')->nullable();
+            $table->datetime('date_time');
             $table->string('image')->nullable();
-            $table->dateTime('date_time')->nullable();
-            $table->integer('likes')->default(0);
-            $table->integer('participants_count')->default(0);
+            $table->text('description')->nullable();
+            $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
+            $table->integer('engagement')->default(0);
             $table->timestamps();
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('events');
     }

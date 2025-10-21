@@ -15,14 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('user_name');
+            $table->string('user_name')->nullable();
             $table->text('comment');
             $table->timestamps();
-
-            // Indexes for better performance
+            
             $table->index('post_id');
             $table->index('user_id');
-            $table->index('created_at');
         });
     }
 

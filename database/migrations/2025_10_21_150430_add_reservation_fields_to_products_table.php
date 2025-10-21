@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            // Ajouter les champs de réservation
             $table->string('reserved_by')->nullable()->after('status');
             $table->timestamp('reserved_at')->nullable()->after('reserved_by');
             $table->text('reserved_message')->nullable()->after('reserved_at');

@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('payment_status')->default('pending')->after('payment_method'); // pending, processing, completed, failed, refunded
-            $table->string('transaction_id')->nullable()->after('payment_status'); // External payment processor ID
-            $table->string('gateway')->nullable()->after('transaction_id'); // stripe, paypal, bank, cash
-            $table->json('gateway_response')->nullable()->after('gateway'); // Store gateway response data
+            $table->string('payment_status')->nullable()->after('payment_method');
+            $table->string('transaction_id')->nullable()->after('payment_status');
+            $table->string('gateway')->nullable()->after('transaction_id');
+            $table->json('gateway_response')->nullable()->after('gateway');
             $table->text('payment_notes')->nullable()->after('gateway_response');
             $table->timestamp('payment_processed_at')->nullable()->after('payment_notes');
-            $table->string('shipping_address')->nullable()->after('payment_processed_at');
+            $table->text('shipping_address')->nullable()->after('payment_processed_at');
             $table->text('order_notes')->nullable()->after('shipping_address');
             
-            $table->index(['payment_status', 'payment_method']);
-            $table->index('transaction_id');
+            // Update status enum to include 'completed'
+            $table->enum('status', ['pending', 'paid', 'shipped', 'completed', 'cancelled'])->default('pending')->change();
         });
     }
 
@@ -32,8 +32,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropIndex(['payment_status', 'payment_method']);
-            $table->dropIndex(['transaction_id']);
             $table->dropColumn([
                 'payment_status',
                 'transaction_id', 
@@ -44,6 +42,9 @@ return new class extends Migration
                 'shipping_address',
                 'order_notes'
             ]);
+            
+            // Revert status enum
+            $table->enum('status', ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'])->default('pending')->change();
         });
     }
 };

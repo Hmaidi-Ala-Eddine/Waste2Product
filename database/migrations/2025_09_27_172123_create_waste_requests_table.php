@@ -13,15 +13,20 @@ return new class extends Migration
     {
         Schema::create('waste_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Customer who requested
-            $table->foreignId('collector_id')->nullable()->constrained('users')->onDelete('set null'); // Assigned collector
-            $table->enum('waste_type', ['organic', 'plastic', 'metal', 'e-waste', 'paper', 'glass', 'textile', 'mixed']);
-            $table->decimal('quantity', 8, 2); // Weight in kg
-            $table->text('address'); // Pickup location
-            $table->text('description')->nullable(); // Additional details
-            $table->enum('status', ['pending', 'accepted', 'collected', 'cancelled'])->default('pending');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('collector_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->enum('waste_type', ['organic', 'plastic', 'metal', 'paper', 'other']);
+            $table->decimal('quantity', 8, 2);
+            $table->text('address');
+            $table->text('description')->nullable();
+            $table->string('state', 100)->nullable();
+            $table->enum('status', ['pending', 'assigned', 'collected', 'cancelled'])->default('pending');
             $table->timestamp('collected_at')->nullable();
             $table->timestamps();
+            
+            $table->index('user_id');
+            $table->index('collector_id');
+            $table->index('state');
         });
     }
 

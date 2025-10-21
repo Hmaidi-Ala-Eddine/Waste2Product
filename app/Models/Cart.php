@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Session;
 
 class Cart extends Model
 {
+    protected $table = 'cart';
+    
     protected $fillable = [
         'session_id',
         'user_id',
@@ -231,5 +233,13 @@ class Cart extends Model
     public function getFormattedPriceAttribute(): string
     {
         return '$' . number_format($this->price, 2);
+    }
+
+    /**
+     * Get subtotal (alias for total_price for compatibility).
+     */
+    public function getSubtotalAttribute(): float
+    {
+        return $this->total_price;
     }
 }

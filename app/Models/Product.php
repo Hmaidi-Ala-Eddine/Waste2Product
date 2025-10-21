@@ -286,17 +286,18 @@ class Product extends Model
      */
     public function isAvailableForPurchase(): bool
     {
-        return $this->status === 'available' && $this->isInStock();
+        return $this->status === 'available';
     }
 
     /**
      * Decrease stock and update status if out of stock.
      */
-    public function decreaseStock(int $quantity = 1): void
+    public function decreaseStock(int $quantity = 1, bool $autoUpdateStatus = true): void
     {
         $this->decrement('stock', $quantity);
         
-        if ($this->stock <= 0) {
+        // Only auto-update status to 'sold' if requested (e.g., during checkout)
+        if ($autoUpdateStatus && $this->stock <= 0) {
             $this->update(['status' => 'sold', 'stock' => 0]);
         }
     }

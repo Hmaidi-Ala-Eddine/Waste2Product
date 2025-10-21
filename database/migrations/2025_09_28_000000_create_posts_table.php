@@ -15,14 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->string('image')->nullable();
-            $table->integer('likes')->default(0);
+            $table->integer('likes')->unsigned()->default(0);
             $table->timestamps();
-
-            // Indexes for better performance
+            
             $table->index('user_id');
-            $table->index('created_at');
         });
     }
 

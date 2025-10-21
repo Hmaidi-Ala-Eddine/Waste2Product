@@ -120,30 +120,6 @@
         margin-bottom: 25px;
     }
 
-    .stock-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 15px 20px;
-        background: #f5f7fa;
-        border-radius: 10px;
-        margin-bottom: 25px;
-    }
-
-    .stock-info i {
-        font-size: 20px;
-        color: #667eea;
-    }
-
-    .stock-text {
-        font-weight: 600;
-        color: #2c3e50;
-    }
-
-    .stock-count {
-        font-weight: 800;
-        color: #667eea;
-    }
 
     .product-description {
         margin-bottom: 30px;
@@ -427,12 +403,6 @@
                         {{ $product->isFree() ? 'FREE' : number_format($product->price, 2) . ' TND' }}
                     </div>
 
-                    <!-- Stock Info -->
-                    <div class="stock-info">
-                        <i class="fas fa-box"></i>
-                        <span class="stock-text">Stock:</span>
-                        <span class="stock-count">{{ $product->stock }} available</span>
-                    </div>
 
                     <!-- Description -->
                     <div class="product-description">
