@@ -111,7 +111,7 @@ class User extends Authenticatable
      */
     public function cartItems()
     {
-        return $this->hasMany(CartItem::class);
+        return $this->hasMany(Cart::class);
     }
 
     /**
@@ -128,6 +128,22 @@ class User extends Authenticatable
     public function getCartCountAttribute()
     {
         return $this->cartItems()->sum('quantity');
+    }
+
+    /**
+     * Get cart items with product relationship
+     */
+    public function getCartItems()
+    {
+        return $this->cartItems()->with('product')->get();
+    }
+
+    /**
+     * Clear user's cart
+     */
+    public function clearCart()
+    {
+        $this->cartItems()->delete();
     }
 
     /**

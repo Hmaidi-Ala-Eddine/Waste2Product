@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('waste_requests', function (Blueprint $table) {
-            $table->string('state')->after('quantity'); // Tunisia governorate
-            $table->index('state'); // For faster filtering
+            // Vérifie si la colonne n'existe pas déjà
+            if (!Schema::hasColumn('waste_requests', 'state')) {
+                $table->string('state')->after('quantity'); // Tunisia governorate
+                $table->index('state'); // For faster filtering
+            }
         });
     }
 
@@ -23,8 +26,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('waste_requests', function (Blueprint $table) {
-            $table->dropIndex(['state']);
-            $table->dropColumn('state');
+            if (Schema::hasColumn('waste_requests', 'state')) {
+                $table->dropIndex(['state']);
+                $table->dropColumn('state');
+            }
         });
     }
 };

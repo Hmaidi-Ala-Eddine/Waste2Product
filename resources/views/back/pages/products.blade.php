@@ -261,6 +261,8 @@
       </div>
       <form id="addProductForm" method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
         @csrf
+        <!-- Hidden field for user_id - automatically filled -->
+        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
         <div class="modal-body p-4">
           <div class="row">
             <!-- Product Information -->
@@ -268,22 +270,14 @@
               <h6 class="text-dark font-weight-bold mb-3">Product Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Owner *</label>
-                <select class="form-control" name="user_id" id="owner_id" required>
-                  <option value="">Select Owner</option>
-                </select>
-                <div class="invalid-feedback"></div>
-              </div>
-              
-              <div class="mb-3">
                 <label class="form-label text-dark">Product Name *</label>
-                <input type="text" class="form-control" name="name" required placeholder="Enter product name">
-                <div class="invalid-feedback"></div>
+                <input type="text" class="form-control" name="name" id="product_name" required placeholder="Enter product name" minlength="3" maxlength="100">
+                <div class="invalid-feedback" id="product_name_error"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Category *</label>
-                <select class="form-control" name="category" required>
+                <select class="form-control" name="category" id="product_category" required>
                   <option value="">Select Category</option>
                   <option value="furniture">Furniture</option>
                   <option value="electronics">Electronics</option>
@@ -291,13 +285,13 @@
                   <option value="textile">Textile</option>
                   <option value="metal">Metal</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="product_category_error"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Price *</label>
-                <input type="number" class="form-control" name="price" step="0.01" min="0" required placeholder="0.00">
-                <div class="invalid-feedback"></div>
+                <input type="number" class="form-control" name="price" id="product_price" step="0.01" min="0" max="999999.99" required placeholder="0.00">
+                <div class="invalid-feedback" id="product_price_error"></div>
               </div>
             </div>
             
@@ -307,24 +301,24 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Status *</label>
-                <select class="form-control" name="status" required>
+                <select class="form-control" name="status" id="product_status" required>
                   <option value="available" selected>Available</option>
                   <option value="sold">Sold</option>
                   <option value="donated">Donated</option>
                   <option value="reserved">Reserved</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="product_status_error"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Condition</label>
-                <select class="form-control" name="condition">
+                <select class="form-control" name="condition" id="product_condition">
                   <option value="excellent">Excellent</option>
                   <option value="good" selected>Good</option>
                   <option value="fair">Fair</option>
                   <option value="poor">Poor</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="product_condition_error"></div>
               </div>
               
               <div class="mb-3">
@@ -332,8 +326,8 @@
                 <div class="input-group input-group-outline">
                   <input type="file" class="form-control" name="image" accept="image/*" id="productImageUpload">
                 </div>
-                <small class="text-muted">Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB</small>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="productImageUpload_error"></div>
+                <div id="image_preview" class="mt-2"></div>
               </div>
             </div>
           </div>
@@ -342,8 +336,11 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description</label>
-                <textarea class="form-control" name="description" rows="4" placeholder="Enter product description"></textarea>
-                <div class="invalid-feedback"></div>
+                <textarea class="form-control" name="description" id="product_description" rows="4" placeholder="Enter product description" maxlength="1000"></textarea>
+                <div class="invalid-feedback" id="product_description_error"></div>
+                <div class="text-end">
+                  <small class="text-muted" id="description_counter">0/1000</small>
+                </div>
               </div>
             </div>
           </div>
@@ -374,6 +371,8 @@
       <form id="editProductForm" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
+        <!-- Hidden field for user_id - automatically filled -->
+        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
         <div class="modal-body p-4">
           <div class="row">
             <!-- Product Information -->
@@ -381,17 +380,9 @@
               <h6 class="text-dark font-weight-bold mb-3">Product Information</h6>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Owner *</label>
-                <select class="form-control" name="user_id" id="edit_owner_id" required>
-                  <option value="">Select Owner</option>
-                </select>
-                <div class="invalid-feedback"></div>
-              </div>
-              
-              <div class="mb-3">
                 <label class="form-label text-dark">Product Name *</label>
-                <input type="text" class="form-control" name="name" id="edit_name" required placeholder="Enter product name">
-                <div class="invalid-feedback"></div>
+                <input type="text" class="form-control" name="name" id="edit_name" required placeholder="Enter product name" minlength="3" maxlength="100">
+                <div class="invalid-feedback" id="edit_name_error"></div>
               </div>
               
               <div class="mb-3">
@@ -404,13 +395,13 @@
                   <option value="textile">Textile</option>
                   <option value="metal">Metal</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="edit_category_error"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Price *</label>
-                <input type="number" class="form-control" name="price" id="edit_price" step="0.01" min="0" required placeholder="0.00">
-                <div class="invalid-feedback"></div>
+                <input type="number" class="form-control" name="price" id="edit_price" step="0.01" min="0" max="999999.99" required placeholder="0.00">
+                <div class="invalid-feedback" id="edit_price_error"></div>
               </div>
             </div>
             
@@ -426,7 +417,7 @@
                   <option value="donated">Donated</option>
                   <option value="reserved">Reserved</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="edit_status_error"></div>
               </div>
               
               <div class="mb-3">
@@ -437,7 +428,7 @@
                   <option value="fair">Fair</option>
                   <option value="poor">Poor</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="edit_condition_error"></div>
               </div>
               
               <div class="mb-3">
@@ -446,8 +437,8 @@
                 <div class="input-group input-group-outline">
                   <input type="file" class="form-control" name="image" accept="image/*" id="editProductImageUpload">
                 </div>
-                <small class="text-muted">Leave empty to keep current image. Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB</small>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" id="edit_image_error"></div>
+                <div id="edit_image_preview" class="mt-2"></div>
               </div>
             </div>
           </div>
@@ -456,8 +447,11 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description</label>
-                <textarea class="form-control" name="description" id="edit_description" rows="4" placeholder="Enter product description"></textarea>
-                <div class="invalid-feedback"></div>
+                <textarea class="form-control" name="description" id="edit_description" rows="4" placeholder="Enter product description" maxlength="1000"></textarea>
+                <div class="invalid-feedback" id="edit_description_error"></div>
+                <div class="text-end">
+                  <small class="text-muted" id="edit_description_counter">0/1000</small>
+                </div>
               </div>
             </div>
           </div>
@@ -501,11 +495,14 @@
 
 @push('scripts')
 <script>
+// Pass Laravel validation errors to JavaScript
+window.laravelErrors = @json($errors->all());
+window.laravelErrorFields = @json($errors->getMessages());
 // Load users when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    loadUsers();
     initializeFloatingLabels();
     initProductsViewToggle();
+    initializeFormValidation();
 });
 
 // Initialize floating labels
@@ -544,52 +541,514 @@ function initializeFloatingLabels() {
     });
 }
 
-// Load users for dropdowns
-function loadUsers() {
-    fetch('/admin/products/users')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+// Handle server validation errors
+function handleServerErrors(formType = 'add') {
+    // Hide global error messages
+    hideGlobalErrors();
+    
+    // Check if there are server validation errors
+    const hasErrors = window.laravelErrorFields && Object.keys(window.laravelErrorFields).length > 0;
+    
+    if (hasErrors) {
+        console.log('Server errors found:', window.laravelErrorFields);
+        
+        // Get errors from Laravel session
+        const errors = getServerErrors();
+        
+        // Display errors under each field
+        Object.keys(errors).forEach(fieldName => {
+            const fieldId = getFieldId(fieldName, formType);
+            const errorMessage = errors[fieldName][0]; // Get first error message
+            
+            console.log(`Field: ${fieldName}, FieldId: ${fieldId}, Message: ${errorMessage}`);
+            
+            if (fieldId && errorMessage) {
+                showFieldError(fieldId, errorMessage);
             }
-            return response.json();
-        })
-        .then(users => {
-            console.log('Users loaded:', users); // Debug log
-            const userSelects = ['owner_id', 'edit_owner_id'];
-            userSelects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                if (select) {
-                    select.innerHTML = '<option value="">Select Owner</option>';
-                    users.forEach(user => {
-                        select.innerHTML += `<option value="${user.id}">${user.name} (${user.email})</option>`;
-                    });
+        });
+    } else {
+        console.log('No server errors found');
+    }
+}
+
+// Hide global error messages
+function hideGlobalErrors() {
+    // Hide Laravel's default error messages
+    const globalErrors = document.querySelectorAll('.alert-danger, .error-message, .alert');
+    globalErrors.forEach(error => {
+        error.style.display = 'none';
+    });
+}
+
+// Get server errors (this would need to be implemented based on your Laravel setup)
+function getServerErrors() {
+    // Use Laravel errors passed to JavaScript
+    if (window.laravelErrorFields && Object.keys(window.laravelErrorFields).length > 0) {
+        return window.laravelErrorFields;
+    }
+    
+    // Fallback: Check for common Laravel validation error patterns
+    const errors = {};
+    
+    // Check for common Laravel validation error patterns
+    const errorElements = document.querySelectorAll('.alert-danger li, .error-message');
+    errorElements.forEach(element => {
+        const text = element.textContent.trim();
+        
+        // Map error messages to field names
+        if (text.includes('description') && text.includes('characters')) {
+            errors['description'] = [text];
+        } else if (text.includes('user id') && text.includes('required')) {
+            errors['user_id'] = [text];
+        } else if (text.includes('name') && text.includes('required')) {
+            errors['name'] = [text];
+        } else if (text.includes('category') && text.includes('required')) {
+            errors['category'] = [text];
+        } else if (text.includes('price') && text.includes('required')) {
+            errors['price'] = [text];
+        }
+    });
+    
+    return errors;
+}
+
+// Map Laravel field names to form field IDs
+function getFieldId(fieldName, formType = 'add') {
+    const fieldMap = {
+        'name': formType === 'add' ? 'product_name' : 'edit_name',
+        'category': formType === 'add' ? 'product_category' : 'edit_category',
+        'price': formType === 'add' ? 'product_price' : 'edit_price',
+        'status': formType === 'add' ? 'product_status' : 'edit_status',
+        'condition': formType === 'add' ? 'product_condition' : 'edit_condition',
+        'description': formType === 'add' ? 'product_description' : 'edit_description',
+        'image': formType === 'add' ? 'productImageUpload' : 'editProductImageUpload',
+        'user_id': null // Hidden field, no need to show error
+    };
+    
+    return fieldMap[fieldName] || null;
+}
+
+// Initialize form validation
+function initializeFormValidation() {
+    // Add validation for add product form
+    const addForm = document.getElementById('addProductForm');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            // Validate all fields and prevent submission if validation fails
+            if (!validateAddForm()) {
+                e.preventDefault();
+                return false;
+            }
+            // Let the form submit normally if validation passes
+        });
+        
+        // Handle server validation errors when modal opens
+        const addModal = document.getElementById('addProductModal');
+        if (addModal) {
+            addModal.addEventListener('shown.bs.modal', function() {
+                handleServerErrors('add');
+            });
+        }
+        
+        // Add real-time validation
+        addRealTimeValidation('product_name', validateName);
+        addRealTimeValidation('product_category', validateCategory);
+        addRealTimeValidation('product_price', validatePrice);
+        addRealTimeValidation('product_status', validateStatus);
+        addRealTimeValidation('product_condition', validateCondition);
+        addRealTimeValidation('product_description', validateDescription);
+        
+        // Image validation
+        const imageInput = document.getElementById('productImageUpload');
+        if (imageInput) {
+            imageInput.addEventListener('change', validateImage);
+        }
+        
+        // Description counter
+        const descriptionTextarea = document.getElementById('product_description');
+        const descriptionCounter = document.getElementById('description_counter');
+        if (descriptionTextarea && descriptionCounter) {
+            descriptionTextarea.addEventListener('input', function() {
+                const length = this.value.length;
+                descriptionCounter.textContent = `${length}/1000`;
+                if (length > 1000) {
+                    descriptionCounter.classList.add('text-danger');
+                } else {
+                    descriptionCounter.classList.remove('text-danger');
                 }
             });
-        })
-        .catch(error => {
-            console.error('Error loading users:', error);
-            // Fallback: try to load from a different endpoint
-            console.log('Trying fallback endpoint...');
-            fetch('/admin/users')
-                .then(response => response.json())
-                .then(data => {
-                    // Handle different response formats
-                    const users = data.users || data.data || data;
-                    if (Array.isArray(users)) {
-                        const userSelects = ['owner_id', 'edit_owner_id'];
-                        userSelects.forEach(selectId => {
-                            const select = document.getElementById(selectId);
-                            if (select) {
-                                select.innerHTML = '<option value="">Select Owner</option>';
-                                users.forEach(user => {
-                                    select.innerHTML += `<option value="${user.id}">${user.name} (${user.email || user.username || 'No email'})</option>`;
-                                });
+        }
+    }
+    
+    // Add validation for edit product form
+    const editForm = document.getElementById('editProductForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            // Validate all fields and prevent submission if validation fails
+            if (!validateEditForm()) {
+                e.preventDefault();
+                return false;
+            }
+            // Let the form submit normally if validation passes
+        });
+        
+        // Handle server validation errors when edit modal opens
+        const editModal = document.getElementById('editProductModal');
+        if (editModal) {
+            editModal.addEventListener('shown.bs.modal', function() {
+                handleServerErrors('edit');
+            });
+        }
+        
+        // Add real-time validation for edit form
+        addRealTimeValidation('edit_name', validateName);
+        addRealTimeValidation('edit_category', validateCategory);
+        addRealTimeValidation('edit_price', validatePrice);
+        addRealTimeValidation('edit_status', validateStatus);
+        addRealTimeValidation('edit_condition', validateCondition);
+        addRealTimeValidation('edit_description', validateDescription);
+        
+        // Image validation for edit form
+        const editImageInput = document.getElementById('editProductImageUpload');
+        if (editImageInput) {
+            editImageInput.addEventListener('change', validateImage);
+        }
+        
+        // Description counter for edit form
+        const editDescriptionTextarea = document.getElementById('edit_description');
+        const editDescriptionCounter = document.getElementById('edit_description_counter');
+        if (editDescriptionTextarea && editDescriptionCounter) {
+            editDescriptionTextarea.addEventListener('input', function() {
+                const length = this.value.length;
+                editDescriptionCounter.textContent = `${length}/1000`;
+                if (length > 1000) {
+                    editDescriptionCounter.classList.add('text-danger');
+                } else {
+                    editDescriptionCounter.classList.remove('text-danger');
                             }
                         });
                     }
-                })
-                .catch(fallbackError => console.error('Fallback also failed:', fallbackError));
+    }
+}
+
+// Add real-time validation to form fields
+function addRealTimeValidation(fieldId, validationFunction) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        // Validate on blur (when user leaves the field)
+        field.addEventListener('blur', function() {
+            validationFunction(fieldId);
         });
+        
+        // Clear error when user starts typing
+        field.addEventListener('input', function() {
+            clearFieldError(fieldId);
+        });
+        
+        // Also validate on change for select fields
+        field.addEventListener('change', function() {
+            validationFunction(fieldId);
+        });
+    }
+}
+
+// Validation functions
+function validateName(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value.trim();
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (!value) {
+        showFieldError(fieldId, 'Product name is required');
+        return false;
+    }
+    
+    if (value.length < 2) {
+        showFieldError(fieldId, 'Product name must be at least 2 characters long');
+        return false;
+    }
+    
+    if (value.length > 100) {
+        showFieldError(fieldId, 'Product name must not exceed 100 characters');
+        return false;
+    }
+    
+    clearFieldError(fieldId);
+    return true;
+}
+
+function validateCategory(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value;
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (!value) {
+        showFieldError(fieldId, 'Please select a category');
+        return false;
+    }
+    
+    const validCategories = ['furniture', 'electronics', 'plastic', 'textile', 'metal'];
+    if (!validCategories.includes(value)) {
+        showFieldError(fieldId, 'Please select a valid category');
+        return false;
+    }
+    
+    clearFieldError(fieldId);
+    return true;
+}
+
+function validatePrice(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value.trim();
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (!value || value === '') {
+        showFieldError(fieldId, 'Please enter a price');
+        return false;
+    }
+    
+    const numValue = parseFloat(value);
+    
+    if (isNaN(numValue)) {
+        showFieldError(fieldId, 'Please enter a valid number');
+        return false;
+    }
+    
+    if (numValue < 0) {
+        showFieldError(fieldId, 'Price cannot be negative');
+        return false;
+    }
+    
+    if (numValue > 999999.99) {
+        showFieldError(fieldId, 'Price cannot exceed $999,999.99');
+        return false;
+    }
+    
+    clearFieldError(fieldId);
+    return true;
+}
+
+function validateStatus(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value;
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (!value) {
+        showFieldError(fieldId, 'Please select a status');
+        return false;
+    }
+    
+    const validStatuses = ['available', 'sold', 'donated', 'reserved'];
+    if (!validStatuses.includes(value)) {
+        showFieldError(fieldId, 'Please select a valid status');
+        return false;
+    }
+    
+    clearFieldError(fieldId);
+    return true;
+}
+
+function validateCondition(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value;
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (!value) {
+        showFieldError(fieldId, 'Please select a condition');
+        return false;
+    }
+    
+    const validConditions = ['excellent', 'good', 'fair', 'poor'];
+    if (!validConditions.includes(value)) {
+        showFieldError(fieldId, 'Please select a valid condition');
+        return false;
+    }
+    
+    clearFieldError(fieldId);
+    return true;
+}
+
+function validateDescription(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value.trim();
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (value.length > 0 && value.length < 10) {
+        showFieldError(fieldId, 'Description must be at least 10 characters');
+        return false;
+    }
+    
+    if (value.length > 1000) {
+        showFieldError(fieldId, 'Description cannot exceed 1000 characters');
+        return false;
+    }
+    
+    clearFieldError(fieldId);
+    return true;
+}
+
+function validateImage() {
+    const field = event.target;
+    const file = field.files[0];
+    const errorElement = document.getElementById('image_error');
+    const editErrorElement = document.getElementById('edit_image_error');
+    const targetErrorElement = field.id === 'productImageUpload' ? errorElement : editErrorElement;
+    
+    if (!file) {
+        clearFieldError(field.id === 'productImageUpload' ? 'productImageUpload' : 'editProductImageUpload');
+        return true;
+    }
+    
+    // Check file size (2MB = 2 * 1024 * 1024 bytes)
+    if (file.size > 2 * 1024 * 1024) {
+        showFieldError(field.id === 'productImageUpload' ? 'productImageUpload' : 'editProductImageUpload', 'File size must not exceed 2MB');
+        return false;
+    }
+    
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+        showFieldError(field.id === 'productImageUpload' ? 'productImageUpload' : 'editProductImageUpload', 'Only JPEG, PNG, JPG, and GIF files are allowed');
+        return false;
+    }
+    
+    // Show image preview
+    const previewId = field.id === 'productImageUpload' ? 'image_preview' : 'edit_image_preview';
+    const previewElement = document.getElementById(previewId);
+    if (previewElement) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewElement.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-height: 100px;" alt="Preview">`;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    clearFieldError(field.id === 'productImageUpload' ? 'productImageUpload' : 'editProductImageUpload');
+    return true;
+}
+
+// Show field error
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (field) {
+        field.classList.add('is-invalid');
+        field.classList.remove('is-valid');
+    }
+    
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.add('show');
+        errorElement.style.display = 'block';
+        errorElement.style.color = '#dc3545';
+        errorElement.style.fontWeight = 'bold';
+    }
+}
+
+// Clear field error
+function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    if (field) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+    }
+    
+    if (errorElement) {
+        errorElement.textContent = '';
+        errorElement.classList.remove('show');
+        errorElement.style.display = 'none';
+    }
+}
+
+// Validate add form
+function validateAddForm() {
+    const fields = ['product_name', 'product_category', 'product_price', 'product_status', 'product_condition', 'product_description'];
+    let isValid = true;
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            let fieldValid = true;
+            switch(fieldId) {
+                case 'product_name':
+                    fieldValid = validateName(fieldId);
+                    break;
+                case 'product_category':
+                    fieldValid = validateCategory(fieldId);
+                    break;
+                case 'product_price':
+                    fieldValid = validatePrice(fieldId);
+                    break;
+                case 'product_status':
+                    fieldValid = validateStatus(fieldId);
+                    break;
+                case 'product_condition':
+                    fieldValid = validateCondition(fieldId);
+                    break;
+                case 'product_description':
+                    fieldValid = validateDescription(fieldId);
+                    break;
+            }
+            if (!fieldValid) isValid = false;
+        }
+    });
+    
+    // Validate image if provided
+    const imageInput = document.getElementById('productImageUpload');
+    if (imageInput && imageInput.files.length > 0) {
+        if (!validateImage()) {
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+// Validate edit form
+function validateEditForm() {
+    const fields = ['edit_name', 'edit_category', 'edit_price', 'edit_status', 'edit_condition', 'edit_description'];
+    let isValid = true;
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            let fieldValid = true;
+            switch(fieldId) {
+                case 'edit_name':
+                    fieldValid = validateName(fieldId);
+                    break;
+                case 'edit_category':
+                    fieldValid = validateCategory(fieldId);
+                    break;
+                case 'edit_price':
+                    fieldValid = validatePrice(fieldId);
+                    break;
+                case 'edit_status':
+                    fieldValid = validateStatus(fieldId);
+                    break;
+                case 'edit_condition':
+                    fieldValid = validateCondition(fieldId);
+                    break;
+                case 'edit_description':
+                    fieldValid = validateDescription(fieldId);
+                    break;
+            }
+            if (!fieldValid) isValid = false;
+        }
+    });
+    
+    // Validate image if provided
+    const imageInput = document.getElementById('editProductImageUpload');
+    if (imageInput && imageInput.files.length > 0) {
+        if (!validateImage()) {
+            isValid = false;
+        }
+    }
+    
+    return isValid;
 }
 
 // Edit product function
@@ -597,13 +1056,19 @@ function editProduct(id) {
     fetch(`{{ url('admin/products') }}/${id}/data`)
         .then(response => response.json())
         .then(product => {
-            document.getElementById('edit_owner_id').value = product.user_id;
             document.getElementById('edit_name').value = product.name;
             document.getElementById('edit_category').value = product.category;
             document.getElementById('edit_price').value = product.price;
             document.getElementById('edit_status').value = product.status;
             document.getElementById('edit_condition').value = product.condition || 'good';
             document.getElementById('edit_description').value = product.description || '';
+            
+            // Update description counter
+            const descriptionCounter = document.getElementById('edit_description_counter');
+            if (descriptionCounter) {
+                const length = product.description ? product.description.length : 0;
+                descriptionCounter.textContent = `${length}/1000`;
+            }
             
             // Show current image preview
             const imagePreview = document.getElementById('current_product_image_preview');
@@ -628,6 +1093,7 @@ function deleteProduct(id, productName) {
     document.getElementById('deleteProductForm').action = `{{ url('admin/products') }}/${id}`;
     new bootstrap.Modal(document.getElementById('deleteProductModal')).show();
 }
+
 
 // View toggle for products
 function initProductsViewToggle(){
@@ -822,6 +1288,99 @@ function initProductsViewToggle(){
 .product-card .card-img-top img{ display:block; }
 .object-fit-cover{ object-fit: cover; }
 .btn-group .btn.active{ background:#344767; color:#fff; }
+
+/* Hide global Laravel error messages */
+.alert-danger, .error-message, .alert {
+    display: none !important;
+}
+
+/* Validation styles */
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545 !important;
+    font-weight: 500;
+}
+
+/* Show error messages when they have content */
+.invalid-feedback.show {
+    display: block !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.is-invalid:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Character counter styling */
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Image preview styling */
+.img-thumbnail {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+}
+
+/* Form field focus improvements */
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    outline: none;
+}
+
+/* Success state for valid fields */
+.form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    background-color: rgba(40, 167, 69, 0.05) !important;
+}
+
+/* Enhanced error message styling */
+.invalid-feedback.show {
+    animation: slideInError 0.3s ease-out;
+}
+
+@keyframes slideInError {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Error icon for better visibility */
+.invalid-feedback.show::before {
+    content: "⚠ ";
+    font-weight: bold;
+    margin-right: 0.25rem;
+}
+
+/* Enhanced field styling when invalid */
+.is-invalid {
+    animation: shakeError 0.5s ease-in-out;
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
 </style>
 @endpush
 
