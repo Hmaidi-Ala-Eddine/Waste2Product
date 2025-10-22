@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     // Product Management Routes - specific routes first
     Route::get('/products/users', [\App\Http\Controllers\Admin\ProductController::class, 'getUsers'])->name('products.users');
     Route::get('/products/{product}/data', [\App\Http\Controllers\Admin\ProductController::class, 'getData'])->name('products.data');
+    Route::post('/products/{product}/generate-description', [\App\Http\Controllers\Admin\ProductController::class, 'generateDescription'])->name('products.generate-description');
     Route::post('products/{product}/change-status', [App\Http\Controllers\Admin\ProductController::class, 'changeStatus'])->name('products.changeStatus');
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     // Orders routes (controller renders Blade index)

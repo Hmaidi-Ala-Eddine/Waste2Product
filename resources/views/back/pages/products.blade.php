@@ -336,7 +336,13 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description</label>
-                <textarea class="form-control" name="description" id="product_description" rows="4" placeholder="Enter product description" maxlength="1000"></textarea>
+                <div class="input-group">
+                  <textarea class="form-control" name="description" id="product_description" rows="4" placeholder="Enter product description" maxlength="1000"></textarea>
+                  <button type="button" class="btn btn-outline-primary" onclick="generateAIDescription('add')" id="generateDescriptionBtn">
+                    <i class="fas fa-robot"></i>
+                    <span>Générer IA</span>
+                  </button>
+                </div>
                 <div class="invalid-feedback" id="product_description_error"></div>
                 <div class="text-end">
                   <small class="text-muted" id="description_counter">0/1000</small>
@@ -447,7 +453,13 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description</label>
-                <textarea class="form-control" name="description" id="edit_description" rows="4" placeholder="Enter product description" maxlength="1000"></textarea>
+                <div class="input-group">
+                  <textarea class="form-control" name="description" id="edit_description" rows="4" placeholder="Enter product description" maxlength="1000"></textarea>
+                  <button type="button" class="btn btn-outline-primary" onclick="generateAIDescription('edit')" id="generateEditDescriptionBtn">
+                    <i class="fas fa-robot"></i>
+                    <span>Générer IA</span>
+                  </button>
+                </div>
                 <div class="invalid-feedback" id="edit_description_error"></div>
                 <div class="text-end">
                   <small class="text-muted" id="edit_description_counter">0/1000</small>
@@ -1063,6 +1075,9 @@ function editProduct(id) {
             document.getElementById('edit_condition').value = product.condition || 'good';
             document.getElementById('edit_description').value = product.description || '';
             
+            // Set current editing product ID for AI generation
+            window.currentEditingProductId = product.id;
+            
             // Update description counter
             const descriptionCounter = document.getElementById('edit_description_counter');
             if (descriptionCounter) {
@@ -1087,12 +1102,166 @@ function editProduct(id) {
         });
 }
 
-// Delete product function
-function deleteProduct(id, productName) {
-    document.getElementById('deleteProductName').textContent = productName;
-    document.getElementById('deleteProductForm').action = `{{ url('admin/products') }}/${id}`;
-    new bootstrap.Modal(document.getElementById('deleteProductModal')).show();
+// Generate AI Description
+function generateAIDescription(formType) {
+    const buttonId = formType === 'add' ? 'generateDescriptionBtn' : 'generateEditDescriptionBtn';
+    const button = document.getElementById(buttonId);
+    const originalHTML = button.innerHTML;
+    
+    // Disable button and show loading
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Génération...</span>';
+    
+    // Get product data based on form type
+    let productData = {};
+    
+    if (formType === 'add') {
+        productData = {
+            name: document.getElementById('product_name').value,
+            category: document.getElementById('product_category').value,
+            condition: document.getElementById('product_condition').value,
+            price: document.getElementById('product_price').value,
+            description: document.getElementById('product_description').value
+        };
+    } else {
+        productData = {
+            name: document.getElementById('edit_name').value,
+            category: document.getElementById('edit_category').value,
+            condition: document.getElementById('edit_condition').value,
+            price: document.getElementById('edit_price').value,
+            description: document.getElementById('edit_description').value
+        };
+    }
+    
+    // Validate required fields
+    if (!productData.name || !productData.category) {
+        alert('Veuillez remplir au moins le nom et la catégorie du produit avant de générer une description.');
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+        return;
+    }
+    
+    // Create a temporary product object for the API call
+    const tempProduct = {
+        id: formType === 'edit' ? window.currentEditingProductId : 'temp',
+        name: productData.name,
+        category: productData.category,
+        condition: productData.condition,
+        price: productData.price ? parseFloat(productData.price) : null,
+        description: productData.description
+    };
+    
+    // Make API call
+    fetch(`/admin/products/${tempProduct.id}/generate-description`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(tempProduct)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Fill the description field
+            const descriptionField = formType === 'add' ? 'product_description' : 'edit_description';
+            document.getElementById(descriptionField).value = data.description;
+            
+            // Update character counter
+            updateDescriptionCounter(formType);
+            
+            // Show message from server (could be success or fallback message)
+            showToast(data.message || 'Description générée avec succès !', 'success');
+        } else {
+            showToast(data.message || 'Erreur lors de la génération', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (error.message.includes('status: 401')) {
+            showToast('Vous devez être connecté pour utiliser cette fonctionnalité', 'error');
+        } else if (error.message.includes('status: 403')) {
+            showToast('Vous n\'avez pas les permissions nécessaires', 'error');
+        } else if (error.message.includes('Unexpected token')) {
+            showToast('Erreur de communication avec le serveur', 'error');
+        } else {
+            showToast('Erreur lors de la génération de la description', 'error');
+        }
+    })
+    .finally(() => {
+        // Re-enable button
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+    });
 }
+
+// Update description counter
+function updateDescriptionCounter(formType) {
+    const fieldId = formType === 'add' ? 'product_description' : 'edit_description';
+    const counterId = formType === 'add' ? 'description_counter' : 'edit_description_counter';
+    
+    const field = document.getElementById(fieldId);
+    const counter = document.getElementById(counterId);
+    
+    if (field && counter) {
+        const length = field.value.length;
+        counter.textContent = `${length}/1000`;
+    }
+}
+
+// Toast notification system
+function showToast(message, type = 'success') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-weight: 500;
+        max-width: 300px;
+        animation: slideInRight 0.3s ease;
+    `;
+    toast.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 
 
 // View toggle for products

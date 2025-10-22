@@ -284,6 +284,63 @@ class ProductController extends Controller
     }
 
     /**
+     * Generate AI description for a product
+     */
+    public function generateDescription(Request $request, $productId)
+    {
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous devez être connecté pour utiliser cette fonctionnalité.'
+            ], 401);
+        }
+
+        try {
+            // Handle temporary product for add form
+            if ($productId === 'temp') {
+                $productData = $request->all();
+                
+                // Create a temporary product object
+                $product = new Product();
+                $product->name = $productData['name'] ?? '';
+                $product->category = $productData['category'] ?? '';
+                $product->condition = $productData['condition'] ?? null;
+                $product->price = $productData['price'] ?? null;
+                $product->description = $productData['description'] ?? '';
+            } else {
+                $product = Product::findOrFail($productId);
+            }
+
+            $aiService = new \App\Services\ProductDescriptionAI();
+            $description = $aiService->generateDescription($product);
+
+            // Always return JSON for AJAX requests
+            return response()->json([
+                'success' => true,
+                'description' => $description,
+                'message' => 'Description générée avec succès !'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to generate AI description: ' . $e->getMessage());
+
+            // Check if it's a rate limit error
+            $isRateLimit = strpos($e->getMessage(), 'rate limit') !== false;
+            $message = $isRateLimit 
+                ? 'Limite de requêtes Groq atteinte. Description de secours générée.'
+                : 'Erreur lors de la génération de la description. Description de secours générée.';
+
+            // Always return JSON for AJAX requests
+            return response()->json([
+                'success' => true, // Still success because we have a fallback
+                'description' => (new \App\Services\ProductDescriptionAI())->generateFallbackDescription($product ?? new Product()),
+                'message' => $message
+            ]);
+        }
+    }
+
+    /**
      * Get product data for editing (Admin only)
      */
     public function getData(Product $product)
