@@ -133,8 +133,8 @@ class ShopController extends Controller
         ];
 
         try {
-            // Send email to the provided email address
-            \Mail::to($request->email)->send(new \App\Mail\ProductReservationMail($product, $reservationData));
+            // Send email to the product owner
+            \Mail::to($product->user->email)->send(new \App\Mail\ProductReservationMail($product, $reservationData));
 
             // Create reservation record
             \App\Models\ProductReservation::create([
@@ -150,7 +150,7 @@ class ShopController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Reservation request sent successfully! The seller will contact you soon.'
+                'message' => 'Reservation request sent successfully! The seller has been notified and will contact you soon.'
             ]);
         } catch (\Exception $e) {
             \Log::error('Failed to send reservation email: ' . $e->getMessage());
