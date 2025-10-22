@@ -291,6 +291,8 @@ Route::get('/shop/{id}', [\App\Http\Controllers\ShopController::class, 'show'])-
 // Product Reserve & My Orders (Authenticated)
 Route::middleware('auth')->group(function () {
     Route::post('/products/{id}/reserve', [\App\Http\Controllers\ShopController::class, 'reserve'])->name('front.products.reserve');
+    Route::post('/products/{id}/make-available', [\App\Http\Controllers\ShopController::class, 'makeAvailable'])->name('front.products.make-available');
+    Route::post('/reservations/{id}/cancel', [\App\Http\Controllers\ShopController::class, 'cancelReservation'])->name('front.reservations.cancel');
     Route::get('/my-orders', [\App\Http\Controllers\ShopController::class, 'myOrders'])->name('front.my-orders');
 });
 
@@ -328,6 +330,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('front.checkout');
     Route::post('/checkout', [\App\Http\Controllers\CartController::class, 'processCheckout'])->name('front.checkout.process');
     Route::get('/order/success', [\App\Http\Controllers\CartController::class, 'orderSuccess'])->name('front.order.success');
+    Route::get('/payment/success', [\App\Http\Controllers\CartController::class, 'paymentSuccess'])->name('payment.success');
 });
 
 // AI Chatbot Routes (Public Access)

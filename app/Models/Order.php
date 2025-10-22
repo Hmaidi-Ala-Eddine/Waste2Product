@@ -16,11 +16,21 @@ class Order extends Model
         'total_price',
         'status',
         'payment_method',
+        'payment_status',
+        'transaction_id',
+        'gateway',
+        'gateway_response',
+        'payment_notes',
+        'payment_processed_at',
+        'shipping_address',
+        'order_notes',
         'ordered_at',
     ];
 
     protected $casts = [
         'ordered_at' => 'datetime',
+        'payment_processed_at' => 'datetime',
+        'gateway_response' => 'array',
     ];
 
     public function buyer()

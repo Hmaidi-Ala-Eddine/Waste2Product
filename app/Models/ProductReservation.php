@@ -14,10 +14,12 @@ class ProductReservation extends Model
         'product_id',
         'status',
         'reserved_at',
+        'reservation_data',
     ];
 
     protected $casts = [
         'reserved_at' => 'datetime',
+        'reservation_data' => 'array',
     ];
 
     /**

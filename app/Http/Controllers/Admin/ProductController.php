@@ -105,6 +105,11 @@ class ProductController extends Controller
             'condition', 'price', 'status', 'waste_request_id'
         ]);
         
+        // If status is 'available' and no stock specified, set stock to 1
+        if ($data['status'] === 'available' && (!isset($data['stock']) || $data['stock'] <= 0)) {
+            $data['stock'] = 1;
+        }
+        
         // Handle image upload
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
@@ -181,6 +186,11 @@ class ProductController extends Controller
             'condition', 'price', 'status', 'waste_request_id'
         ]);
         
+        // If status is 'available' and stock is 0, set stock to 1
+        if ($data['status'] === 'available' && $product->stock <= 0) {
+            $data['stock'] = 1;
+        }
+        
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
@@ -238,7 +248,17 @@ class ProductController extends Controller
             'status' => 'required|in:available,sold,donated,reserved'
         ]);
 
-        $product->update(['status' => $request->status]);
+        $newStatus = $request->status;
+        
+        // If changing to 'available' and stock is 0, set stock to 1
+        if ($newStatus === 'available' && $product->stock <= 0) {
+            $product->update([
+                'status' => $newStatus,
+                'stock' => 1
+            ]);
+        } else {
+            $product->update(['status' => $newStatus]);
+        }
 
         return redirect()->back()
             ->with('success', 'Product status updated successfully.');

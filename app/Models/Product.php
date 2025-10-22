@@ -26,6 +26,21 @@ class Product extends Model
     ];
 
     /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When updating a product, ensure stock is set if status is 'available'
+        static::updating(function ($product) {
+            if ($product->status === 'available' && $product->stock <= 0) {
+                $product->stock = 1;
+            }
+        });
+    }
+
+    /**
      * Get the user who owns the product.
      */
     public function user(): BelongsTo
