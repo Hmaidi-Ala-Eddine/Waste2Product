@@ -398,6 +398,18 @@
                                         <i class="fas fa-user"></i>
                                         <span>Seller: {{ $reservation->product->user->name }}</span>
                                     </div>
+                                    @if($reservation->reservation_data)
+                                        <div class="meta-item">
+                                            <i class="fas fa-envelope"></i>
+                                            <span>Contact: {{ $reservation->reservation_data['email'] ?? 'N/A' }}</span>
+                                        </div>
+                                        @if(!empty($reservation->reservation_data['notes']))
+                                            <div class="meta-item">
+                                                <i class="fas fa-sticky-note"></i>
+                                                <span>Notes: {{ Str::limit($reservation->reservation_data['notes'], 50) }}</span>
+                                            </div>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
 
@@ -407,6 +419,11 @@
                                 <div class="price-value">
                                     {{ $reservation->product->isFree() ? 'FREE' : number_format($reservation->product->price, 2) . ' TND' }}
                                 </div>
+                                @if($reservation->status === 'active')
+                                    <button class="btn-cancel-reservation" onclick="cancelReservation({{ $reservation->id }}, this)" style="margin-top: 10px; padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                        <i class="fas fa-times"></i> Cancel Reservation
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -446,6 +463,42 @@ function switchTab(tab) {
     
     // Activate button
     event.target.closest('.tab-btn').classList.add('active');
+}
+
+// Cancel Reservation
+function cancelReservation(reservationId, buttonElement) {
+    if (!confirm('Are you sure you want to cancel this reservation?')) return;
+
+    buttonElement.disabled = true;
+    const originalHTML = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+
+    fetch(`/reservations/${reservationId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            alert('Reservation cancelled successfully!');
+            // Reload page to update the display
+            location.reload();
+        } else {
+            alert(data.message || 'Failed to cancel reservation');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHTML;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to cancel reservation');
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHTML;
+    });
 }
 </script>
 @endpush

@@ -165,7 +165,7 @@ class CartController extends Controller
         try {
             // Create orders for each product
             foreach ($cartItems as $item) {
-                Order::create([
+                $order = Order::create([
                     'user_id' => Auth::id(),
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
@@ -175,6 +175,17 @@ class CartController extends Controller
                     'ordered_at' => now(),
                 ]);
 
+                // If payment method is card, simulate successful payment
+                if ($request->payment_method === 'card') {
+                    $order->update([
+                        'status' => 'completed',
+                        'payment_status' => 'completed',
+                        'transaction_id' => 'TXN-' . time() . '-' . $order->id,
+                        'gateway' => 'simulated_card',
+                        'payment_processed_at' => now()
+                    ]);
+                }
+
                 // Decrease stock - will auto-update status to 'sold' if stock reaches 0
                 $item->product->decreaseStock($item->quantity);
             }
@@ -183,6 +194,11 @@ class CartController extends Controller
             Auth::user()->cartItems()->delete();
 
             DB::commit();
+
+            // If payment method is card, redirect to payment success page
+            if ($request->payment_method === 'card') {
+                return redirect()->route('payment.success')->with('success', 'Payment successful! Your order has been processed.');
+            }
 
             return redirect()->route('front.order.success')->with('success', 'Order placed successfully!');
 
@@ -201,5 +217,13 @@ class CartController extends Controller
     public function orderSuccess()
     {
         return view('front.pages.order-success');
+    }
+
+    /**
+     * Show payment success page
+     */
+    public function paymentSuccess()
+    {
+        return view('front.pages.payment-success');
     }
 }

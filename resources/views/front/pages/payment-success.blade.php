@@ -273,7 +273,7 @@
             </div>
 
             <div class="success-actions">
-                <a href="{{ route('orders.index') }}" class="btn-action btn-primary">
+                <a href="{{ route('front.my-orders') }}" class="btn-action btn-primary">
                     <i class="fas fa-shopping-bag"></i>
                     <span>View My Orders</span>
                 </a>

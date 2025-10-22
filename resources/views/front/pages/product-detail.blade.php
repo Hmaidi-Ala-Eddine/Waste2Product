@@ -230,6 +230,16 @@
         box-shadow: 0 8px 25px rgba(158, 158, 158, 0.4);
     }
 
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    }
+
     .btn-back {
         background: white;
         color: #667eea;
@@ -453,10 +463,19 @@
                                 </button>
                             </div>
                         @else
-                            <button class="btn-action btn-disabled" disabled>
-                                <i class="fas fa-times-circle"></i>
-                                <span>Not Available</span>
-                            </button>
+                            <div class="product-actions">
+                                <button class="btn-action btn-disabled" disabled>
+                                    <i class="fas fa-times-circle"></i>
+                                    <span>Not Available</span>
+                                </button>
+                                
+                                @if($product->user_id === auth()->id())
+                                    <button class="btn-action btn-success" onclick="makeAvailable({{ $product->id }}, this)">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Make Available</span>
+                                    </button>
+                                @endif
+                            </div>
                         @endif
                     @else
                         <a href="{{ route('front.login') }}" class="btn-action btn-add-cart">
@@ -493,6 +512,62 @@
             </div>
         </div>
         @endif
+    </div>
+</div>
+
+<!-- Reservation Modal -->
+<div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reservationModalLabel">
+                    <i class="fas fa-bookmark text-primary"></i>
+                    Reserve Product
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reservationForm">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Fill out this form to send a reservation request to the seller. They will contact you to arrange pickup or delivery.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="form-text">The seller will contact you at this email address</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Additional Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any specific requirements, preferred pickup time, etc."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Send Reservation Request
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection
@@ -558,15 +633,15 @@ function addToCart(productId, buttonElement) {
     });
 }
 
-// Reserve Product
-function reserveProduct(productId, buttonElement) {
-    if (!confirm('Do you want to reserve this product?')) return;
+// Make Product Available (for product owners)
+function makeAvailable(productId, buttonElement) {
+    if (!confirm('Are you sure you want to make this product available again?')) return;
 
     buttonElement.disabled = true;
     const originalHTML = buttonElement.innerHTML;
-    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Reserving...</span>';
+    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Updating...</span>';
 
-    fetch(`/products/${productId}/reserve`, {
+    fetch(`/products/${productId}/make-available`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -576,7 +651,7 @@ function reserveProduct(productId, buttonElement) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('Product reserved successfully!', 'success');
+            showToast('Product is now available!', 'success');
             setTimeout(() => location.reload(), 1000);
         } else {
             showToast(data.message, 'error');
@@ -586,10 +661,64 @@ function reserveProduct(productId, buttonElement) {
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Failed to reserve product', 'error');
+        showToast('Failed to update product status', 'error');
         buttonElement.disabled = false;
         buttonElement.innerHTML = originalHTML;
     });
 }
+
+// Reserve Product
+function reserveProduct(productId, buttonElement) {
+    // Show the reservation modal
+    const modal = new bootstrap.Modal(document.getElementById('reservationModal'));
+    modal.show();
+}
+
+// Handle reservation form submission
+document.getElementById('reservationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const productId = {{ $product->id }};
+    
+    // Disable submit button and show loading
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalHTML = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    // Add product ID to form data
+    formData.append('product_id', productId);
+    
+    fetch(`/products/${productId}/reserve`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Close modal and reset form
+            bootstrap.Modal.getInstance(document.getElementById('reservationModal')).hide();
+            document.getElementById('reservationForm').reset();
+            // Reload page to show updated status
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Failed to send reservation request', 'error');
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+    });
+});
 </script>
 @endpush

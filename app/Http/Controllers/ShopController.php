@@ -104,10 +104,17 @@ class ShopController extends Controller
     }
 
     /**
-     * Reserve a product
+     * Reserve a product with contact form
      */
-    public function reserve($id)
+    public function reserve(Request $request, $id)
     {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'notes' => 'nullable|string|max:1000'
+        ]);
+
         $product = Product::findOrFail($id);
 
         // Check if product is available
@@ -118,20 +125,94 @@ class ShopController extends Controller
             ], 400);
         }
 
-        // Create reservation record
-        ProductReservation::create([
-            'user_id' => Auth::id(),
-            'product_id' => $product->id,
-            'status' => 'active',
-            'reserved_at' => now(),
-        ]);
+        $reservationData = [
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'notes' => $request->notes,
+        ];
 
-        // Update product status to reserved
-        $product->update(['status' => 'reserved']);
+        try {
+            // Send email to the provided email address
+            \Mail::to($request->email)->send(new \App\Mail\ProductReservationMail($product, $reservationData));
+
+            // Create reservation record
+            \App\Models\ProductReservation::create([
+                'user_id' => Auth::id(),
+                'product_id' => $product->id,
+                'status' => 'active',
+                'reserved_at' => now(),
+                'reservation_data' => json_encode($reservationData) // Store the form data
+            ]);
+
+            // Update product status to reserved
+            $product->update(['status' => 'reserved']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reservation request sent successfully! The seller will contact you soon.'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send reservation email: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send reservation request. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Make product available again (for product owners)
+     */
+    public function makeAvailable($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Check if user is the owner of the product
+        if ($product->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to perform this action.'
+            ], 403);
+        }
+
+        // Update product status to available and ensure stock > 0
+        $product->update([
+            'status' => 'available',
+            'stock' => max($product->stock, 1) // Ensure stock is at least 1
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Product reserved successfully!'
+            'message' => 'Product is now available for purchase!'
+        ]);
+    }
+
+    /**
+     * Cancel a reservation
+     */
+    public function cancelReservation($id)
+    {
+        $reservation = \App\Models\ProductReservation::findOrFail($id);
+
+        // Check if user owns this reservation
+        if ($reservation->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to perform this action.'
+            ], 403);
+        }
+
+        // Update reservation status to cancelled
+        $reservation->update(['status' => 'cancelled']);
+
+        // Update product status back to available
+        $reservation->product->update(['status' => 'available']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reservation cancelled successfully!'
         ]);
     }
 
