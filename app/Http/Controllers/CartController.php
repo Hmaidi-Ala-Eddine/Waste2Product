@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartItem;
+use App\Models\Cart;
 use App\Models\Product;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -40,19 +40,22 @@ class CartController extends Controller
         }
 
         // Check if user already has this product in cart
-        $cartItem = CartItem::where('user_id', Auth::id())
-                            ->where('product_id', $productId)
-                            ->first();
+        $cartItem = Cart::where('user_id', Auth::id())
+                        ->where('product_id', $productId)
+                        ->first();
 
         if ($cartItem) {
             // Update quantity
             $cartItem->increment('quantity', $request->get('quantity', 1));
+            $cartItem->update(['total_price' => $cartItem->product->price * $cartItem->quantity]);
         } else {
             // Create new cart item
-            CartItem::create([
+            Cart::create([
                 'user_id' => Auth::id(),
                 'product_id' => $productId,
                 'quantity' => $request->get('quantity', 1),
+                'price' => $product->price,
+                'total_price' => $product->price * $request->get('quantity', 1),
             ]);
         }
 
@@ -68,7 +71,7 @@ class CartController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $cartItem = CartItem::where('id', $id)
+        $cartItem = Cart::where('id', $id)
                             ->where('user_id', Auth::id())
                             ->firstOrFail();
 
@@ -76,7 +79,10 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1|max:10'
         ]);
 
-        $cartItem->update(['quantity' => $request->quantity]);
+        $cartItem->update([
+            'quantity' => $request->quantity,
+            'total_price' => $cartItem->product->price * $request->quantity
+        ]);
 
         return response()->json([
             'success' => true,
@@ -91,7 +97,7 @@ class CartController extends Controller
      */
     public function remove($id)
     {
-        $cartItem = CartItem::where('id', $id)
+        $cartItem = Cart::where('id', $id)
                             ->where('user_id', Auth::id())
                             ->firstOrFail();
 
