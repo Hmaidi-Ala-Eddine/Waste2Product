@@ -1,0 +1,22 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - routes
+        - config
+        - database
+
+    level: 5
+
+    ignoreErrors:
+        - '#Unsafe usage of new static#'
+
+    excludePaths:
+        - storage
+        - bootstrap/cache
+        - node_modules
+
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false

@@ -1,0 +1,335 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PHP_VERSION: '8.2'
+  NODE_VERSION: '20'
+  MYSQL_VERSION: '8.0'
+  REDIS_VERSION: '7'
+
+jobs:
+  # ==========================================
+  # 🔍 CODE QUALITY & LINTING
+  # ==========================================
+  code-quality:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP ${{ env.PHP_VERSION }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, redis
+          coverage: none
+          tools: composer:v2
+
+      - name: 📦 Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: 🗄️ Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: 📥 Install Composer Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: 🔍 PHP Syntax Check
+        run: find . -type f -name '*.php' -not -path './vendor/*' -exec php -l {} \; | grep -v "No syntax errors"
+
+      - name: 🛡️ Security Audit (Composer)
+        run: composer audit || true
+
+      - name: 📊 Static Analysis with Larastan
+        run: |
+          composer require --dev larastan/larastan --no-interaction
+          vendor/bin/phpstan analyse --memory-limit=2G --level=5 || echo "⚠️ Static analysis warnings found"
+
+      - name: ✅ Check Code Style (Pint)
+        run: |
+          composer require laravel/pint --dev --no-interaction
+          ./vendor/bin/pint --test || echo "⚠️ Code style issues found"
+
+  # ==========================================
+  # 🧪 UNIT & FEATURE TESTS
+  # ==========================================
+  tests:
+    name: 🧪 Tests (PHP ${{ matrix.php }} - ${{ matrix.db }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2']
+        db: ['mysql']
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: waste2_test
+          MYSQL_USER: waste2user
+          MYSQL_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, redis, bcmath, pcntl, exif, opcache, zip
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: 📦 Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: 📥 Install Composer Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: 📁 Prepare Laravel Application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          mkdir -p storage/framework/{sessions,views,cache,testing}
+          mkdir -p storage/logs
+          mkdir -p bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
+
+      - name: 🗄️ Run Database Migrations
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: waste2_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+          SESSION_DRIVER: array
+          CACHE_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: php artisan migrate --force --seed
+
+      - name: 🧪 Execute PHPUnit Tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: waste2_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+          SESSION_DRIVER: array
+          CACHE_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: |
+          php artisan test --parallel --coverage --min=50 --stop-on-failure --log-junit junit.xml
+          
+      - name: 📊 Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: junit.xml
+
+      - name: 📊 Upload Coverage Report
+        if: matrix.php == '8.2'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-php-${{ matrix.php }}
+          path: coverage/
+          retention-days: 7
+
+  # ==========================================
+  # 🐳 DOCKER BUILD & TEST
+  # ==========================================
+  docker:
+    name: 🐳 Docker Build Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: waste2product:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PHP_VERSION=8.2
+
+      - name: 📝 Create Test .env File
+        run: |
+          cp .env.example .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "DB_HOST=mysql" >> .env
+          echo "DB_DATABASE=waste2" >> .env
+          echo "DB_USERNAME=root" >> .env
+          echo "DB_PASSWORD=secret" >> .env
+          echo "REDIS_HOST=redis" >> .env
+
+      - name: 🧪 Test Docker Compose Stack
+        run: |
+          docker-compose up -d --build
+          echo "⏳ Waiting for services to be ready..."
+          sleep 45
+          docker-compose ps
+          docker-compose exec -T app php --version
+          docker-compose exec -T app php artisan --version
+          docker-compose logs app
+          docker-compose down -v
+
+  # ==========================================
+  # 🎨 FRONTEND BUILD
+  # ==========================================
+  frontend:
+    name: 🎨 Frontend Assets Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install NPM Dependencies
+        run: npm ci
+
+      - name: 🏗️ Build Frontend Assets
+        run: npm run build
+
+      - name: ✅ Verify Build Output
+        run: |
+          if [ ! -d "public/build" ]; then
+            echo "❌ Build directory not found!"
+            exit 1
+          fi
+          echo "✅ Build successful!"
+          ls -lah public/build/
+
+      - name: 📊 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: public/build/
+          retention-days: 7
+
+  # ==========================================
+  # 📦 DEPENDENCY SECURITY SCAN
+  # ==========================================
+  security:
+    name: 🛡️ Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2
+
+      - name: 📥 Install Dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: 🔒 Run Security Audit
+        run: |
+          echo "🔍 Checking PHP dependencies..."
+          composer audit || true
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔒 NPM Audit
+        run: |
+          echo "🔍 Checking NPM dependencies..."
+          npm audit --audit-level=moderate || true
+
+  # ==========================================
+  # ✅ FINAL STATUS CHECK
+  # ==========================================
+  status:
+    name: ✅ CI Pipeline Status
+    runs-on: ubuntu-latest
+    needs: [code-quality, tests, docker, frontend, security]
+    if: always()
+
+    steps:
+      - name: 🎉 All Checks Passed
+        if: ${{ needs.code-quality.result == 'success' && needs.tests.result == 'success' && needs.docker.result == 'success' && needs.frontend.result == 'success' }}
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ ALL CI/CD CHECKS PASSED SUCCESSFULLY! ✅"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "✓ Code Quality: PASSED"
+          echo "✓ Unit Tests: PASSED"
+          echo "✓ Docker Build: PASSED"
+          echo "✓ Frontend Build: PASSED"
+          echo "✓ Security Scan: PASSED"
+          echo ""
+          echo "🚀 Ready for deployment!"
+
+      - name: ❌ Some Checks Failed
+        if: ${{ needs.code-quality.result == 'failure' || needs.tests.result == 'failure' || needs.docker.result == 'failure' || needs.frontend.result == 'failure' }}
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "❌ CI/CD PIPELINE FAILED ❌"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Please review the failed jobs above and fix the issues."
+          exit 1

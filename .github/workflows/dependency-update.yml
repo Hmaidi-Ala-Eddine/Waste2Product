@@ -1,0 +1,53 @@
+name: 📦 Dependency Updates Check
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Every Monday at midnight
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  update-dependencies:
+    name: 🔄 Check for Dependency Updates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: 📦 Check Composer Outdated Packages
+        run: |
+          composer install
+          composer outdated --direct || true
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Check NPM Outdated Packages
+        run: |
+          npm install
+          npm outdated || true
+
+      - name: 📊 Generate Update Report
+        run: |
+          echo "## 📦 Dependency Update Report" > update-report.md
+          echo "" >> update-report.md
+          echo "### PHP Dependencies (Composer)" >> update-report.md
+          composer outdated --direct >> update-report.md || true
+          echo "" >> update-report.md
+          echo "### JavaScript Dependencies (NPM)" >> update-report.md
+          npm outdated >> update-report.md || true
+
+      - name: 📤 Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-update-report
+          path: update-report.md
+          retention-days: 30
