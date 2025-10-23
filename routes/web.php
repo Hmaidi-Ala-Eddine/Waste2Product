@@ -245,17 +245,22 @@ Route::get('/eco-ideas/{ecoIdea}', [\App\Http\Controllers\EcoIdeaController::cla
 
 // Eco Ideas interaction routes (Authenticated Users Only)
 Route::middleware('auth')->group(function () {
+    Route::post('/eco-ideas/store', [\App\Http\Controllers\EcoIdeaController::class, 'frontendStore'])->name('front.eco-ideas.store');
     Route::post('/eco-ideas/{ecoIdea}/like', [\App\Http\Controllers\EcoIdeaController::class, 'likeIdea'])->name('front.eco-ideas.like');
     Route::post('/eco-ideas/{ecoIdea}/apply', [\App\Http\Controllers\EcoIdeaController::class, 'applyToIdea'])->name('front.eco-ideas.apply');
     Route::post('/eco-ideas/{ecoIdea}/review', [\App\Http\Controllers\EcoIdeaController::class, 'addReview'])->name('front.eco-ideas.review');
     Route::delete('/eco-ideas/review/{interaction}', [\App\Http\Controllers\EcoIdeaController::class, 'deleteReview'])->name('front.eco-ideas.review.delete');
     
-    // Eco Ideas Dashboard & Project Management
-    Route::get('/eco-ideas-dashboard', [\App\Http\Controllers\EcoIdeaController::class, 'dashboard'])->name('front.eco-ideas.dashboard');
-    Route::post('/eco-ideas-dashboard/create', [\App\Http\Controllers\EcoIdeaController::class, 'createFromDashboard'])->name('front.eco-ideas.dashboard.create');
+    // Eco Ideas Dashboard - DEPRECATED - Redirect to main eco-ideas page
+    Route::get('/eco-ideas-dashboard', function() {
+        return redirect()->route('front.eco-ideas')->with('info', 'Dashboard functionality is now integrated into the main Eco Ideas page!');
+    })->name('front.eco-ideas.dashboard');
+    
+    // Project Management Routes (Still needed for managing projects)
     Route::get('/eco-ideas-dashboard/{ecoIdea}/manage', [\App\Http\Controllers\EcoIdeaController::class, 'manageProject'])->name('front.eco-ideas.dashboard.manage');
     Route::put('/eco-ideas-dashboard/{ecoIdea}/update', [\App\Http\Controllers\EcoIdeaController::class, 'updateFromDashboard'])->name('front.eco-ideas.dashboard.update');
     Route::delete('/eco-ideas-dashboard/{ecoIdea}/delete', [\App\Http\Controllers\EcoIdeaController::class, 'deleteFromDashboard'])->name('front.eco-ideas.dashboard.delete');
+    Route::post('/eco-ideas-dashboard/{ecoIdea}/mark-completed', [\App\Http\Controllers\EcoIdeaController::class, 'markAsCompleted'])->name('front.eco-ideas.dashboard.mark-completed');
     
     // Application Management
     Route::get('/eco-ideas-dashboard/{ecoIdea}/applications', [\App\Http\Controllers\EcoIdeaController::class, 'getApplications'])->name('front.eco-ideas.dashboard.applications');
@@ -274,6 +279,9 @@ Route::middleware('auth')->group(function () {
     // Chat Room
     Route::get('/eco-ideas-dashboard/{ecoIdea}/messages', [\App\Http\Controllers\EcoIdeaController::class, 'getMessages'])->name('front.eco-ideas.dashboard.messages');
     Route::post('/eco-ideas-dashboard/{ecoIdea}/messages', [\App\Http\Controllers\EcoIdeaController::class, 'sendMessage'])->name('front.eco-ideas.dashboard.messages.send');
+    
+    // Certificate Download
+    Route::get('/eco-ideas/{ecoIdea}/certificate', [\App\Http\Controllers\EcoIdeaController::class, 'downloadCertificate'])->name('front.eco-ideas.certificate.download');
 });
 
 // Frontend Events Routes - Public viewing, Auth required for interactions

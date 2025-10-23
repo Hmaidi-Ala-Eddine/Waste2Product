@@ -56,7 +56,7 @@ class EcoIdeaController extends Controller
             'team_requirements' => 'sometimes|nullable|array',
             'team_size_needed' => 'sometimes|nullable|integer',
             'application_description' => 'sometimes|nullable|string',
-            'project_status' => 'sometimes|in:idea,recruiting,in_progress,completed,verified,donated',
+            'project_status' => 'sometimes|in:recruiting,in_progress,completed,verified,donated',
             'final_description' => 'sometimes|nullable|string',
             'impact_metrics' => 'sometimes|nullable|array',
             'donated_to_ngo' => 'sometimes|boolean',
@@ -171,7 +171,7 @@ class EcoIdeaController extends Controller
             'team_size_needed' => 'nullable|integer|min:1|max:20',
             'team_requirements' => 'nullable|string',
             'application_description' => 'nullable|string',
-            'project_status' => 'nullable|in:idea,recruiting,in_progress,completed,verified,donated',
+            'project_status' => 'nullable|in:recruiting,in_progress,completed,verified,donated',
             'final_description' => 'nullable|string',
             'impact_metrics' => 'nullable|array',
         ]);
@@ -240,6 +240,15 @@ class EcoIdeaController extends Controller
 
         $donatedToNgo = $data['donated_to_ngo'] === '1';
 
+        // Check if all tasks are completed before verifying
+        $totalTasks = $idea->tasks()->count();
+        $completedTasks = $idea->tasks()->where('status', 'completed')->count();
+        
+        if ($totalTasks > 0 && $completedTasks !== $totalTasks) {
+            return redirect()->route('admin.eco-ideas')
+                ->with('error', 'Cannot verify project: All tasks must be completed first! (' . $completedTasks . '/' . $totalTasks . ' completed)');
+        }
+
         $idea->update([
             'project_status' => 'verified',
             'final_description' => $data['final_description'],
@@ -301,8 +310,10 @@ class EcoIdeaController extends Controller
             'donated_to_ngo' => false,
             'ngo_name' => null,
             'verification_date' => null,
-            'project_status' => 'completed', // Reset to completed status
         ]);
+        
+        // Set status based on team size and task completion
+        $this->updateProjectStatus($idea);
 
         return response()->json(['message' => 'Verification deleted successfully']);
     }
@@ -312,9 +323,11 @@ class EcoIdeaController extends Controller
         $idea = EcoIdea::findOrFail($id);
         
         $idea->update([
-            'project_status' => 'completed',
             'verification_date' => null,
         ]);
+        
+        // Set status based on team size and task completion
+        $this->updateProjectStatus($idea);
 
         return redirect()->route('admin.eco-ideas')->with('success', 'Verification removed successfully!');
     }
@@ -333,12 +346,83 @@ class EcoIdeaController extends Controller
             \Log::info("Updated {$updated} EcoIdeas to approved status");
         }
         
+        // Get all approved eco-ideas for main view
         $ideas = EcoIdea::with(['creator', 'team', 'applications', 'interactions'])
             ->where('status', 'approved')
             ->orderByDesc('created_at')
-            ->paginate(12);
+            ->get();
+        
+        // Get user-specific data if authenticated
+        $myProjects = collect();
+        $joinedProjects = collect();
+        $myApplications = collect();
+        
+        if (auth()->check()) {
+            $myProjects = EcoIdea::where('creator_id', auth()->id())
+                ->withCount(['applications' => function($query) {
+                    $query->where('status', 'pending');
+                }])
+                ->withCount('team')
+                ->withCount('tasks')
+                ->latest()
+                ->get();
 
-        return view('front.pages.eco-ideas', compact('ideas'));
+            $joinedProjects = EcoIdea::whereHas('team', function($query) {
+                    $query->where('user_id', auth()->id());
+                })
+                ->where('creator_id', '!=', auth()->id())
+                ->with(['creator', 'team', 'tasks'])
+                ->withCount('team')
+                ->withCount('tasks')
+                ->latest()
+                ->get();
+            
+            $myApplications = \App\Models\EcoIdeaApplication::where('user_id', auth()->id())
+                ->with(['ecoIdea.creator'])
+                ->latest()
+                ->get();
+        }
+
+        return view('front.pages.eco-ideas', compact('ideas', 'myProjects', 'joinedProjects', 'myApplications'));
+    }
+
+    public function frontendStore(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'waste_type' => 'required|in:organic,plastic,metal,e-waste,paper,glass,textile,mixed',
+            'difficulty_level' => 'required|in:easy,medium,hard',
+            'team_size_needed' => 'nullable|integer|min:1',
+            'team_requirements' => 'nullable|string',
+            'application_description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('eco-ideas', 'public');
+            $validated['image_path'] = $imagePath;
+        }
+
+        // Set creator and default values
+        $validated['creator_id'] = auth()->id();
+        $validated['status'] = 'pending'; // Admin approval required
+        
+        // Automatic project_status based on team size
+        // Creator counts as 1 member, so if team_size_needed > 1, we need more members (recruiting)
+        $teamSizeNeeded = $validated['team_size_needed'] ?? 1;
+        if ($teamSizeNeeded > 1) {
+            $validated['project_status'] = 'recruiting'; // Need more team members
+        } else {
+            $validated['project_status'] = 'in_progress'; // Solo project or team complete
+        }
+
+        // Create the eco idea
+        $ecoIdea = EcoIdea::create($validated);
+
+        return redirect()->route('front.eco-ideas')
+            ->with('success', 'Eco idea created successfully! It will be reviewed by admin.');
     }
 
     public function frontendShow(EcoIdea $ecoIdea)
@@ -361,7 +445,15 @@ class EcoIdeaController extends Controller
                 ->exists();
         }
 
-        return view('front.pages.eco-idea-details', compact('ecoIdea', 'hasApplied', 'hasLiked'));
+        // Check if user is a team member
+        $isTeamMember = false;
+        if (auth()->check()) {
+            $isTeamMember = $ecoIdea->team()
+                ->where('user_id', auth()->id())
+                ->exists();
+        }
+
+        return view('front.pages.eco-idea-details', compact('ecoIdea', 'hasApplied', 'hasLiked', 'isTeamMember'));
     }
 
     public function applyToIdea(Request $request, EcoIdea $ecoIdea)
@@ -373,6 +465,25 @@ class EcoIdeaController extends Controller
         // Prevent creator from applying to their own idea
         if ($ecoIdea->creator_id === auth()->id()) {
             return back()->with('error', 'You cannot apply to your own eco idea.');
+        }
+
+        // Prevent team members from applying (they're already in the team!)
+        $isTeamMember = $ecoIdea->team()->where('user_id', auth()->id())->exists();
+        if ($isTeamMember) {
+            return back()->with('error', 'You are already a team member of this project!');
+        }
+
+        // Check if the project is open for recruitment (using project_status)
+        if ($ecoIdea->project_status !== 'recruiting') {
+            return back()->with('error', 'This eco idea is not currently accepting applications. Recruitment is closed.');
+        }
+
+        // Check if team is full (include owner in count)
+        $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+        $teamSizeNeeded = $ecoIdea->team_size_needed ?? 0;
+        
+        if ($teamSizeNeeded > 0 && $currentTeamCount >= $teamSizeNeeded) {
+            return back()->with('error', "This team is full! All positions have been filled ({$currentTeamCount}/{$teamSizeNeeded} members including owner).");
         }
 
         $data = $request->validate([
@@ -387,10 +498,6 @@ class EcoIdeaController extends Controller
 
         if ($existingApplication) {
             return back()->with('error', 'You have already applied for this idea. Please wait for a response.');
-        }
-
-        if ($ecoIdea->project_status !== 'recruiting' && $ecoIdea->project_status !== 'idea') {
-            return back()->with('error', 'This idea is no longer accepting applications.');
         }
 
         // Handle resume upload
@@ -458,6 +565,9 @@ class EcoIdeaController extends Controller
     public function addReview(Request $request, EcoIdea $ecoIdea)
     {
         if (!auth()->check()) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Please login to add a review.'], 401);
+            }
             return redirect()->route('front.login')->with('error', 'Please login to add a review.');
         }
 
@@ -465,11 +575,27 @@ class EcoIdeaController extends Controller
             'content' => 'required|string|max:1000',
         ]);
 
-        $ecoIdea->interactions()->create([
+        $interaction = $ecoIdea->interactions()->create([
             'user_id' => auth()->id(),
             'type' => 'comment',
             'content' => $data['content'],
         ]);
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            $user = auth()->user();
+            return response()->json([
+                'success' => true,
+                'message' => 'Review posted successfully!',
+                'review' => [
+                    'id' => $interaction->id,
+                    'user_name' => $user->name,
+                    'user_avatar' => $user->profile_picture_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=10b981&color=fff',
+                    'review_text' => $interaction->content,
+                    'created_at' => $interaction->created_at->diffForHumans(),
+                ]
+            ]);
+        }
 
         return back()->with('success', 'Your review has been posted successfully!');
     }
@@ -510,8 +636,16 @@ class EcoIdeaController extends Controller
      */
     public function dashboard()
     {
-        // Get eco ideas created by the user
-        $userIdeas = EcoIdea::where('creator_id', auth()->id())
+        // Get ALL approved eco ideas for discovery
+        $allIdeas = EcoIdea::where('status', 'approved')
+            ->with(['creator', 'team'])
+            ->withCount('team')
+            ->withCount('tasks')
+            ->latest()
+            ->get();
+        
+        // Get eco ideas created by the user (My Projects)
+        $myProjects = EcoIdea::where('creator_id', auth()->id())
             ->withCount(['applications' => function($query) {
                 $query->where('status', 'pending');
             }])
@@ -520,18 +654,24 @@ class EcoIdeaController extends Controller
             ->latest()
             ->get();
 
-        // Get eco ideas the user has joined as a team member (excluding their own created ideas)
-        $joinedIdeas = EcoIdea::whereHas('team', function($query) {
+        // Get eco ideas the user has joined as a team member (Joined Projects)
+        $joinedProjects = EcoIdea::whereHas('team', function($query) {
                 $query->where('user_id', auth()->id());
             })
-            ->where('creator_id', '!=', auth()->id()) // Exclude ideas created by the user
+            ->where('creator_id', '!=', auth()->id())
             ->with(['creator', 'team', 'tasks'])
             ->withCount('team')
             ->withCount('tasks')
             ->latest()
             ->get();
+        
+        // Get user's applications
+        $myApplications = \App\Models\EcoIdeaApplication::where('user_id', auth()->id())
+            ->with(['ecoIdea.creator'])
+            ->latest()
+            ->get();
 
-        return view('front.pages.eco-ideas-dashboard', compact('userIdeas', 'joinedIdeas'));
+        return view('front.pages.eco-ideas-dashboard', compact('allIdeas', 'myProjects', 'joinedProjects', 'myApplications'));
     }
 
     /**
@@ -552,8 +692,18 @@ class EcoIdeaController extends Controller
         ]);
 
         $data['creator_id'] = auth()->id();
-        $data['project_status'] = 'idea';
         $data['status'] = 'approved'; // Auto-approve user-created ideas
+        
+        // Smart auto-status: No team needed = in_progress, Team needed = recruiting
+        // team_size_needed includes the owner (e.g., if owner wants 2 more people, they enter 3)
+        $teamSizeNeeded = $data['team_size_needed'] ?? 0;
+        if ($teamSizeNeeded > 1) { // >1 means owner needs additional members
+            $data['project_status'] = 'recruiting';
+            $data['is_recruiting'] = true;
+        } else {
+            $data['project_status'] = 'in_progress';
+            $data['is_recruiting'] = false;
+        }
         
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('eco-ideas', 'public');
@@ -610,18 +760,30 @@ class EcoIdeaController extends Controller
             abort(403);
         }
 
+        // Get current team count (including owner)
+        $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'waste_type' => 'required|in:organic,plastic,metal,e-waste,paper,glass,textile,mixed',
             'difficulty_level' => 'required|in:easy,medium,hard',
-            'project_status' => 'required|in:idea,recruiting,in_progress,completed,verified',
             'team_size_needed' => 'nullable|integer|min:1',
-            'is_recruiting' => 'boolean',
             'team_requirements' => 'nullable|string',
             'application_description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
+        
+        // Note: project_status is NOT included - it's managed automatically by the system
+
+        // Validate team_size_needed (must include the owner)
+        if (isset($data['team_size_needed'])) {
+            if ($data['team_size_needed'] < $currentTeamCount) {
+                return back()->withErrors([
+                    'team_size_needed' => "Team size cannot be less than current team members ({$currentTeamCount}). You currently have {$currentTeamCount} member(s) including yourself as the owner."
+                ])->withInput();
+            }
+        }
 
         if ($request->hasFile('image')) {
             if ($ecoIdea->image_path) {
@@ -631,6 +793,9 @@ class EcoIdeaController extends Controller
         }
 
         $ecoIdea->update($data);
+
+        // Auto-update project status based on team size and task completion
+        $this->updateProjectStatus($ecoIdea);
 
         return back()->with('success', 'Eco idea updated successfully!');
     }
@@ -693,7 +858,18 @@ class EcoIdeaController extends Controller
             'joined_at' => now(),
         ]);
 
-        return back()->with('success', 'Application accepted! Member added to team.');
+        // Auto-update project status based on team size
+        $this->updateProjectStatus($ecoIdea);
+
+        $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+        $teamSizeNeeded = $ecoIdea->team_size_needed ?? 0;
+
+        $message = 'Application accepted! Member added to team.';
+        if ($currentTeamCount >= $teamSizeNeeded && $teamSizeNeeded > 0) {
+            $message .= " Team is now full ({$currentTeamCount}/{$teamSizeNeeded}) - project status changed to In Progress.";
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -731,7 +907,45 @@ class EcoIdeaController extends Controller
 
         $teamMember->delete();
 
-        return back()->with('success', 'Team member removed successfully. They can now reapply if needed.');
+        // Auto-update project status based on team size and task completion
+        $this->updateProjectStatus($ecoIdea);
+
+        $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+        $teamSizeNeeded = $ecoIdea->team_size_needed ?? 0;
+        $spotsAvailable = max(0, $teamSizeNeeded - $currentTeamCount);
+        
+        $message = 'Team member removed successfully. They can now reapply if needed.';
+        if ($currentTeamCount < $teamSizeNeeded) {
+            $message .= " Recruitment reopened ({$currentTeamCount}/{$teamSizeNeeded}) - {$spotsAvailable} spot(s) available.";
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Mark project as completed (owner only, requires all tasks done)
+     */
+    public function markAsCompleted(EcoIdea $ecoIdea)
+    {
+        if ($ecoIdea->creator_id !== auth()->id()) {
+            abort(403, 'Only the project creator can mark it as completed.');
+        }
+
+        // Check if all tasks are completed
+        $totalTasks = $ecoIdea->tasks()->count();
+        $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
+
+        if ($totalTasks === 0) {
+            return back()->with('error', 'Cannot mark as completed: No tasks have been created yet.');
+        }
+
+        if ($completedTasks !== $totalTasks) {
+            return back()->with('error', "Cannot mark as completed: {$completedTasks}/{$totalTasks} tasks completed. All tasks must be completed first.");
+        }
+
+        $ecoIdea->update(['project_status' => 'completed']);
+
+        return back()->with('success', 'Project marked as completed! Waiting for Waste2Product verification.');
     }
 
     /**
@@ -783,6 +997,9 @@ class EcoIdeaController extends Controller
 
             $task = \App\Models\EcoIdeaTask::create($data);
 
+            // Auto-update project status based on team size and task completion
+            $this->updateProjectStatus($ecoIdea);
+
             return response()->json($task->load('assignedUser'));
             
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -826,6 +1043,9 @@ class EcoIdeaController extends Controller
 
         $task->update($data);
 
+        // Auto-update project status based on team size and task completion
+        $this->updateProjectStatus($ecoIdea);
+
         return response()->json($task->load('assignedUser'));
     }
 
@@ -846,6 +1066,9 @@ class EcoIdeaController extends Controller
         }
 
         $task->delete();
+
+        // Auto-update project status based on team size and task completion
+        $this->updateProjectStatus($ecoIdea);
 
         return response()->json(['message' => 'Task deleted successfully']);
     }
@@ -898,4 +1121,71 @@ class EcoIdeaController extends Controller
 
         return response()->json($message->load('user'));
     }
+
+    /**
+     * Automatically update project status based on team size and task completion
+     * Status Logic:
+     * - recruiting: Team is not full (current team < team_size_needed)
+     * - in_progress: Team is full but not all tasks are completed
+     * - completed: Team is full AND all tasks are completed
+     */
+    private function updateProjectStatus(EcoIdea $ecoIdea)
+    {
+        // Count current team members (including owner)
+        $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+        $teamSizeNeeded = $ecoIdea->team_size_needed ?? 1;
+        
+        // Check if team is full
+        $teamIsFull = $currentTeamCount >= $teamSizeNeeded;
+        
+        // Count tasks
+        $totalTasks = $ecoIdea->tasks()->count();
+        $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
+        $allTasksCompleted = $totalTasks > 0 && $completedTasks === $totalTasks;
+        
+        // Determine new status
+        $newStatus = 'recruiting'; // Default
+        
+        if (!$teamIsFull) {
+            // Team not full - recruiting
+            $newStatus = 'recruiting';
+        } elseif ($teamIsFull && $allTasksCompleted) {
+            // Team full AND all tasks completed - completed
+            $newStatus = 'completed';
+        } elseif ($teamIsFull) {
+            // Team full but tasks not all completed - in progress
+            $newStatus = 'in_progress';
+        }
+        
+        // Only update if status has changed (to avoid unnecessary database writes)
+        if ($ecoIdea->project_status !== $newStatus) {
+            $ecoIdea->update(['project_status' => $newStatus]);
+        }
+    }
+
+    /**
+     * Download completion certificate for verified/completed projects
+     */
+    public function downloadCertificate(EcoIdea $ecoIdea)
+    {
+        // Check if user is owner or team member
+        $isOwner = auth()->id() === $ecoIdea->creator_id;
+        $isTeamMember = $ecoIdea->team()->where('user_id', auth()->id())->exists();
+        
+        if (!$isOwner && !$isTeamMember) {
+            abort(403, 'You must be a project owner or team member to download the certificate.');
+        }
+
+        // Check if project is completed or verified
+        if (!in_array($ecoIdea->project_status, ['completed', 'verified'])) {
+            return back()->with('error', 'Certificates are only available for completed or verified projects.');
+        }
+
+        // Return a printable HTML certificate
+        $user = auth()->user();
+        $isVerified = $ecoIdea->project_status === 'verified';
+        
+        return view('front.certificates.eco-idea', compact('ecoIdea', 'user', 'isVerified'));
+    }
 }
+
