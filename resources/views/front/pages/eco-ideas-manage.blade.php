@@ -4,58 +4,68 @@
 
 @push('styles')
 <style>
-    .manage-wrapper { display: flex; min-height: 100vh; background: #f9fafb; padding-top: 80px; }
-    .sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; position: fixed; top: 80px; bottom: 0; overflow-y: auto; padding: 30px 0; }
-    .sidebar-header { padding: 0 25px 25px; border-bottom: 1px solid #e5e7eb; }
-    .project-title { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 10px; }
-    .project-status { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    /* FORCE DARK NAVBAR TEXT */
+    .navbar-nav > li > a,
+    .navbar-brand,
+    .attr-nav > ul > li > a {
+        color: #2c3e50 !important;
+        text-shadow: none !important;
+    }
+
+    .manage-wrapper { display: flex; gap: 20px; min-height: 100vh; background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 30%, #ecfdf5 60%, #d1fae5 100%); padding: 120px 20px 60px; margin-top: 0; max-width: 1600px; margin-left: auto; margin-right: auto; }
+    .sidebar { width: 240px; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: sticky; top: 100px; height: calc(100vh - 120px); align-self: flex-start; overflow-y: auto; padding: 20px 0; flex-shrink: 0; }
+    .sidebar-header { padding: 0 16px 16px; border-bottom: 1px solid #e5e7eb; }
+    .project-title { font-size: 15px; font-weight: 700; color: #1a202c; margin-bottom: 8px; }
+    .project-status { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
     .status-idea { background: #dbeafe; color: #1e40af; }
     .status-recruiting { background: #d1fae5; color: #065f46; }
     .status-in_progress { background: #fed7aa; color: #9a3412; }
     .status-completed { background: #bbf7d0; color: #166534; }
-    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 25px; color: #6b7280; text-decoration: none; transition: all 0.2s ease; cursor: pointer; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; color: #6b7280; text-decoration: none; transition: all 0.2s ease; cursor: pointer; font-size: 13px; }
     .nav-item:hover { background: #f3f4f6; color: #10b981; }
     .nav-item.active { background: #f0fdf4; color: #10b981; border-right: 3px solid #10b981; font-weight: 700; }
-    .nav-badge { margin-left: auto; background: #ef4444; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; }
-    .main-content { margin-left: 280px; flex: 1; padding: 30px; }
+    .nav-badge { margin-left: auto; background: #ef4444; color: white; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+    .nav-item i { font-size: 14px; }
+    .main-content { flex: 1; padding: 0; min-width: 0; max-width: 1200px; }
     .content-section { display: none; }
-    .content-section.active { display: block; }
-    .section { background: white; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
-    .section-title { font-size: 20px; font-weight: 700; color: #1a202c; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-    .stat-card { text-align: center; padding: 20px; border-radius: 12px; }
-    .stat-icon { font-size: 32px; margin-bottom: 10px; }
-    .stat-value { font-size: 24px; font-weight: 800; color: #1a202c; }
-    .stat-label { font-size: 14px; color: #6b7280; }
-    .applications-table { width: 100%; border-collapse: collapse; }
-    .applications-table th { text-align: left; padding: 12px; background: #f9fafb; font-weight: 700; color: #6b7280; font-size: 13px; text-transform: uppercase; }
-    .applications-table td { padding: 15px 12px; border-top: 1px solid #e5e7eb; }
-    .applicant-info { display: flex; align-items: center; gap: 12px; }
-    .applicant-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-    .btn-sm { padding: 6px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+    .content-section.active { display: block; width: 100%; }
+    .section { background: white; border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); width: 100%; box-sizing: border-box; }
+    .section-title { font-size: 17px; font-weight: 700; color: #1a202c; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .section-title i { font-size: 16px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+    .stat-card { text-align: center; padding: 14px; border-radius: 10px; }
+    .stat-icon { font-size: 26px; margin-bottom: 8px; }
+    .stat-value { font-size: 20px; font-weight: 800; color: #1a202c; }
+    .stat-label { font-size: 12px; color: #6b7280; }
+    .applications-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .applications-table th { text-align: left; padding: 10px; background: #f9fafb; font-weight: 700; color: #6b7280; font-size: 11px; text-transform: uppercase; }
+    .applications-table td { padding: 12px 10px; border-top: 1px solid #e5e7eb; }
+    .applicant-info { display: flex; align-items: center; gap: 10px; }
+    .applicant-avatar { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+    .btn-sm { padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
     .btn-accept { background: #10b981; color: white; }
     .btn-accept:hover { background: #059669; }
     .btn-reject { background: #ef4444; color: white; }
     .btn-reject:hover { background: #dc2626; }
-    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-    .team-member-card { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; }
-    .member-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .btn-remove { width: 100%; background: #ef4444; color: white; padding: 8px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    .task-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .task-column { background: #f9fafb; border-radius: 12px; padding: 15px; min-height: 400px; }
-    .column-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #e5e7eb; }
-    .task-list { min-height: 300px; padding: 10px; border-radius: 8px; transition: background 0.2s ease; }
-    .task-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); cursor: grab; transition: all 0.2s ease; word-wrap: break-word; overflow-wrap: break-word; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .team-member-card { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 10px; padding: 14px; }
+    .member-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .btn-remove { width: 100%; background: #ef4444; color: white; padding: 7px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; }
+    .task-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .task-column { background: #f9fafb; border-radius: 10px; padding: 12px; min-height: 350px; }
+    .column-header { display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; font-size: 13px; font-weight: 700; }
+    .task-list { min-height: 250px; padding: 8px; border-radius: 8px; transition: background 0.2s ease; }
+    .task-card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); cursor: grab; transition: all 0.2s ease; word-wrap: break-word; overflow-wrap: break-word; font-size: 13px; }
     .task-card:active { cursor: grabbing; }
-    .priority-high { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-    .priority-medium { background: #fed7aa; color: #9a3412; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-    .priority-low { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-    .form-group { margin-bottom: 20px; }
-    .form-label { display: block; font-weight: 600; color: #1a202c; margin-bottom: 8px; }
-    .form-input, .form-select, .form-textarea { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
-    .form-textarea { min-height: 100px; }
-    .submit-btn { padding: 14px 28px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-    .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
+    .priority-high { background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+    .priority-medium { background: #fed7aa; color: #9a3412; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+    .priority-low { background: #dbeafe; color: #1e40af; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 600; color: #1a202c; margin-bottom: 6px; font-size: 13px; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; }
+    .form-textarea { min-height: 80px; }
+    .submit-btn { padding: 11px 22px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; }
+    .empty-state { text-align: center; padding: 30px; color: #9ca3af; font-size: 14px; }
     @media (max-width: 768px) { 
         .sidebar { position: static; width: 100%; } 
         .main-content { margin-left: 0; } 
@@ -64,6 +74,29 @@
     }
     @media (max-width: 1024px) {
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* NASA-Style Animations */
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+    }
+    @keyframes float-slow {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @keyframes data-pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+    }
+    .animated-stat { animation: data-pulse 2s ease-in-out infinite; }
+    @keyframes loading-sweep {
+        0% { left: -100%; }
+        100% { left: 200%; }
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
     }
 </style>
 @endpush
@@ -87,40 +120,327 @@
             <a href="#" class="nav-item" data-section="team"><i class="fas fa-users"></i><span>Team Members</span></a>
             <a href="#" class="nav-item" data-section="tasks"><i class="fas fa-tasks"></i><span>Task Board</span></a>
             <a href="#" class="nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat Room</span></a>
+            
+            @if($ecoIdea->project_status === 'completed' || $ecoIdea->project_status === 'verified')
+                <a href="#" class="nav-item" data-section="certificate" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; margin: 10px 0;">
+                    <i class="fas fa-certificate" style="color: #ec4899;"></i>
+                    <span style="font-weight: 700; color: #9f1239;">Get Certificate</span>
+                    @if($ecoIdea->project_status === 'verified')
+                        <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 8px; font-size: 9px; margin-left: auto;">VERIFIED</span>
+                    @endif
+                </a>
+            @endif
+            
+            @if($isCreator && $ecoIdea->project_status === 'in_progress')
+                @php
+                    $totalTasks = $ecoIdea->tasks()->count();
+                    $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
+                    $allTasksCompleted = $totalTasks > 0 && $completedTasks === $totalTasks;
+                @endphp
+                @if($allTasksCompleted)
+                    <a href="#" class="nav-item completion-prompt" data-section="completion" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; margin: 10px 0; animation: glow 2s ease-in-out infinite; position: relative;">
+                        <i class="fas fa-star" style="color: #f59e0b;"></i>
+                        <span style="font-weight: 700; color: #92400e;">Mark Complete?</span>
+                        <span style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: pulse-dot 1.5s ease-in-out infinite;"></span>
+                    </a>
+                    <style>
+                        @keyframes glow {
+                            0%, 100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.3); }
+                            50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 0 30px rgba(245, 158, 11, 0.4); }
+                        }
+                        @keyframes pulse-dot {
+                            0%, 100% { transform: scale(1); opacity: 1; }
+                            50% { transform: scale(1.5); opacity: 0.5; }
+                        }
+                        .completion-prompt:hover {
+                            transform: translateX(5px);
+                            box-shadow: 0 0 25px rgba(245, 158, 11, 0.7) !important;
+                        }
+                    </style>
+                @endif
+            @endif
+            
             @if($isCreator)
                 <a href="#" class="nav-item" data-section="settings"><i class="fas fa-cog"></i><span>Settings</span></a>
             @endif
         </div>
-        <div style="padding: 0 25px;"><a href="{{ route('front.eco-ideas.dashboard') }}" class="btn-sm" style="display: block; text-align: center; background: #e5e7eb; color: #1a202c; text-decoration: none;"><i class="fas fa-arrow-left"></i> Back</a></div>
+        <div style="padding: 0 16px;"><a href="{{ route('front.eco-ideas') }}" class="btn-sm" style="display: block; text-align: center; background: #e5e7eb; color: #1a202c; text-decoration: none; padding: 8px;"><i class="fas fa-arrow-left"></i> Back</a></div>
     </div>
 
     <div class="main-content">
         @if(session('success'))
-            <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-bottom: 20px;"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
+            <div style="background: #d1fae5; color: #065f46; padding: 12px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
         @endif
 
         <!-- Overview -->
         <div class="content-section active" id="overview-section">
-            <div class="section">
-                <div class="stats-grid">
-                    <div class="stat-card" style="background: #f0fdf4;"><i class="fas fa-user-clock stat-icon" style="color: #10b981;"></i><div class="stat-value">{{ $ecoIdea->applications->where('status', 'pending')->count() }}</div><div class="stat-label">Pending Applications</div></div>
-                    <div class="stat-card" style="background: #eff6ff;"><i class="fas fa-users stat-icon" style="color: #3b82f6;"></i><div class="stat-value">{{ $ecoIdea->team->count() + 1 }}</div><div class="stat-label">Team Members</div></div>
-                    <div class="stat-card" style="background: #fef3c7;"><i class="fas fa-tasks stat-icon" style="color: #f59e0b;"></i><div class="stat-value">{{ $ecoIdea->tasks->count() }}</div><div class="stat-label">Total Tasks</div></div>
-                    <div class="stat-card" style="background: #fce7f3;"><i class="fas fa-heart stat-icon" style="color: #ec4899;"></i><div class="stat-value">{{ $ecoIdea->upvotes ?? 0 }}</div><div class="stat-label">Upvotes</div></div>
+            <!-- Mission Control Header -->
+            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 20px; padding: 35px; margin-bottom: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                <div style="position: relative; z-index: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="font-size: 28px; font-weight: 900; color: white; margin-bottom: 8px; letter-spacing: -0.5px;">
+                                <i class="fas fa-rocket" style="color: #10b981;"></i> PROJECT MISSION CONTROL
+                            </h2>
+                            <p style="color: #94a3b8; font-size: 14px; font-weight: 500;">Real-time Analytics & Performance Dashboard</p>
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.2); padding: 12px 20px; border-radius: 12px; border: 2px solid #10b981;">
+                            <div style="color: #6ee7b7; font-size: 12px; font-weight: 700; margin-bottom: 4px;">STATUS</div>
+                            <div style="color: white; font-size: 18px; font-weight: 900;">{{ strtoupper($ecoIdea->project_status) }}</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px;">
+                        <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 15px; border-radius: 10px;">
+                            <div style="color: #6ee7b7; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Applications</div>
+                            <div style="color: white; font-size: 24px; font-weight: 900;">{{ $ecoIdea->applications->where('status', 'pending')->count() }}</div>
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 15px; border-radius: 10px;">
+                            <div style="color: #93c5fd; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Team Size</div>
+                            <div style="color: white; font-size: 24px; font-weight: 900;">{{ $ecoIdea->team->count() + 1 }}/{{ $ecoIdea->team_size_needed ?? 'N/A' }}</div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 10px;">
+                            <div style="color: #fbbf24; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Total Tasks</div>
+                            <div style="color: white; font-size: 24px; font-weight: 900;">{{ $ecoIdea->tasks->count() }}</div>
+                        </div>
+                        <div style="background: rgba(236, 72, 153, 0.1); border-left: 4px solid #ec4899; padding: 15px; border-radius: 10px;">
+                            <div style="color: #f9a8d4; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Community</div>
+                            <div style="color: white; font-size: 24px; font-weight: 900;">{{ $ecoIdea->upvotes ?? 0 }} <span style="font-size: 14px;">❤️</span></div>
+                        </div>
+                    </div>
                 </div>
-                
-                @php
-                    $todoCount = $ecoIdea->tasks->where('status', 'todo')->count();
-                    $inProgressCount = $ecoIdea->tasks->where('status', 'in_progress')->count();
-                    $reviewCount = $ecoIdea->tasks->where('status', 'review')->count();
-                    $completedCount = $ecoIdea->tasks->where('status', 'completed')->count();
-                    $totalTasks = $ecoIdea->tasks->count();
-                    $completionPercent = $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100) : 0;
-                @endphp
-                
-                <!-- Task Progress Section -->
-                <div style="margin-top: 30px;">
-                    <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #1f2937;"><i class="fas fa-chart-pie" style="color: #10b981;"></i> Task Progress Overview</h3>
+            </div>
+
+            @php
+                $todoCount = $ecoIdea->tasks->where('status', 'todo')->count();
+                $inProgressCount = $ecoIdea->tasks->where('status', 'in_progress')->count();
+                $reviewCount = $ecoIdea->tasks->where('status', 'review')->count();
+                $completedCount = $ecoIdea->tasks->where('status', 'completed')->count();
+                $totalTasks = $ecoIdea->tasks->count();
+                $completionPercent = $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100) : 0;
+            @endphp
+
+            <!-- ADVANCED TASK ANALYTICS DASHBOARD -->
+            <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); border: 2px solid #10b981;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3 style="font-size: 24px; font-weight: 900; color: #1f2937; margin: 0;">
+                        <i class="fas fa-chart-line" style="color: #10b981;"></i> TASK PROGRESS ANALYTICS
+                    </h3>
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                        <span style="color: white; font-size: 22px; font-weight: 900;">{{ $completionPercent }}%</span>
+                        <span style="color: #d1fae5; font-size: 12px; margin-left: 8px;">COMPLETE</span>
+                    </div>
+                </div>
+
+                <!-- Animated Main Progress Bar -->
+                <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 20px; padding: 25px; margin-bottom: 25px; position: relative; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="position: absolute; top: 0; left: 0; width: {{ $completionPercent }}%; height: 100%; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.2) 100%); transition: width 2s ease;"></div>
+                    <div style="position: relative; z-index: 1;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <span style="font-size: 16px; font-weight: 800; color: #1f2937;"><i class="fas fa-rocket" style="color: #10b981;"></i> MISSION PROGRESS</span>
+                            <span style="font-size: 14px; font-weight: 700; color: #059669;">{{ $completedCount }} / {{ $totalTasks }} Tasks</span>
+                        </div>
+                        <div style="position: relative; background: #e5e7eb; border-radius: 50px; height: 28px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="position: absolute; top: 0; left: 0; height: 100%; width: {{ $completionPercent }}%; background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%); border-radius: 50px; transition: width 2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 12px rgba(16, 185, 129, 0.5); animation: shimmer 2s infinite linear;">
+                                <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%); animation: loading-sweep 2s infinite;"></div>
+                            </div>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 14px; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10;">{{ $completionPercent }}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Multi-Graph Layout -->
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px;">
+                    <!-- Left: Detailed Task Breakdown -->
+                    <div>
+                        <h4 style="font-size: 16px; font-weight: 800; color: #1f2937; margin-bottom: 18px;"><i class="fas fa-tasks" style="color: #3b82f6;"></i> Task Status Distribution</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <!-- To Do Card -->
+                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 15px; padding: 18px; border-left: 5px solid #f59e0b; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                        <div>
+                                            <div style="font-size: 11px; font-weight: 800; color: #92400e; letter-spacing: 1px;">TO DO</div>
+                                            <div style="font-size: 32px; font-weight: 900; color: #f59e0b; line-height: 1;">{{ $todoCount }}</div>
+                                        </div>
+                                        <div style="width: 45px; height: 45px; background: rgba(255,255,255,0.5); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-clipboard-list" style="font-size: 22px; color: #f59e0b;"></i>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(245, 158, 11, 0.2); border-radius: 50px; height: 8px; overflow: hidden; margin-bottom: 8px;">
+                                        <div style="background: #f59e0b; height: 100%; width: {{ $totalTasks > 0 ? round(($todoCount / $totalTasks) * 100) : 0 }}%; border-radius: 50px; transition: width 1.5s ease; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);"></div>
+                                    </div>
+                                    <div style="font-size: 11px; color: #92400e; font-weight: 700;">{{ $totalTasks > 0 ? round(($todoCount / $totalTasks) * 100) : 0 }}% of total</div>
+                                </div>
+                            </div>
+
+                            <!-- In Progress Card -->
+                            <div style="background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%); border-radius: 15px; padding: 18px; border-left: 5px solid #3b82f6; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                        <div>
+                                            <div style="font-size: 11px; font-weight: 800; color: #1e40af; letter-spacing: 1px;">IN PROGRESS</div>
+                                            <div style="font-size: 32px; font-weight: 900; color: #3b82f6; line-height: 1;">{{ $inProgressCount }}</div>
+                                        </div>
+                                        <div style="width: 45px; height: 45px; background: rgba(255,255,255,0.5); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-spinner" style="font-size: 22px; color: #3b82f6;"></i>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(59, 130, 246, 0.2); border-radius: 50px; height: 8px; overflow: hidden; margin-bottom: 8px;">
+                                        <div style="background: #3b82f6; height: 100%; width: {{ $totalTasks > 0 ? round(($inProgressCount / $totalTasks) * 100) : 0 }}%; border-radius: 50px; transition: width 1.5s ease; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);"></div>
+                                    </div>
+                                    <div style="font-size: 11px; color: #1e40af; font-weight: 700;">{{ $totalTasks > 0 ? round(($inProgressCount / $totalTasks) * 100) : 0 }}% of total</div>
+                                </div>
+                            </div>
+
+                            <!-- Review Card -->
+                            <div style="background: linear-gradient(135deg, #fce7f3 0%, #f9a8d4 100%); border-radius: 15px; padding: 18px; border-left: 5px solid #ec4899; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.2); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                        <div>
+                                            <div style="font-size: 11px; font-weight: 800; color: #9f1239; letter-spacing: 1px;">REVIEW</div>
+                                            <div style="font-size: 32px; font-weight: 900; color: #ec4899; line-height: 1;">{{ $reviewCount }}</div>
+                                        </div>
+                                        <div style="width: 45px; height: 45px; background: rgba(255,255,255,0.5); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-search" style="font-size: 22px; color: #ec4899;"></i>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(236, 72, 153, 0.2); border-radius: 50px; height: 8px; overflow: hidden; margin-bottom: 8px;">
+                                        <div style="background: #ec4899; height: 100%; width: {{ $totalTasks > 0 ? round(($reviewCount / $totalTasks) * 100) : 0 }}%; border-radius: 50px; transition: width 1.5s ease; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);"></div>
+                                    </div>
+                                    <div style="font-size: 11px; color: #9f1239; font-weight: 700;">{{ $totalTasks > 0 ? round(($reviewCount / $totalTasks) * 100) : 0 }}% of total</div>
+                                </div>
+                            </div>
+
+                            <!-- Completed Card -->
+                            <div style="background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%); border-radius: 15px; padding: 18px; border-left: 5px solid #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%); border-radius: 50%;"></div>
+                                <div style="position: relative;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                        <div>
+                                            <div style="font-size: 11px; font-weight: 800; color: #065f46; letter-spacing: 1px;">COMPLETED</div>
+                                            <div style="font-size: 32px; font-weight: 900; color: #10b981; line-height: 1;">{{ $completedCount }}</div>
+                                        </div>
+                                        <div style="width: 45px; height: 45px; background: rgba(255,255,255,0.5); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-check-circle" style="font-size: 22px; color: #10b981;"></i>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(16, 185, 129, 0.2); border-radius: 50px; height: 8px; overflow: hidden; margin-bottom: 8px;">
+                                        <div style="background: #10b981; height: 100%; width: {{ $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100) : 0 }}%; border-radius: 50px; transition: width 1.5s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); animation: pulse-glow 2s infinite;"></div>
+                                    </div>
+                                    <div style="font-size: 11px; color: #065f46; font-weight: 700;">{{ $totalTasks > 0 ? round(($completedCount / $totalTasks) * 100) : 0 }}% of total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Circular Progress & Stats -->
+                    <div>
+                        <h4 style="font-size: 16px; font-weight: 800; color: #1f2937; margin-bottom: 18px;"><i class="fas fa-chart-pie" style="color: #8b5cf6;"></i> Completion Overview</h4>
+                        <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 15px; padding: 25px; text-align: center; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);">
+                            <!-- Circular Progress -->
+                            <div style="position: relative; width: 160px; height: 160px; margin: 0 auto 20px;">
+                                <svg width="160" height="160" style="transform: rotate(-90deg);">
+                                    <!-- Background Circle -->
+                                    <circle cx="80" cy="80" r="70" fill="none" stroke="#e5e7eb" stroke-width="12"></circle>
+                                    <!-- Progress Circle -->
+                                    <circle cx="80" cy="80" r="70" fill="none" stroke="url(#gradient)" stroke-width="12" stroke-dasharray="{{ 2 * 3.14159 * 70 }}" stroke-dashoffset="{{ 2 * 3.14159 * 70 * (1 - $completionPercent / 100) }}" stroke-linecap="round" style="transition: stroke-dashoffset 2s ease;">
+                                        <animate attributeName="stroke-dashoffset" from="{{ 2 * 3.14159 * 70 }}" to="{{ 2 * 3.14159 * 70 * (1 - $completionPercent / 100) }}" dur="2s" fill="freeze" />
+                                    </circle>
+                                    <defs>
+                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <div style="font-size: 36px; font-weight: 900; color: #10b981; line-height: 1;">{{ $completionPercent }}%</div>
+                                    <div style="font-size: 11px; color: #6b7280; font-weight: 700; margin-top: 4px;">COMPLETE</div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
+                                <div style="background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="font-size: 24px; font-weight: 900; color: #3b82f6;">{{ $totalTasks }}</div>
+                                    <div style="font-size: 10px; color: #6b7280; font-weight: 700;">TOTAL</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="font-size: 24px; font-weight: 900; color: #10b981;">{{ $completedCount }}</div>
+                                    <div style="font-size: 10px; color: #6b7280; font-weight: 700;">DONE</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="font-size: 24px; font-weight: 900; color: #f59e0b;">{{ $totalTasks - $completedCount }}</div>
+                                    <div style="font-size: 10px; color: #6b7280; font-weight: 700;">REMAINING</div>
+                                </div>
+                                <div style="background: white; padding: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="font-size: 24px; font-weight: 900; color: #ec4899;">{{ $totalTasks > 0 ? round($completedCount / max($totalTasks, 1) * 100 / 10) : 0 }}/10</div>
+                                    <div style="font-size: 10px; color: #6b7280; font-weight: 700;">SCORE</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Intelligence Panel -->
+            <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+                <h3 style="font-size: 20px; font-weight: 900; color: #1f2937; margin-bottom: 20px;">
+                    <i class="fas fa-brain" style="color: #8b5cf6;"></i> PROJECT INTELLIGENCE
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <div>
+                        <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 15px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 50px; height: 50px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);">
+                                    <i class="fas fa-recycle" style="font-size: 24px; color: #3b82f6;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; color: #1e40af; font-weight: 700; margin-bottom: 2px;">WASTE TYPE</div>
+                                    <div style="font-size: 18px; color: #1e3a8a; font-weight: 900;">{{ ucfirst($ecoIdea->waste_type) }}</div>
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: #475569; line-height: 1.6;">{{ $ecoIdea->description }}</p>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 15px; padding: 20px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 12px; color: #92400e; font-weight: 700; margin-bottom: 4px;">DIFFICULTY</div>
+                                    <div style="font-size: 20px; color: #78350f; font-weight: 900;">{{ strtoupper($ecoIdea->difficulty_level) }}</div>
+                                </div>
+                                <div style="display: flex; gap: 4px;">
+                                    @for($i = 0; $i < 5; $i++)
+                                        <div style="width: 8px; height: 30px; background: {{ $i < ['easy' => 2, 'medium' => 3, 'hard' => 5][$ecoIdea->difficulty_level] ? '#f59e0b' : '#fde68a' }}; border-radius: 4px;"></div>
+                                    @endfor
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 15px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #10b981;">
+                            <div style="font-size: 12px; color: #065f46; font-weight: 700; margin-bottom: 10px;">CREATOR</div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 900; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">{{ strtoupper(substr($ecoIdea->creator->name, 0, 1)) }}</div>
+                                <div>
+                                    <div style="font-size: 16px; color: #064e3b; font-weight: 800;">{{ $ecoIdea->creator->name }}</div>
+                                    <div style="font-size: 12px; color: #065f46;">{{ $ecoIdea->creator->email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-radius: 15px; padding: 20px; border-left: 4px solid #ec4899;">
+                            <div style="font-size: 12px; color: #9f1239; font-weight: 700; margin-bottom: 8px;">PROJECT TIMELINE</div>
+                            <div style="font-size: 12px; color: #831843; margin-bottom: 6px;"><i class="fas fa-calendar-plus" style="color: #ec4899;"></i> Created: {{ $ecoIdea->created_at->format('M d, Y') }}</div>
+                            <div style="font-size: 12px; color: #831843;"><i class="fas fa-clock" style="color: #ec4899;"></i> Age: {{ $ecoIdea->created_at->diffForHumans() }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
                     
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
                         <!-- Left: Progress Bars -->
@@ -372,7 +692,12 @@
                             @if($isCreator)
                                 <div style="display: flex; gap: 8px;">
                                     <button onclick="viewMemberDetails('{{ $member->user->id }}', '{{ $member->user->name }}', '{{ $member->user->email }}', '{{ ucfirst($member->role ?? 'Member') }}', '{{ $member->joined_at ? $member->joined_at->diffForHumans() : 'recently' }}', '{{ $member->application->resume_path ?? '' }}')" style="flex: 1; background: #3b82f6; color: white; padding: 8px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"><i class="fas fa-eye"></i> View</button>
-                                    <form action="{{ route('front.eco-ideas.dashboard.team.remove', $member) }}" method="POST" style="flex: 1;" onsubmit="return confirm('Remove this member?');">@csrf @method('DELETE')<button type="submit" class="btn-remove" style="margin: 0;"><i class="fas fa-user-minus"></i> Remove</button></form>
+                                    <form id="remove-member-form-{{ $member->id }}" action="{{ route('front.eco-ideas.dashboard.team.remove', $member) }}" method="POST" style="flex: 1;">
+                                        @csrf @method('DELETE')
+                                        <button type="button" onclick="confirmRemoveMember('{{ $member->id }}', '{{ $member->user->name }}')" class="btn-remove" style="margin: 0;">
+                                            <i class="fas fa-user-minus"></i> Remove
+                                        </button>
+                                    </form>
                                 </div>
                             @endif
                         </div>
@@ -385,12 +710,70 @@
         <div class="content-section" id="tasks-section">
             <div class="section">
                 <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h2 class="section-title" style="margin-bottom: 0;"><i class="fas fa-tasks"></i>Task Board</h2>
-                        <button onclick="openCreateTaskModal()" style="padding: 12px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
-                            <i class="fas fa-plus"></i> Add Task
-                        </button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+                        <h2 class="section-title" style="margin-bottom: 0;">
+                            <i class="fas fa-tasks"></i>Task Board
+                            @if($ecoIdea->project_status === 'verified' || $ecoIdea->project_status === 'completed')
+                                <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 11px; margin-left: 10px;">
+                                    <i class="fas fa-lock"></i> LOCKED
+                                </span>
+                            @endif
+                        </h2>
+                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
+                            <button onclick="openCreateTaskModal()" style="padding: 12px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-plus"></i> Add Task
+                            </button>
+                        @endif
                     </div>
+                    
+                    @if($ecoIdea->project_status === 'verified' || $ecoIdea->project_status === 'completed')
+                        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 18px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-lock" style="font-size: 28px; color: #f59e0b;"></i>
+                                <div>
+                                    <h4 style="font-size: 15px; font-weight: 800; color: #92400e; margin: 0 0 5px 0;">Task Board Locked</h4>
+                                    <p style="font-size: 13px; color: #78350f; margin: 0; line-height: 1.6;">
+                                        This project has been {{ $ecoIdea->project_status === 'verified' ? 'verified' : 'completed' }}. Tasks can no longer be edited or created. You can still view task details for reference.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    @if($isCreator && $ecoIdea->project_status === 'in_progress')
+                        @php
+                            $totalTasks = $ecoIdea->tasks()->count();
+                            $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
+                            $allTasksCompleted = $totalTasks > 0 && $completedTasks === $totalTasks;
+                        @endphp
+                        @if($allTasksCompleted)
+                            <div onclick="switchSection('completion')" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 20px rgba(245,158,11,0.4)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <i class="fas fa-star" style="font-size: 24px; color: #f59e0b; animation: spin-slow 3s linear infinite;"></i>
+                                    <div style="flex: 1;">
+                                        <p style="font-size: 14px; color: #92400e; margin: 0; font-weight: 700;">
+                                            🎉 All tasks completed! Ready to submit?
+                                        </p>
+                                        <p style="font-size: 12px; color: #b45309; margin: 5px 0 0 0;">
+                                            <i class="fas fa-arrow-right"></i> Click here or check the sidebar to mark project as completed
+                                        </p>
+                                    </div>
+                                    <i class="fas fa-chevron-right" style="color: #f59e0b; font-size: 18px;"></i>
+                                </div>
+                            </div>
+                            <style>
+                                @keyframes spin-slow {
+                                    from { transform: rotate(0deg); }
+                                    to { transform: rotate(360deg); }
+                                }
+                            </style>
+                        @elseif($totalTasks > 0)
+                            <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                                <p style="font-size: 13px; color: #1e40af; margin: 0;">
+                                    <i class="fas fa-info-circle"></i> Progress: <strong>{{ $completedTasks }}/{{ $totalTasks }}</strong> tasks completed. Complete all tasks to mark project as done.
+                                </p>
+                            </div>
+                        @endif
+                    @endif
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <input type="text" id="taskSearchInput" placeholder="Search tasks..." style="flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px;">
                         <select id="taskFilterAssignee" style="padding: 10px 15px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; min-width: 150px;">
@@ -420,7 +803,7 @@
                         </div>
                         <div class="task-list" data-status="todo">
                             @foreach($ecoIdea->tasks->where('status', 'todo') as $task)
-                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="true">
+                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="{{ ($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed') ? 'true' : 'false' }}" style="{{ ($ecoIdea->project_status === 'verified' || $ecoIdea->project_status === 'completed') ? 'opacity: 0.7; cursor: default;' : '' }}">
                                     <div style="font-size:14px; font-weight:700; margin-bottom:8px;">{{ $task->title }}</div>
                                     <div style="font-size:12px; color:#6b7280; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
                                         <span class="priority-{{ $task->priority }}">{{ strtoupper($task->priority) }}</span>
@@ -435,7 +818,11 @@
                                     </div>
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
+                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @else
+                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -448,7 +835,7 @@
                         </div>
                         <div class="task-list" data-status="in_progress">
                             @foreach($ecoIdea->tasks->where('status', 'in_progress') as $task)
-                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="true">
+                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="{{ ($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed') ? 'true' : 'false' }}" style="{{ ($ecoIdea->project_status === 'verified' || $ecoIdea->project_status === 'completed') ? 'opacity: 0.7; cursor: default;' : '' }}">
                                     <div style="font-size:14px; font-weight:700; margin-bottom:8px;">{{ $task->title }}</div>
                                     <div style="font-size:12px; color:#6b7280; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
                                         <span class="priority-{{ $task->priority }}">{{ strtoupper($task->priority) }}</span>
@@ -463,7 +850,11 @@
                                     </div>
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
+                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @else
+                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -476,7 +867,7 @@
                         </div>
                         <div class="task-list" data-status="review">
                             @foreach($ecoIdea->tasks->where('status', 'review') as $task)
-                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="true">
+                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="{{ ($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed') ? 'true' : 'false' }}" style="{{ ($ecoIdea->project_status === 'verified' || $ecoIdea->project_status === 'completed') ? 'opacity: 0.7; cursor: default;' : '' }}">
                                     <div style="font-size:14px; font-weight:700; margin-bottom:8px;">{{ $task->title }}</div>
                                     <div style="font-size:12px; color:#6b7280; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
                                         <span class="priority-{{ $task->priority }}">{{ strtoupper($task->priority) }}</span>
@@ -491,7 +882,11 @@
                                     </div>
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
+                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @else
+                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -504,7 +899,7 @@
                         </div>
                         <div class="task-list" data-status="completed">
                             @foreach($ecoIdea->tasks->where('status', 'completed') as $task)
-                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="true">
+                                <div class="task-card" data-task-id="{{ $task->id }}" data-task-title="{{ strtolower($task->title) }}" data-task-assignee="{{ $task->assigned_to ?? 'unassigned' }}" data-task-priority="{{ $task->priority }}" draggable="{{ ($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed') ? 'true' : 'false' }}" style="{{ ($ecoIdea->project_status === 'verified' || $ecoIdea->project_status === 'completed') ? 'opacity: 0.7; cursor: default;' : '' }}">
                                     <div style="font-size:14px; font-weight:700; margin-bottom:8px;">{{ $task->title }}</div>
                                     <div style="font-size:12px; color:#6b7280; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
                                         <span class="priority-{{ $task->priority }}">{{ strtoupper($task->priority) }}</span>
@@ -519,7 +914,11 @@
                                     </div>
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
+                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                                        @else
+                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -536,7 +935,7 @@
                 
                 <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
                     <!-- Chat Messages Container -->
-                    <div id="chatMessages" style="height: 500px; overflow-y: auto; padding: 20px; background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);">
+                    <div id="chatMessages" style="height: 350px; overflow-y: auto; padding: 20px; background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);">
                         <div style="text-align: center; color: #9ca3af; padding: 40px;">
                             <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
                             <p style="font-size: 14px;">Loading messages...</p>
@@ -571,6 +970,207 @@
             </div>
         </div>
 
+        <!-- Certificate Section -->
+        @if($ecoIdea->project_status === 'completed' || $ecoIdea->project_status === 'verified')
+        <div class="content-section" id="certificate-section">
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-certificate"></i> Project Completion Certificate</h2>
+                
+                <!-- Certificate Preview -->
+                <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); border-radius: 20px; padding: 50px 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 8px double #10b981; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                    
+                    <div style="position: relative; text-align: center;">
+                        <!-- Header -->
+                        <div style="margin-bottom: 30px;">
+                            <div style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px 30px; border-radius: 50px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-award" style="font-size: 40px; color: white;"></i>
+                            </div>
+                            <h1 style="font-size: 36px; font-weight: 900; color: #1f2937; margin: 0 0 10px 0; letter-spacing: -1px;">CERTIFICATE OF ACHIEVEMENT</h1>
+                            <p style="font-size: 16px; color: #6b7280; font-weight: 600;">Environmental Impact & Sustainability</p>
+                        </div>
+
+                        <!-- Recipient -->
+                        <div style="margin: 40px 0;">
+                            <p style="font-size: 14px; color: #6b7280; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">This certifies that</p>
+                            <h2 style="font-size: 32px; font-weight: 900; color: #10b981; margin: 10px 0; font-family: 'Georgia', serif;">{{ auth()->user()->name }}</h2>
+                            <p style="font-size: 14px; color: #6b7280; margin-top: 10px;">has successfully completed the eco-innovation project</p>
+                        </div>
+
+                        <!-- Project Details -->
+                        <div style="background: rgba(16, 185, 129, 0.05); border-radius: 15px; padding: 25px; margin: 30px 0; border-left: 4px solid #10b981;">
+                            <h3 style="font-size: 24px; font-weight: 800; color: #1f2937; margin: 0 0 15px 0;">{{ $ecoIdea->title }}</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; text-align: left; margin-top: 20px;">
+                                <div>
+                                    <div style="font-size: 11px; color: #6b7280; font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">Waste Type</div>
+                                    <div style="font-size: 15px; color: #1f2937; font-weight: 700;">{{ ucfirst($ecoIdea->waste_type) }}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: #6b7280; font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">Difficulty</div>
+                                    <div style="font-size: 15px; color: #1f2937; font-weight: 700;">{{ ucfirst($ecoIdea->difficulty_level) }}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: #6b7280; font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">Team Size</div>
+                                    <div style="font-size: 15px; color: #1f2937; font-weight: 700;">{{ $ecoIdea->team()->count() + 1 }} Members</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: #6b7280; font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">Completion Date</div>
+                                    <div style="font-size: 15px; color: #1f2937; font-weight: 700;">{{ $ecoIdea->updated_at->format('M d, Y') }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Achievement Message -->
+                        <div style="margin: 30px 0;">
+                            <p style="font-size: 16px; line-height: 1.8; color: #4b5563; max-width: 700px; margin: 0 auto;">
+                                <strong style="color: #1f2937;">Congratulations!</strong> You have demonstrated exceptional commitment to environmental sustainability by successfully completing this eco-innovation project. Your contribution in transforming waste materials into valuable resources exemplifies the spirit of circular economy and environmental stewardship.
+                            </p>
+                        </div>
+
+                        @if($ecoIdea->project_status === 'verified')
+                        <!-- NGO Donation Message -->
+                        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 15px; padding: 20px; margin: 30px 0; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center; gap: 15px; justify-content: center;">
+                                <i class="fas fa-hands-helping" style="font-size: 32px; color: #f59e0b;"></i>
+                                <div style="text-align: left;">
+                                    <h4 style="font-size: 16px; font-weight: 800; color: #92400e; margin: 0 0 5px 0;">Project Donated to NGO</h4>
+                                    <p style="font-size: 13px; color: #78350f; margin: 0;">This verified project has been donated to environmental organizations for continued impact and community benefit.</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Verification Badge -->
+                        @if($ecoIdea->project_status === 'verified')
+                        <div style="margin-top: 40px;">
+                            <div style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px 25px; border-radius: 50px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-check-circle" style="font-size: 20px;"></i>
+                                <span style="font-weight: 800; font-size: 14px; letter-spacing: 1px;">VERIFIED PROJECT</span>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Footer -->
+                        <div style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 20px;">
+                                <div style="text-align: center;">
+                                    <div style="width: 150px; height: 2px; background: #10b981; margin: 0 auto 10px;"></div>
+                                    <p style="font-size: 12px; color: #6b7280; margin: 0; font-weight: 700;">Project Creator</p>
+                                    <p style="font-size: 14px; color: #1f2937; margin: 5px 0 0 0; font-weight: 800;">{{ $ecoIdea->creator->name }}</p>
+                                </div>
+                                <div style="text-align: center;">
+                                    <i class="fas fa-leaf" style="font-size: 40px; color: #10b981; opacity: 0.3;"></i>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="width: 150px; height: 2px; background: #ec4899; margin: 0 auto 10px;"></div>
+                                    <p style="font-size: 12px; color: #6b7280; margin: 0; font-weight: 700;">Waste2Product Platform</p>
+                                    <p style="font-size: 14px; color: #1f2937; margin: 5px 0 0 0; font-weight: 800;">{{ now()->format('Y') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Button -->
+                <div style="text-align: center;">
+                    <a href="{{ route('front.eco-ideas.certificate.download', $ecoIdea) }}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 10px; padding: 15px 35px; font-size: 16px; text-decoration: none; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;">
+                        <i class="fas fa-download"></i>
+                        Download Certificate (PDF)
+                    </a>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 15px;">
+                        <i class="fas fa-info-circle"></i> Your personalized certificate will be generated with your name and project details.
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Project Completion Confirmation -->
+        @if($isCreator && $ecoIdea->project_status === 'in_progress')
+            @php
+                $totalTasks = $ecoIdea->tasks()->count();
+                $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
+                $allTasksCompleted = $totalTasks > 0 && $completedTasks === $totalTasks;
+            @endphp
+            @if($allTasksCompleted)
+                <div class="content-section" id="completion-section">
+                    <div class="section">
+                        <div style="text-align: center; padding: 40px 20px;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3); animation: bounce 2s ease-in-out infinite;">
+                                <i class="fas fa-star" style="font-size: 60px; color: #f59e0b;"></i>
+                            </div>
+                            
+                            <h2 style="font-size: 32px; font-weight: 800; color: #1f2937; margin-bottom: 15px;">
+                                🎉 All Tasks Completed!
+                            </h2>
+                            
+                            <p style="font-size: 18px; color: #6b7280; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                                Congratulations! You've completed all <strong>{{ $totalTasks }}</strong> tasks for this project.
+                            </p>
+                            
+                            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; padding: 30px; margin: 30px auto; max-width: 700px; border: 2px solid #3b82f6;">
+                                <h3 style="font-size: 24px; font-weight: 800; color: #1e40af; margin-bottom: 20px;">
+                                    <i class="fas fa-question-circle"></i> Is Your Project Completed?
+                                </h3>
+                                
+                                <p style="font-size: 15px; color: #1e3a8a; margin-bottom: 25px; line-height: 1.7;">
+                                    By confirming completion, your project will be submitted to <strong>Waste2Product</strong> for verification. 
+                                    Our team will review your work and issue an official certificate if everything meets the requirements.
+                                </p>
+                                
+                                <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                                    <h4 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 15px;">
+                                        <i class="fas fa-clipboard-check" style="color: #10b981;"></i> Before You Confirm:
+                                    </h4>
+                                    <ul style="list-style: none; padding: 0; margin: 0; text-align: left;">
+                                        <li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">
+                                            <i class="fas fa-check-circle" style="color: #10b981;"></i> All {{ $totalTasks }} tasks are marked as completed
+                                        </li>
+                                        <li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">
+                                            <i class="fas fa-check-circle" style="color: #10b981;"></i> Project goals have been achieved
+                                        </li>
+                                        <li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #4b5563;">
+                                            <i class="fas fa-check-circle" style="color: #10b981;"></i> All documentation is ready
+                                        </li>
+                                        <li style="padding: 8px 0; color: #4b5563;">
+                                            <i class="fas fa-check-circle" style="color: #10b981;"></i> Team is satisfied with the results
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                                    <form action="{{ route('front.eco-ideas.dashboard.mark-completed', $ecoIdea) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" style="padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-check-double"></i>
+                                            <span>Yes, Mark as Completed</span>
+                                        </button>
+                                    </form>
+                                    
+                                    <button onclick="switchSection('tasks')" style="padding: 16px 40px; background: #f3f4f6; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-times"></i>
+                                        <span>Not Yet, Go Back</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <p style="font-size: 13px; color: #9ca3af; margin-top: 20px;">
+                                <i class="fas fa-info-circle"></i> You can come back to this page anytime as long as all tasks remain completed
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-20px); }
+                    }
+                </style>
+            @endif
+        @endif
+
         <!-- Settings -->
         @if($isCreator)
         <div class="content-section" id="settings-section">
@@ -580,17 +1180,295 @@
                     @csrf @method('PUT')
                     <div class="form-group"><label class="form-label">Title</label><input type="text" name="title" class="form-input" value="{{ $ecoIdea->title }}" required></div>
                     <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-textarea" required>{{ $ecoIdea->description }}</textarea></div>
+                    
+                    <!-- Image Upload Section -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-image"></i> Project Image</label>
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <!-- Current Image Preview -->
+                                @if($ecoIdea->image_path)
+                                    <div style="flex-shrink: 0;">
+                                        <img id="currentImage" src="{{ asset('storage/' . $ecoIdea->image_path) }}" alt="Current Image" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 3px solid #e5e7eb;">
+                                    </div>
+                                @endif
+                                
+                                <!-- Upload Button -->
+                                <div style="flex: 1;">
+                                    <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;" onchange="previewNewImage(this)">
+                                    <label for="imageInput" class="upload-btn" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                                        <i class="fas fa-cloud-upload-alt"></i> Choose New Image
+                                    </label>
+                                    <style>
+                                        .upload-btn:hover {
+                                            transform: translateY(-2px);
+                                            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+                                        }
+                                        #currentImage {
+                                            transition: all 0.3s ease;
+                                        }
+                                    </style>
+                                    <p style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+                                        <i class="fas fa-info-circle"></i> Recommended: 800x600px, Max 5MB (JPG, PNG, WEBP)
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- New Image Preview -->
+                            <div id="newImagePreview" style="display: none; margin-top: 15px; padding: 15px; background: #f0f9ff; border-radius: 12px; border: 2px dashed #3b82f6;">
+                                <p style="font-size: 14px; font-weight: 700; color: #1e40af; margin-bottom: 10px;">
+                                    <i class="fas fa-eye"></i> New Image Preview:
+                                </p>
+                                <img id="newImagePreviewImg" src="" alt="New Image" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <button type="button" onclick="removeNewImage()" style="margin-top: 10px; padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                                    <i class="fas fa-times"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div class="form-group"><label class="form-label">Waste Type</label><select name="waste_type" class="form-select" required><option value="organic" {{ $ecoIdea->waste_type == 'organic' ? 'selected' : '' }}>Organic</option><option value="plastic" {{ $ecoIdea->waste_type == 'plastic' ? 'selected' : '' }}>Plastic</option><option value="metal" {{ $ecoIdea->waste_type == 'metal' ? 'selected' : '' }}>Metal</option><option value="e-waste" {{ $ecoIdea->waste_type == 'e-waste' ? 'selected' : '' }}>E-Waste</option><option value="paper" {{ $ecoIdea->waste_type == 'paper' ? 'selected' : '' }}>Paper</option><option value="glass" {{ $ecoIdea->waste_type == 'glass' ? 'selected' : '' }}>Glass</option><option value="textile" {{ $ecoIdea->waste_type == 'textile' ? 'selected' : '' }}>Textile</option><option value="mixed" {{ $ecoIdea->waste_type == 'mixed' ? 'selected' : '' }}>Mixed</option></select></div>
                         <div class="form-group"><label class="form-label">Difficulty</label><select name="difficulty_level" class="form-select" required><option value="easy" {{ $ecoIdea->difficulty_level == 'easy' ? 'selected' : '' }}>Easy</option><option value="medium" {{ $ecoIdea->difficulty_level == 'medium' ? 'selected' : '' }}>Medium</option><option value="hard" {{ $ecoIdea->difficulty_level == 'hard' ? 'selected' : '' }}>Hard</option></select></div>
                     </div>
-                    <div class="form-group"><label class="form-label">Project Status</label><select name="project_status" class="form-select" required><option value="idea" {{ $ecoIdea->project_status == 'idea' ? 'selected' : '' }}>Idea</option><option value="recruiting" {{ $ecoIdea->project_status == 'recruiting' ? 'selected' : '' }}>Recruiting</option><option value="in_progress" {{ $ecoIdea->project_status == 'in_progress' ? 'selected' : '' }}>In Progress</option><option value="completed" {{ $ecoIdea->project_status == 'completed' ? 'selected' : '' }}>Completed</option></select></div>
-                    <div class="form-group"><label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" name="is_recruiting" value="1" {{ $ecoIdea->is_recruiting ? 'checked' : '' }}><span>Open for recruitment</span></label></div>
+                    
+                    <!-- Current Status Display (Read-only) -->
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #3b82f6; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 48px; height: 48px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                @if($ecoIdea->project_status === 'recruiting')
+                                    <i class="fas fa-users" style="font-size: 24px; color: #3b82f6;"></i>
+                                @elseif($ecoIdea->project_status === 'in_progress')
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #10b981;"></i>
+                                @elseif($ecoIdea->project_status === 'completed')
+                                    <i class="fas fa-check-circle" style="font-size: 24px; color: #f59e0b;"></i>
+                                @elseif($ecoIdea->project_status === 'verified')
+                                    <i class="fas fa-certificate" style="font-size: 24px; color: #8b5cf6;"></i>
+                                @endif
+                            </div>
+                            <div style="flex: 1;">
+                                <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin: 0 0 4px 0;">Current Project Status</p>
+                                <h3 style="font-size: 18px; font-weight: 800; color: #1f2937; margin: 0; text-transform: capitalize;">
+                                    {{ str_replace('_', ' ', $ecoIdea->project_status) }}
+                                </h3>
+                            </div>
+                        </div>
+                        <p style="font-size: 12px; color: #6b7280; margin: 10px 0 0 0; padding-top: 10px; border-top: 1px solid rgba(59, 130, 246, 0.2);">
+                            <i class="fas fa-magic"></i> <strong>Automatic Status:</strong> Status changes automatically based on team and task completion
+                    <!-- Team Size Management -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-users"></i> Team Size Needed (Including You)</label>
+                        @php
+                            $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+                        @endphp
+                        <input 
+                            type="number" 
+                            name="team_size_needed" 
+                            class="form-input" 
+                            value="{{ $ecoIdea->team_size_needed }}" 
+                            min="{{ $currentTeamCount }}" 
+                            placeholder="Total team size including yourself"
+                        >
+                        <div style="margin-top: 10px; padding: 12px; background: {{ $currentTeamCount >= ($ecoIdea->team_size_needed ?? 0) && $ecoIdea->team_size_needed > 0 ? '#fef2f2' : '#f0fdf4' }}; border-left: 4px solid {{ $currentTeamCount >= ($ecoIdea->team_size_needed ?? 0) && $ecoIdea->team_size_needed > 0 ? '#ef4444' : '#10b981' }}; border-radius: 8px;">
+                            <p style="font-size: 14px; color: {{ $currentTeamCount >= ($ecoIdea->team_size_needed ?? 0) && $ecoIdea->team_size_needed > 0 ? '#991b1b' : '#065f46' }}; margin: 0; font-weight: 600;">
+                                <i class="fas {{ $currentTeamCount >= ($ecoIdea->team_size_needed ?? 0) && $ecoIdea->team_size_needed > 0 ? 'fa-users-slash' : 'fa-user-check' }}"></i>
+                                Current Team: <strong>{{ $currentTeamCount }}</strong> / <strong>{{ $ecoIdea->team_size_needed ?? 0 }}</strong> members
+                            </p>
+                            <p style="font-size: 13px; color: #6b7280; margin: 8px 0 0 0;">
+                                @if($currentTeamCount >= ($ecoIdea->team_size_needed ?? 0) && $ecoIdea->team_size_needed > 0)
+                                    <i class="fas fa-check-circle" style="color: #ef4444;"></i> Team is full! Recruitment automatically closed.
+                                @elseif($ecoIdea->team_size_needed > 0)
+                                    <i class="fas fa-users" style="color: #10b981;"></i> Waiting for <strong>{{ ($ecoIdea->team_size_needed ?? 0) - $currentTeamCount }}</strong> more member(s). Recruitment is open!
+                                @else
+                                    <i class="fas fa-info-circle"></i> Set team size to open recruitment. Enter total team size including yourself.
+                                @endif
+                            </p>
+                            <p style="font-size: 12px; color: #9ca3af; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                                <i class="fas fa-lightbulb"></i> <strong>Note:</strong> Team size includes you as owner. Current: {{ $currentTeamCount }} (You + {{ $currentTeamCount - 1 }} member(s))
+                            </p>
+                        </div>
+                        @error('team_size_needed')
+                            <span style="color: #ef4444; font-size: 13px; margin-top: 5px; display: block;">
+                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                            </span>
+                        @enderror
+                    </div>
                     <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Save Changes</button>
                 </form>
             </div>
+
+            <!-- Danger Zone -->
+            <div class="section" style="border: 2px solid #fee2e2; background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);">
+                <h2 class="section-title" style="color: #dc2626;">
+                    <i class="fas fa-exclamation-triangle"></i> Danger Zone
+                </h2>
+                <div style="background: white; padding: 16px; border-radius: 10px; border: 2px dashed #fca5a5;">
+                    <p style="color: #6b7280; margin-bottom: 12px; font-size: 13px;">
+                        <i class="fas fa-info-circle"></i> <strong>Warning:</strong> Deleting this project is permanent and cannot be undone. All team members, applications, tasks, and data will be permanently deleted.
+                    </p>
+                    <button type="button" onclick="confirmDeleteProject()" style="padding: 10px 20px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                        <i class="fas fa-trash-alt"></i> Delete Project
+                    </button>
+                </div>
+            </div>
         </div>
         @endif
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: modalSlideIn 0.3s ease; overflow: hidden;">
+        <!-- Warning Header -->
+        <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 20px; display: flex; align-items: center; gap: 15px;">
+            <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: white;"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: white; font-size: 20px; font-weight: 800;">⚠️ WARNING: DELETE PROJECT?</h3>
+                <p style="margin: 4px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 13px;">This action cannot be undone</p>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 25px;">
+            <p style="font-size: 15px; color: #1f2937; margin-bottom: 15px; font-weight: 600;">
+                Are you sure you want to permanently delete "<span id="deleteProjectTitle" style="color: #dc2626;"></span>"?
+            </p>
+
+            <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="font-size: 13px; color: #991b1b; margin: 0 0 10px 0; font-weight: 700;">
+                    <i class="fas fa-info-circle"></i> This action will:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #7f1d1d; font-size: 13px; line-height: 1.8;">
+                    <li>Delete all team members</li>
+                    <li>Delete all applications</li>
+                    <li>Delete all tasks</li>
+                    <li>Delete all project data</li>
+                </ul>
+            </div>
+
+            <div style="background: #fffbeb; border: 2px solid #fbbf24; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="font-size: 13px; color: #92400e; margin: 0 0 10px 0; font-weight: 700;">
+                    <i class="fas fa-shield-alt"></i> Type <strong>"DELETE"</strong> to confirm:
+                </p>
+                <input type="text" id="deleteConfirmInput" placeholder="Type DELETE here" style="width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-weight: 600; text-transform: uppercase;" />
+                <p id="deleteInputError" style="display: none; color: #dc2626; font-size: 12px; margin: 8px 0 0 0;">
+                    <i class="fas fa-times-circle"></i> You must type "DELETE" exactly to confirm
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeDeleteModal()" style="padding: 12px 24px; background: white; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" onclick="executeDelete()" style="padding: 12px 24px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+                    <i class="fas fa-trash-alt"></i> Delete Forever
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+    20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+#deleteConfirmModal {
+    display: none !important;
+}
+
+#deleteConfirmModal.show {
+    display: flex !important;
+}
+
+#deleteConfirmInput:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+#deleteConfirmModal button:hover {
+    transform: translateY(-2px);
+}
+
+#deleteConfirmModal button:active {
+    transform: translateY(0);
+}
+
+#removeMemberModal {
+    display: none !important;
+}
+
+#removeMemberModal.show {
+    display: flex !important;
+}
+
+#removeMemberModal button:hover {
+    transform: translateY(-2px);
+}
+
+#removeMemberModal button:active {
+    transform: translateY(0);
+}
+</style>
+
+<!-- Remove Member Confirmation Modal -->
+<div id="removeMemberModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: modalSlideIn 0.3s ease; overflow: hidden;">
+        <!-- Warning Header -->
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 20px; display: flex; align-items: center; gap: 15px;">
+            <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-minus" style="font-size: 24px; color: white;"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; color: white; font-size: 20px; font-weight: 800;">Remove Team Member?</h3>
+                <p style="margin: 4px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 13px;">This action will remove the member</p>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 25px;">
+            <p style="font-size: 15px; color: #1f2937; margin-bottom: 15px; font-weight: 600;">
+                Are you sure you want to remove "<span id="removeMemberName" style="color: #f59e0b;"></span>" from the team?
+            </p>
+
+            <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="font-size: 13px; color: #92400e; margin: 0 0 10px 0; font-weight: 700;">
+                    <i class="fas fa-info-circle"></i> What happens:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #78350f; font-size: 13px; line-height: 1.8;">
+                    <li>Member will be removed from the project</li>
+                    <li>They can reapply if needed</li>
+                    <li>Recruitment may reopen if team becomes unfull</li>
+                </ul>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeRemoveMemberModal()" style="padding: 12px 24px; background: white; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" onclick="executeRemoveMember()" style="padding: 12px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                    <i class="fas fa-user-minus"></i> Remove Member
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -806,7 +1684,7 @@ if (!document.getElementById('toastAnimations')) {
     document.head.appendChild(style);
 }
 
-// Navigation with Chat Support
+// Navigation with Chat Support and Tab Memory
 let chatRefreshInterval = null;
 
 console.log('Navigation script loading...');
@@ -814,41 +1692,96 @@ console.log('Navigation script loading...');
 const navItems = document.querySelectorAll('.nav-item');
 console.log('Found nav items:', navItems.length);
 
+// Function to switch to a specific tab
+function switchToTab(section) {
+    // Switch active nav item
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    const targetNavItem = document.querySelector(`.nav-item[data-section="${section}"]`);
+    if (targetNavItem) {
+        targetNavItem.classList.add('active');
+    }
+    
+    // Switch active section
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    const targetSection = document.getElementById(section + '-section');
+    if (targetSection) {
+        targetSection.classList.add('active');
+        console.log('✅ Switched to section:', section);
+    } else {
+        console.error('❌ Section not found:', section + '-section');
+    }
+    
+    // Clear existing chat refresh interval
+    if (chatRefreshInterval) {
+        clearInterval(chatRefreshInterval);
+        chatRefreshInterval = null;
+    }
+    
+    // If chat section is opened, load messages and start auto-refresh
+    if (section === 'chat') {
+        loadChatMessages();
+        chatRefreshInterval = setInterval(loadChatMessages, 3000);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('ecoIdea_activeTab_{{ $ecoIdea->id }}', section);
+}
+
+// Attach click listeners to nav items
 navItems.forEach(item => {
     console.log('Attaching listener to:', item.dataset.section);
     item.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         console.log('Nav item clicked:', this.dataset.section);
-        
-        // Switch active nav item
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        this.classList.add('active');
-        
-        // Switch active section
-        const section = this.dataset.section;
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        const targetSection = document.getElementById(section + '-section');
-        if (targetSection) {
-            targetSection.classList.add('active');
-            console.log('✅ Switched to section:', section);
-        } else {
-            console.error('❌ Section not found:', section + '-section');
-        }
-        
-        // Clear existing chat refresh interval
-        if (chatRefreshInterval) {
-            clearInterval(chatRefreshInterval);
-            chatRefreshInterval = null;
-        }
-        
-        // If chat section is opened, load messages and start auto-refresh
-        if (section === 'chat') {
-            loadChatMessages();
-            chatRefreshInterval = setInterval(loadChatMessages, 3000);
-        }
+        switchToTab(this.dataset.section);
     });
 });
+
+// Helper function for programmatic section switching
+function switchSection(sectionName) {
+    switchToTab(sectionName);
+}
+
+// Restore last active tab on page load
+const savedTab = localStorage.getItem('ecoIdea_activeTab_{{ $ecoIdea->id }}');
+
+// Check if all tasks are completed and auto-show completion prompt
+@if($isCreator && $ecoIdea->project_status === 'in_progress')
+    @php
+        $totalTasks = $ecoIdea->tasks()->count();
+        $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
+        $allTasksCompleted = $totalTasks > 0 && $completedTasks === $totalTasks;
+    @endphp
+    @if($allTasksCompleted)
+        const allTasksCompleted = true;
+        // Check if user just completed the last task (coming from tasks section)
+        if (savedTab === 'tasks' || !savedTab) {
+            console.log('🌟 All tasks completed! Showing completion prompt...');
+            switchToTab('completion');
+        } else if (savedTab) {
+            switchToTab(savedTab);
+        } else {
+            switchToTab('completion');
+        }
+    @else
+        if (savedTab) {
+            console.log('📌 Restoring saved tab:', savedTab);
+            switchToTab(savedTab);
+        } else {
+            console.log('📌 No saved tab, using default (overview)');
+            switchToTab('overview');
+        }
+    @endif
+@else
+    if (savedTab) {
+        console.log('📌 Restoring saved tab:', savedTab);
+        switchToTab(savedTab);
+    } else {
+        console.log('📌 No saved tab, using default (overview)');
+        switchToTab('overview');
+    }
+@endif
 
 console.log('Navigation initialized successfully!');
 
@@ -1397,6 +2330,184 @@ document.getElementById('chatForm').addEventListener('submit', function(e) {
         console.error('Error sending message:', err);
         showToast('❌ Failed to send message', 'error');
     });
+});
+
+// ========== IMAGE UPLOAD PREVIEW ==========
+function previewNewImage(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('⚠️ Image size must be less than 5MB!');
+            input.value = '';
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('⚠️ Please upload a valid image (JPG, PNG, or WEBP)!');
+            input.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            document.getElementById('newImagePreviewImg').src = e.target.result;
+            document.getElementById('newImagePreview').style.display = 'block';
+            
+            // Fade out current image slightly
+            const currentImg = document.getElementById('currentImage');
+            if (currentImg) {
+                currentImg.style.opacity = '0.4';
+                currentImg.style.filter = 'grayscale(50%)';
+            }
+        }
+        
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeNewImage() {
+    document.getElementById('imageInput').value = '';
+    document.getElementById('newImagePreview').style.display = 'none';
+    
+    // Restore current image opacity
+    const currentImg = document.getElementById('currentImage');
+    if (currentImg) {
+        currentImg.style.opacity = '1';
+        currentImg.style.filter = 'none';
+    }
+}
+
+// Delete Project Confirmation - Custom Modal
+function confirmDeleteProject() {
+    const projectTitle = '{{ $ecoIdea->title }}';
+    
+    // Set project title in modal
+    document.getElementById('deleteProjectTitle').textContent = projectTitle;
+    
+    // Clear input and error
+    document.getElementById('deleteConfirmInput').value = '';
+    document.getElementById('deleteInputError').style.display = 'none';
+    
+    // Show modal
+    const modal = document.getElementById('deleteConfirmModal');
+    modal.classList.add('show');
+    
+    // Focus input
+    setTimeout(() => {
+        document.getElementById('deleteConfirmInput').focus();
+    }, 300);
+    
+    // Allow Enter key to submit
+    document.getElementById('deleteConfirmInput').onkeypress = function(e) {
+        if (e.key === 'Enter') {
+            executeDelete();
+        }
+    };
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    modal.classList.remove('show');
+    document.getElementById('deleteConfirmInput').value = '';
+    document.getElementById('deleteInputError').style.display = 'none';
+}
+
+function executeDelete() {
+    const input = document.getElementById('deleteConfirmInput');
+    const errorMsg = document.getElementById('deleteInputError');
+    
+    if (input.value.trim() === 'DELETE') {
+        // Create and submit delete form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route('front.eco-ideas.dashboard.delete', $ecoIdea) }}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        
+        form.appendChild(csrfInput);
+        form.appendChild(methodInput);
+        document.body.appendChild(form);
+        form.submit();
+    } else {
+        // Show error
+        errorMsg.style.display = 'block';
+        input.style.borderColor = '#dc2626';
+        input.focus();
+        
+        // Shake animation
+        input.style.animation = 'shake 0.5s';
+        setTimeout(() => {
+            input.style.animation = '';
+        }, 500);
+    }
+}
+
+// Close modal on background click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (e.target === modal) {
+        closeDeleteModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDeleteModal();
+        closeRemoveMemberModal();
+    }
+});
+
+// Remove Member Modal Functions
+let currentRemoveMemberId = null;
+
+function confirmRemoveMember(memberId, memberName) {
+    // Store member ID
+    currentRemoveMemberId = memberId;
+    
+    // Set member name in modal
+    document.getElementById('removeMemberName').textContent = memberName;
+    
+    // Show modal
+    const modal = document.getElementById('removeMemberModal');
+    modal.classList.add('show');
+}
+
+function closeRemoveMemberModal() {
+    const modal = document.getElementById('removeMemberModal');
+    modal.classList.remove('show');
+    currentRemoveMemberId = null;
+}
+
+function executeRemoveMember() {
+    if (currentRemoveMemberId) {
+        // Submit the form
+        const form = document.getElementById('remove-member-form-' + currentRemoveMemberId);
+        if (form) {
+            form.submit();
+        }
+    }
+}
+
+// Close remove member modal on background click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('removeMemberModal');
+    if (e.target === modal) {
+        closeRemoveMemberModal();
+    }
 });
 </script>
 @endpush

@@ -13,30 +13,30 @@
     .details-wrapper {
         background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         min-height: 100vh;
-        padding-top: 120px;
-        padding-bottom: 80px;
+        padding-top: 100px;
+        padding-bottom: 50px;
     }
 
     .details-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 30px;
+        padding: 0 20px;
     }
 
     .back-button {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        padding: 12px 24px;
+        gap: 8px;
+        padding: 9px 18px;
         background: white;
         border: 2px solid #e5e7eb;
-        border-radius: 12px;
+        border-radius: 10px;
         color: #6b7280;
         text-decoration: none;
         font-weight: 600;
-        font-size: 15px;
+        font-size: 13px;
         transition: all 0.3s ease;
-        margin-bottom: 25px;
+        margin-bottom: 18px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
@@ -49,7 +49,7 @@
     }
 
     .back-button i {
-        font-size: 18px;
+        font-size: 14px;
         transition: transform 0.3s ease;
     }
 
@@ -59,37 +59,37 @@
 
     .idea-hero {
         background: white;
-        border-radius: 24px;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
     }
 
     .hero-image {
         width: 100%;
-        height: 450px;
+        height: 350px;
         object-fit: cover;
     }
 
     .hero-content {
-        padding: 40px;
+        padding: 25px;
     }
 
     .hero-badges {
         display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 8px;
+        margin-bottom: 15px;
         flex-wrap: wrap;
     }
 
     .hero-badge {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 13px;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 11px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
     }
 
     .badge-waste {
@@ -113,64 +113,64 @@
     }
 
     .hero-title {
-        font-size: 36px;
+        font-size: 26px;
         font-weight: 800;
         color: #1f2937;
-        margin-bottom: 15px;
-        line-height: 1.2;
+        margin-bottom: 12px;
+        line-height: 1.3;
     }
 
     .hero-meta {
         display: flex;
         align-items: center;
-        gap: 25px;
-        margin-bottom: 25px;
+        gap: 18px;
+        margin-bottom: 18px;
         flex-wrap: wrap;
     }
 
     .creator-info {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
     .creator-avatar {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid #10b981;
+        border: 2px solid #10b981;
     }
 
     .creator-details h4 {
         margin: 0;
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 700;
         color: #1f2937;
     }
 
     .creator-details span {
-        font-size: 13px;
+        font-size: 12px;
         color: #6b7280;
     }
 
     .meta-stats {
         display: flex;
-        gap: 20px;
+        gap: 15px;
     }
 
     .stat {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 14px;
+        gap: 6px;
+        font-size: 13px;
         color: #6b7280;
         font-weight: 600;
     }
 
     .stat i {
         color: #10b981;
-        font-size: 18px;
+        font-size: 14px;
     }
 
     .stat strong {
@@ -178,31 +178,31 @@
     }
 
     .hero-description {
-        font-size: 16px;
-        line-height: 1.8;
+        font-size: 14px;
+        line-height: 1.7;
         color: #4b5563;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
 
     .action-buttons {
         display: flex;
-        gap: 15px;
+        gap: 12px;
         flex-wrap: wrap;
     }
 
     .btn-primary {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
-        padding: 14px 30px;
-        border-radius: 12px;
+        padding: 10px 22px;
+        border-radius: 10px;
         font-weight: 700;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        font-size: 15px;
+        gap: 8px;
+        font-size: 13px;
         text-decoration: none;
     }
 
@@ -216,16 +216,16 @@
     .btn-secondary {
         background: white;
         color: #10b981;
-        padding: 14px 30px;
-        border-radius: 12px;
+        padding: 10px 22px;
+        border-radius: 10px;
         font-weight: 700;
         border: 2px solid #10b981;
         cursor: pointer;
         transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        font-size: 15px;
+        gap: 8px;
+        font-size: 13px;
         text-decoration: none;
     }
 
@@ -250,38 +250,38 @@
 
     .content-section {
         background: white;
-        border-radius: 20px;
-        padding: 35px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
     }
 
     .section-title {
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 800;
         color: #1f2937;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
     .section-title i {
         color: #10b981;
-        font-size: 28px;
+        font-size: 20px;
     }
 
     .team-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 14px;
     }
 
     .team-member {
         text-align: center;
-        padding: 20px;
+        padding: 14px;
         background: #f9fafb;
-        border-radius: 16px;
+        border-radius: 12px;
         transition: all 0.3s ease;
     }
 
@@ -291,62 +291,62 @@
     }
 
     .team-avatar {
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         object-fit: cover;
-        margin: 0 auto 12px;
-        border: 3px solid #10b981;
+        margin: 0 auto 10px;
+        border: 2px solid #10b981;
     }
 
     .team-name {
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 700;
         color: #1f2937;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
 
     .team-role {
-        font-size: 13px;
+        font-size: 11px;
         color: #6b7280;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .team-badge {
         display: inline-block;
-        padding: 4px 10px;
+        padding: 3px 8px;
         background: #d1fae5;
         color: #065f46;
-        border-radius: 12px;
-        font-size: 11px;
+        border-radius: 10px;
+        font-size: 10px;
         font-weight: 700;
     }
 
     .apply-form {
         background: #f9fafb;
-        padding: 30px;
-        border-radius: 16px;
-        margin-top: 20px;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 16px;
     }
 
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
 
     .form-label {
         display: block;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         color: #374151;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .form-control {
         width: 100%;
-        padding: 12px 16px;
+        padding: 10px 14px;
         border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        font-size: 14px;
+        border-radius: 8px;
+        font-size: 13px;
         transition: all 0.3s ease;
     }
 
@@ -357,89 +357,90 @@
     }
 
     textarea.form-control {
-        min-height: 120px;
+        min-height: 90px;
         resize: vertical;
     }
 
     .review-item {
-        padding: 20px;
+        padding: 14px;
         background: #f9fafb;
-        border-radius: 16px;
-        margin-bottom: 15px;
+        border-radius: 12px;
+        margin-bottom: 12px;
     }
 
     .review-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
+        gap: 10px;
+        margin-bottom: 10px;
     }
 
     .review-avatar {
-        width: 45px;
-        height: 45px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         object-fit: cover;
     }
 
     .review-info h5 {
         margin: 0;
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 700;
         color: #1f2937;
     }
 
     .review-info span {
-        font-size: 12px;
+        font-size: 11px;
         color: #9ca3af;
     }
 
     .review-content {
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.6;
         color: #4b5563;
     }
 
     .impact-metrics {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 14px;
     }
 
     .metric-card {
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        padding: 20px;
-        border-radius: 16px;
+        padding: 14px;
+        border-radius: 12px;
         text-align: center;
     }
 
     .metric-icon {
-        font-size: 32px;
+        font-size: 24px;
         color: #10b981;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .metric-value {
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 800;
         color: #065f46;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
 
     .metric-label {
-        font-size: 13px;
+        font-size: 11px;
         color: #047857;
         font-weight: 600;
     }
 
     .alert {
-        padding: 16px 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         font-weight: 600;
+        font-size: 13px;
     }
 
     .alert-success {
@@ -557,13 +558,13 @@
                     <div class="meta-stats">
                         <div class="stat">
                             <i class="fas fa-heart"></i>
-                            <strong>{{ $ecoIdea->upvotes ?? 0 }}</strong> Likes
+                            <strong id="header-like-count">{{ $ecoIdea->upvotes ?? 0 }}</strong> Likes
                         </div>
                         <div class="stat">
                             <i class="fas fa-users"></i>
-                            <strong>{{ $ecoIdea->team_size_current ?? 1 }}/{{ $ecoIdea->team_size_needed ?? 0 }}</strong> Team
+                            <strong>{{ $ecoIdea->team()->count() + 1 }}/{{ $ecoIdea->team_size_needed ?? 0 }}</strong> Team
                         </div>
-                        @if($ecoIdea->is_recruiting)
+                        @if($ecoIdea->project_status === 'recruiting')
                             <div class="stat">
                                 <i class="fas fa-user-plus"></i>
                                 <span style="color: #10b981; font-weight: 700;">Recruiting Now!</span>
@@ -583,7 +584,7 @@
                             <span id="like-text">{{ $hasLiked ? 'Unlike' : 'Like' }}</span> (<span id="like-count">{{ $ecoIdea->upvotes ?? 0 }}</span>)
                         </button>
 
-                        @if($ecoIdea->is_recruiting && !$hasApplied && $ecoIdea->project_status !== 'completed' && $ecoIdea->project_status !== 'verified' && $ecoIdea->creator_id !== auth()->id())
+                        @if($ecoIdea->project_status === 'recruiting' && !$hasApplied && !$isTeamMember && $ecoIdea->creator_id !== auth()->id())
                             <button onclick="document.getElementById('apply-section').scrollIntoView({behavior: 'smooth'})" class="btn-primary">
                                 <i class="fas fa-user-plus"></i>
                                 Apply to Join
@@ -592,6 +593,11 @@
                             <span class="btn-secondary" style="cursor: not-allowed; opacity: 0.7;">
                                 <i class="fas fa-check"></i>
                                 Application Submitted
+                            </span>
+                        @elseif($isTeamMember)
+                            <span class="btn-secondary" style="cursor: not-allowed; opacity: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                                <i class="fas fa-users"></i>
+                                You're a Team Member
                             </span>
                         @elseif($ecoIdea->creator_id === auth()->id())
                             <span class="btn-secondary" style="cursor: not-allowed; opacity: 0.7;">
@@ -610,28 +616,41 @@
         </div>
 
         <!-- Team Section -->
-        @if($ecoIdea->team && $ecoIdea->team->count() > 0)
-            <div class="content-section">
-                <h2 class="section-title">
-                    <i class="fas fa-users"></i>
-                    Team Members ({{ $ecoIdea->team->count() }})
-                </h2>
-                <div class="team-grid">
-                    @foreach($ecoIdea->team as $member)
-                        <div class="team-member">
-                            <img src="{{ $member->user->profile_picture_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($member->user->name ?? 'U') . '&background=10b981&color=fff' }}" 
-                                 alt="{{ $member->user->name ?? 'Member' }}" 
-                                 class="team-avatar">
-                            <div class="team-name">{{ $member->user->name ?? 'Member' }}</div>
-                            <div class="team-role">{{ $member->specialization ?? $member->role }}</div>
-                            @if($member->role === 'leader')
-                                <span class="team-badge">Leader</span>
-                            @endif
-                        </div>
-                    @endforeach
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-users"></i>
+                Team Members ({{ $ecoIdea->team->count() + 1 }} including owner)
+            </h2>
+            <div class="team-grid">
+                <!-- Owner (Always First) -->
+                <div class="team-member">
+                    <img src="{{ $ecoIdea->creator->profile_picture_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($ecoIdea->creator->name ?? 'Owner') . '&background=f59e0b&color=fff' }}" 
+                         alt="{{ $ecoIdea->creator->name ?? 'Owner' }}" 
+                         class="team-avatar">
+                    <div class="team-name">{{ $ecoIdea->creator->name ?? 'Owner' }}</div>
+                    <div class="team-role">Project Owner</div>
+                    <span class="team-badge" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="fas fa-crown"></i> Owner
+                    </span>
                 </div>
+                
+                <!-- Team Members -->
+                @foreach($ecoIdea->team as $member)
+                    <div class="team-member">
+                        <img src="{{ $member->user->profile_picture_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($member->user->name ?? 'U') . '&background=10b981&color=fff' }}" 
+                             alt="{{ $member->user->name ?? 'Member' }}" 
+                             class="team-avatar">
+                        <div class="team-name">{{ $member->user->name ?? 'Member' }}</div>
+                        <div class="team-role">{{ $member->specialization ?? ucfirst($member->role) }}</div>
+                        @if($member->role === 'leader')
+                            <span class="team-badge">
+                                <i class="fas fa-star"></i> Leader
+                            </span>
+                        @endif
+                    </div>
+                @endforeach
             </div>
-        @endif
+        </div>
 
         <!-- Requirements Section -->
         @if($ecoIdea->team_requirements)
@@ -696,12 +715,47 @@
 
         <!-- Application Form -->
         @auth
-            @if($ecoIdea->is_recruiting && !$hasApplied && $ecoIdea->project_status !== 'completed' && $ecoIdea->project_status !== 'verified' && $ecoIdea->creator_id !== auth()->id())
+            @php
+                $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
+                $teamSizeNeeded = $ecoIdea->team_size_needed ?? 0;
+                $spotsAvailable = max(0, $teamSizeNeeded - $currentTeamCount);
+                $teamIsFull = $teamSizeNeeded > 0 && $currentTeamCount >= $teamSizeNeeded;
+            @endphp
+            
+            @if($teamIsFull && $ecoIdea->creator_id !== auth()->id() && !$hasApplied && !$isTeamMember)
+                <!-- Team Full Message -->
+                <div class="content-section" id="apply-section">
+                    <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #ef4444; padding: 25px; border-radius: 12px; text-align: center;">
+                        <i class="fas fa-users-slash" style="font-size: 48px; color: #dc2626; margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 22px; font-weight: 800; color: #991b1b; margin-bottom: 10px;">
+                            Team is Full!
+                        </h3>
+                        <p style="font-size: 16px; color: #7f1d1d; margin: 0;">
+                            All <strong>{{ $teamSizeNeeded }} positions</strong> have been filled (including owner). This project is no longer accepting applications.
+                        </p>
+                        <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                            <p style="font-size: 14px; color: #991b1b; margin: 0;">
+                                <i class="fas fa-check-circle"></i> Current Team: <strong>{{ $currentTeamCount }}/{{ $teamSizeNeeded }}</strong> members
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @elseif($ecoIdea->project_status === 'recruiting' && !$hasApplied && !$isTeamMember && $ecoIdea->creator_id !== auth()->id())
                 <div class="content-section" id="apply-section">
                     <h2 class="section-title">
                         <i class="fas fa-file-alt"></i>
                         Apply to Join This Project
                     </h2>
+                    @if($teamSizeNeeded > 0)
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #10b981; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <p style="font-size: 14px; color: #065f46; margin: 0; font-weight: 600;">
+                                <i class="fas fa-users"></i> Waiting for <strong>{{ $spotsAvailable }}</strong> more member(s) out of {{ $teamSizeNeeded }} total
+                            </p>
+                            <p style="font-size: 13px; color: #047857; margin: 5px 0 0 0;">
+                                Current team: {{ $currentTeamCount }}/{{ $teamSizeNeeded }} members
+                            </p>
+                        </div>
+                    @endif
                     @if($ecoIdea->application_description)
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
@@ -776,7 +830,7 @@
                     <i class="fas fa-pen"></i>
                     Share Your Thoughts
                 </h2>
-                <form action="{{ route('front.eco-ideas.review', $ecoIdea->id) }}" method="POST" class="apply-form">
+                <form id="reviewForm" action="{{ route('front.eco-ideas.review', $ecoIdea->id) }}" method="POST" class="apply-form">
                     @csrf
                     <div class="form-group">
                         <label class="form-label">Write a review *</label>
@@ -871,8 +925,9 @@
                 return;
             }
 
-            // Update the like count
+            // Update both like counts
             document.getElementById('like-count').textContent = data.upvotes;
+            document.getElementById('header-like-count').textContent = data.upvotes;
 
             // Update the text
             const likeText = document.getElementById('like-text');
