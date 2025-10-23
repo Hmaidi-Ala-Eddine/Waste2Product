@@ -944,11 +944,11 @@
                     
                     <!-- Chat Input -->
                     <div style="border-top: 2px solid #e5e7eb; padding: 20px; background: white;">
-                        <form id="chatForm" style="display: flex; gap: 12px; align-items: center;">
+                        <form id="teamChatForm" style="display: flex; gap: 12px; align-items: center;">
                             @csrf
                             <input 
                                 type="text" 
-                                id="chatInput" 
+                                id="teamChatInput" 
                                 placeholder="Type your message..." 
                                 style="flex: 1; padding: 14px 20px; border: 2px solid #e5e7eb; border-radius: 999px; font-size: 14px; outline: none; transition: all 0.2s ease;"
                                 required
@@ -2304,10 +2304,10 @@ function loadChatMessages() {
 }
 
 // Send message
-document.getElementById('chatForm').addEventListener('submit', function(e) {
+document.getElementById('teamChatForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const input = document.getElementById('chatInput');
+    const input = document.getElementById('teamChatInput');
     const message = input.value.trim();
     
     if (!message) return;
