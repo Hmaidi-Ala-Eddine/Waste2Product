@@ -768,7 +768,7 @@ class EcoIdeaController extends Controller
             'description' => 'required|string',
             'waste_type' => 'required|in:organic,plastic,metal,e-waste,paper,glass,textile,mixed',
             'difficulty_level' => 'required|in:easy,medium,hard',
-            'team_size_needed' => 'nullable|integer|min:1',
+            'team_size_needed' => 'nullable|integer|min:1|max:20',
             'team_requirements' => 'nullable|string',
             'application_description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -776,11 +776,16 @@ class EcoIdeaController extends Controller
         
         // Note: project_status is NOT included - it's managed automatically by the system
 
-        // Validate team_size_needed (must include the owner)
+        // Validate team_size_needed (must include the owner and not exceed maximum)
         if (isset($data['team_size_needed'])) {
             if ($data['team_size_needed'] < $currentTeamCount) {
                 return back()->withErrors([
                     'team_size_needed' => "Team size cannot be less than current team members ({$currentTeamCount}). You currently have {$currentTeamCount} member(s) including yourself as the owner."
+                ])->withInput();
+            }
+            if ($data['team_size_needed'] > 20) {
+                return back()->withErrors([
+                    'team_size_needed' => "Team size cannot exceed 20 members. Please choose a smaller team size."
                 ])->withInput();
             }
         }
@@ -797,7 +802,7 @@ class EcoIdeaController extends Controller
         // Auto-update project status based on team size and task completion
         $this->updateProjectStatus($ecoIdea);
 
-        return back()->with('success', 'Eco idea updated successfully!');
+        return back();
     }
 
     /**
@@ -928,7 +933,7 @@ class EcoIdeaController extends Controller
     public function markAsCompleted(EcoIdea $ecoIdea)
     {
         if ($ecoIdea->creator_id !== auth()->id()) {
-            abort(403, 'Only the project creator can mark it as completed.');
+            return response()->json(['success' => false, 'message' => 'Only the project creator can mark it as completed.'], 403);
         }
 
         // Check if all tasks are completed
@@ -936,16 +941,23 @@ class EcoIdeaController extends Controller
         $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
 
         if ($totalTasks === 0) {
-            return back()->with('error', 'Cannot mark as completed: No tasks have been created yet.');
+            return response()->json(['success' => false, 'message' => 'Cannot mark as completed: No tasks have been created yet.']);
         }
 
         if ($completedTasks !== $totalTasks) {
-            return back()->with('error', "Cannot mark as completed: {$completedTasks}/{$totalTasks} tasks completed. All tasks must be completed first.");
+            return response()->json(['success' => false, 'message' => "Cannot mark as completed: {$completedTasks}/{$totalTasks} tasks completed. All tasks must be completed first."]);
         }
 
-        $ecoIdea->update(['project_status' => 'completed']);
+        // Mark project as completed
+        $ecoIdea->update([
+            'project_status' => 'completed',
+            'completion_date' => now()
+        ]);
 
-        return back()->with('success', 'Project marked as completed! Waiting for Waste2Product verification.');
+        return response()->json([
+            'success' => true, 
+            'message' => 'Project marked as completed! Your project is now locked and awaiting admin verification. If verified, you and your team will earn certificates!'
+        ]);
     }
 
     /**

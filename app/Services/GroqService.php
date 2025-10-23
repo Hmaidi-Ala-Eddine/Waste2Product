@@ -415,6 +415,205 @@ Remember: Your goal is to make waste management easy, accessible, and encourage 
     }
 
     /**
+     * Suggest team requirements for EcoIdea project
+     *
+     * @param string $title
+     * @param string $description
+     * @param string $wasteType
+     * @param string $difficultyLevel
+     * @param int|null $teamSize
+     * @return array
+     */
+    public function suggestTeamRequirements(string $title, string $description, string $wasteType, string $difficultyLevel, ?int $teamSize = null): array
+    {
+        // Map waste type and difficulty to readable names
+        $wasteTypeLabels = [
+            'plastic' => 'Plastic',
+            'paper' => 'Paper',
+            'metal' => 'Metal',
+            'glass' => 'Glass',
+            'organic' => 'Organic Waste',
+            'e-waste' => 'Electronic Waste (E-Waste)',
+            'textile' => 'Textile',
+            'mixed' => 'Mixed Waste'
+        ];
+
+        $difficultyLabels = [
+            'easy' => 'Easy (Beginner-friendly)',
+            'medium' => 'Medium (Intermediate skills required)',
+            'hard' => 'Hard (Advanced expertise needed)'
+        ];
+
+        $wasteTypeLabel = $wasteTypeLabels[$wasteType] ?? $wasteType;
+        $difficultyLabel = $difficultyLabels[$difficultyLevel] ?? $difficultyLevel;
+        $teamSizeContext = $teamSize ? " The team size needed is: {$teamSize} members." : "";
+
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => "You are an expert project manager specializing in environmental and waste management projects. Based on the project details provided, suggest specific team requirements listing the skills, roles, and expertise needed. Be concise, practical, and specific to the waste type and project complexity. Format as a clear list of skills/roles separated by commas (e.g., 'Environmental Engineer, Waste Management Specialist, Project Coordinator, Marketing/Communications'). Keep it under 200 characters. Focus on the most essential skills only."
+            ],
+            [
+                'role' => 'user',
+                'content' => "Suggest team requirements for this eco-innovation project:\n\nTitle: {$title}\nDescription: {$description}\nWaste Type: {$wasteTypeLabel}\nDifficulty: {$difficultyLabel}{$teamSizeContext}\n\nProvide a concise comma-separated list of required skills and roles."
+            ]
+        ];
+
+        try {
+            $response = $this->chat($messages, $this->analysisModel);
+
+            if ($response && isset($response['choices'][0]['message']['content'])) {
+                $suggested = trim($response['choices'][0]['message']['content']);
+                
+                return [
+                    'success' => true,
+                    'suggested' => $suggested
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Could not generate team requirements'
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Team requirements suggestion failed', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'message' => 'Suggestion service temporarily unavailable'
+            ];
+        }
+    }
+
+    /**
+     * Check EcoIdea originality against existing ideas
+     *
+     * @param string $title
+     * @param string $description
+     * @param array $existingIdeas
+     * @return array
+     */
+    public function checkIdeaOriginality(string $title, string $description, array $existingIdeas): array
+    {
+        if (empty($existingIdeas)) {
+            return [
+                'success' => true,
+                'is_original' => true,
+                'similarity_percentage' => 0,
+                'message' => 'No existing ideas to compare against'
+            ];
+        }
+
+        // Format existing ideas for AI comparison
+        $existingIdeasText = '';
+        foreach ($existingIdeas as $index => $idea) {
+            $num = $index + 1;
+            $existingIdeasText .= "Idea #{$num}:\nTitle: {$idea['title']}\nDescription: {$idea['description']}\n\n";
+        }
+
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => "You are an expert copyright and plagiarism detector for eco-innovation projects. Your job is to analyze if a new project idea is too similar to existing ones.
+
+IMPORTANT: Almost ALL eco-projects involve 'transforming waste into something useful' - that's too general to count as similar!
+
+CRITICAL RULES FOR DETERMINING SIMILARITY:
+1. **HIGH Similarity (80-100%)**: Ideas are similar if they share:
+   - Same specific waste type (e.g., both use plastic bottles, both use paper)
+   - Same specific methodology/process (e.g., both make vertical gardens, both make furniture)
+   - Same specific end product (e.g., both create planters, both create bags)
+   - Same specific target application (e.g., both for schools, both for homes)
+
+2. **LOW Similarity (0-30%)**: Ideas are DIFFERENT if they differ in:
+   - Different waste types (plastic bottles vs organic waste vs e-waste)
+   - Different end products (garden vs furniture vs clothing vs machine)
+   - Different methodologies (composting vs crafting vs melting vs recycling)
+   - Different target users or applications
+
+3. **Be CONSISTENT**: Same inputs should always give same similarity score.
+
+4. **Be SPECIFIC**: Don't say 'both transform waste' - that's too vague. Focus on WHAT waste, WHAT process, WHAT product.
+
+EXAMPLES:
+- 'Plastic bottle garden' vs 'Plastic bottle planter': 90% similar ✓
+- 'Plastic bottle garden' vs 'Paper waste compost': 15% similar ✓
+- 'Plastic bottle garden' vs 'E-waste recycling machine': 10% similar ✓
+- 'Plastic bottle garden' vs 'Textile waste bags': 10% similar ✓
+
+OUTPUT FORMAT (JSON only, no extra text):
+{
+    \"similarity_percentage\": <number 0-100>,
+    \"most_similar_idea_number\": <number or null>,
+    \"is_original\": <true or false>,
+    \"reasoning\": \"<specific explanation focusing on waste type, methodology, and end product>\",
+    \"similar_aspects\": [\"<list of similar aspects if any>\"]
+}"
+            ],
+            [
+                'role' => 'user',
+                'content' => "NEW IDEA TO CHECK:\nTitle: {$title}\nDescription: {$description}\n\n---\n\nEXISTING IDEAS IN DATABASE:\n{$existingIdeasText}\n\nAnalyze if the new idea is too similar (>= 80%) to any existing idea. Return ONLY valid JSON."
+            ]
+        ];
+
+        try {
+            // Use temperature 0 for consistent, deterministic results
+            $response = $this->chat($messages, $this->analysisModel, 0);
+
+            if ($response && isset($response['choices'][0]['message']['content'])) {
+                $aiResponse = trim($response['choices'][0]['message']['content']);
+                
+                // Try to extract JSON from response
+                if (preg_match('/\{[\s\S]*\}/', $aiResponse, $matches)) {
+                    $jsonData = json_decode($matches[0], true);
+                    
+                    if ($jsonData && isset($jsonData['similarity_percentage'])) {
+                        $similarityPercentage = (float) $jsonData['similarity_percentage'];
+                        $isOriginal = $similarityPercentage < 80;
+                        
+                        $result = [
+                            'success' => true,
+                            'is_original' => $isOriginal,
+                            'similarity_percentage' => $similarityPercentage,
+                            'reasoning' => $jsonData['reasoning'] ?? 'No reasoning provided',
+                            'similar_aspects' => $jsonData['similar_aspects'] ?? [],
+                            'most_similar_idea_number' => $jsonData['most_similar_idea_number'] ?? null
+                        ];
+
+                        if (!$isOriginal && isset($jsonData['most_similar_idea_number'])) {
+                            $similarIdeaIndex = $jsonData['most_similar_idea_number'] - 1;
+                            if (isset($existingIdeas[$similarIdeaIndex])) {
+                                $result['similar_idea_id'] = $existingIdeas[$similarIdeaIndex]['id'];
+                                $result['similar_idea_title'] = $existingIdeas[$similarIdeaIndex]['title'];
+                            }
+                        }
+
+                        return $result;
+                    }
+                }
+
+                // Fallback if JSON parsing fails
+                return [
+                    'success' => false,
+                    'message' => 'Could not parse AI response'
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Could not check originality'
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Originality check failed', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'message' => 'Originality check service temporarily unavailable'
+            ];
+        }
+    }
+
+    /**
      * Generate AI report for waste requests
      *
      * @param array $data

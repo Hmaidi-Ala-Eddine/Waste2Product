@@ -313,4 +313,117 @@ class ChatbotController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Suggest team requirements for EcoIdea using AI
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function suggestTeamRequirements(Request $request)
+    {
+        // Rate limiting
+        $key = 'ai-suggest-team:' . $request->ip();
+        
+        if (RateLimiter::tooManyAttempts($key, 15)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many requests. Please wait a moment.',
+            ], 429);
+        }
+
+        RateLimiter::hit($key, 60);
+
+        // Validate input
+        $validated = $request->validate([
+            'title' => 'required|string|min:3|max:255',
+            'description' => 'required|string|min:10|max:1000',
+            'waste_type' => 'required|string|in:plastic,paper,metal,glass,organic,e-waste,textile,mixed',
+            'difficulty_level' => 'required|string|in:easy,medium,hard',
+            'team_size' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        try {
+            $result = $this->groqService->suggestTeamRequirements(
+                $validated['title'],
+                $validated['description'],
+                $validated['waste_type'],
+                $validated['difficulty_level'],
+                $validated['team_size'] ?? null
+            );
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Team requirements suggestion error', [
+                'error' => $e->getMessage(),
+                'title' => $validated['title']
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not generate team requirements. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Check EcoIdea originality using AI
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkIdeaOriginality(Request $request)
+    {
+        // Rate limiting
+        $key = 'ai-check-originality:' . $request->ip();
+        
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many requests. Please wait a moment.',
+            ], 429);
+        }
+
+        RateLimiter::hit($key, 60);
+
+        // Validate input
+        $validated = $request->validate([
+            'title' => 'required|string|min:5|max:255',
+            'description' => 'required|string|min:20|max:1000',
+        ]);
+
+        try {
+            // Get all existing eco ideas (only title and description)
+            $existingIdeas = \App\Models\EcoIdea::select('id', 'title', 'description')
+                ->get()
+                ->map(function ($idea) {
+                    return [
+                        'id' => $idea->id,
+                        'title' => $idea->title,
+                        'description' => $idea->description
+                    ];
+                })
+                ->toArray();
+
+            $result = $this->groqService->checkIdeaOriginality(
+                $validated['title'],
+                $validated['description'],
+                $existingIdeas
+            );
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('Originality check error', [
+                'error' => $e->getMessage(),
+                'title' => $validated['title']
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not check originality. Please try again.',
+            ], 500);
+        }
+    }
 }

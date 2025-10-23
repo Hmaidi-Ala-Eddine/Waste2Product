@@ -706,6 +706,59 @@ footer {
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
+/* AI Suggestion Button */
+.team-requirements-enhancer-wrapper {
+    position: relative;
+}
+
+/* Custom Number Input with Beautiful Visible Arrows */
+input[type="number"]#team_size_needed {
+    padding-right: 8px !important;
+}
+
+input[type="number"]#team_size_needed::-webkit-inner-spin-button,
+input[type="number"]#team_size_needed::-webkit-outer-spin-button {
+    opacity: 1 !important;
+    cursor: pointer;
+    height: 50px;
+}
+
+.btn-ai-suggest {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    z-index: 10;
+}
+
+.btn-ai-suggest:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.btn-ai-suggest:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-ai-suggest i {
+    margin-right: 6px;
+}
+
+.team-requirements-enhancer-wrapper textarea {
+    padding-right: 140px;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1288,7 +1341,7 @@ footer {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form action="{{ route('front.eco-ideas.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="createIdeaForm" action="{{ route('front.eco-ideas.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
@@ -1327,13 +1380,26 @@ footer {
                     </div>
 
                     <div class="form-group">
-                        <label for="team_size_needed">Team Size Needed</label>
-                        <input type="number" id="team_size_needed" name="team_size_needed" class="form-control-modal" min="1" placeholder="e.g., 5">
+                        <label for="team_size_needed">Total Team Size (including you)</label>
+                        <input type="number" id="team_size_needed" name="team_size_needed" class="form-control-modal" min="1" max="20" value="1" step="1" onkeydown="return false" style="font-size: 18px; font-weight: 600; text-align: center;">
+                        <small style="display: block; margin-top: 5px; font-size: 11px; color: #6b7280;">
+                            <i class="fas fa-user"></i> Use ↑↓ arrows to adjust. Range: 1-20 members (you as the owner)
+                        </small>
                     </div>
 
                     <div class="form-group">
                         <label for="team_requirements">Team Requirements</label>
-                        <textarea id="team_requirements" name="team_requirements" class="form-control-modal" rows="3" placeholder="Skills needed: coding, design, marketing..."></textarea>
+                        <div class="team-requirements-enhancer-wrapper">
+                            <textarea id="team_requirements" name="team_requirements" class="form-control-modal" rows="3" placeholder="Skills needed: coding, design, marketing..."></textarea>
+                            <button type="button" id="suggestTeamBtn" class="btn-ai-suggest" title="Suggest with AI">
+                                <span class="btn-text">
+                                    <i class="fas fa-sparkles"></i> Suggest with AI
+                                </span>
+                                <span class="btn-loader" style="display:none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -1342,8 +1408,30 @@ footer {
                     </div>
 
                     <div class="form-group">
-                        <label for="image">Image</label>
-                        <input type="file" id="image" name="image" class="form-control-modal" accept="image/*">
+                        <label for="image">Image *</label>
+                        <input type="file" id="image" name="image" class="form-control-modal" accept="image/*" required>
+                        <small id="imageHelp" style="display: block; margin-top: 5px; font-size: 11px; color: #6b7280;">
+                            <i class="fas fa-info-circle"></i> Please upload a project image (JPG, PNG, or GIF)
+                        </small>
+                    </div>
+
+                    <!-- Copyright Verification Section -->
+                    <div id="copyrightSection" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 8px; margin-top: 15px;">
+                        <p style="margin: 0 0 10px 0; font-size: 13px; color: #92400e; font-weight: 600;">
+                            <i class="fas fa-shield-alt"></i> <strong>Copyright Verification Required</strong>
+                        </p>
+                        <p style="margin: 0 0 10px 0; font-size: 11px; color: #92400e;">
+                            Before creating your idea, you must verify it's original and not too similar (≥80%) to existing projects.
+                        </p>
+                        <button type="button" id="verifyOriginality" class="btn-verify-copyright" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                            <span class="btn-text-verify">
+                                <i class="fas fa-check-circle"></i> Verify Originality with AI
+                            </span>
+                            <span class="btn-loader-verify" style="display:none;">
+                                <i class="fas fa-spinner fa-spin"></i> Checking...
+                            </span>
+                        </button>
+                        <div id="verificationResult" style="margin-top: 10px; display: none;"></div>
                     </div>
 
                     <!-- Status is now automatic based on team size and task completion -->
@@ -1361,7 +1449,7 @@ footer {
                 
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary-modal" onclick="closeCreateModal()">Cancel</button>
-                    <button type="submit" class="btn-primary-modal">
+                    <button type="submit" id="submitIdeaBtn" class="btn-primary-modal" disabled style="opacity: 0.5; cursor: not-allowed;">
                         <i class="fas fa-check"></i> Create Eco Idea
                     </button>
                 </div>
@@ -1460,7 +1548,7 @@ footer {
                             @if($idea->image_path && file_exists(public_path('storage/' . $idea->image_path)))
                                 <img src="{{ asset('storage/' . $idea->image_path) }}" alt="{{ $idea->title }}" class="idea-image">
                             @else
-                                <img src="{{ asset('assets/front/img/default-eco.jpg') }}" alt="{{ $idea->title }}" class="idea-image" onerror="this.src='https://via.placeholder.com/400x250/10b981/ffffff?text=Eco+Idea'">
+                                <img src="{{ asset('assets/front/img/default-eco.jpg') }}" alt="{{ $idea->title }}" class="idea-image">
                             @endif
                             
                             <div class="idea-badges">
@@ -1562,6 +1650,137 @@ footer {
             closeCreateModal();
         }
     });
+
+    // ========== FORM VALIDATION WITH VISUAL FEEDBACK ==========
+    const createForm = document.getElementById('createIdeaForm');
+    
+    if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            let firstInvalidField = null;
+
+            // Helper function to mark field as invalid
+            function markInvalid(fieldId, message) {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.style.border = '2px solid #ef4444';
+                    field.style.background = '#fef2f2';
+                    
+                    // Remove existing error message if any
+                    const existingError = field.parentElement.querySelector('.error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.style.cssText = 'color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+                    field.parentElement.appendChild(errorDiv);
+                    
+                    if (!firstInvalidField) {
+                        firstInvalidField = field;
+                    }
+                    isValid = false;
+                }
+            }
+
+            // Helper function to clear validation styling
+            function clearValidation(fieldId) {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.style.border = '';
+                    field.style.background = '';
+                    const errorMsg = field.parentElement.querySelector('.error-message');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            }
+
+            // Clear all previous validation
+            ['title', 'description', 'waste_type', 'difficulty_level', 'image'].forEach(clearValidation);
+
+            // Validate Title
+            const title = document.getElementById('title').value.trim();
+            if (!title) {
+                markInvalid('title', 'Title is required');
+            } else if (title.length < 5) {
+                markInvalid('title', 'Title must be at least 5 characters');
+            }
+
+            // Validate Description
+            const description = document.getElementById('description').value.trim();
+            if (!description) {
+                markInvalid('description', 'Description is required');
+            } else if (description.length < 20) {
+                markInvalid('description', 'Description must be at least 20 characters');
+            }
+
+            // Validate Waste Type (already selected by default, but check anyway)
+            const wasteType = document.getElementById('waste_type').value;
+            if (!wasteType) {
+                markInvalid('waste_type', 'Please select a waste type');
+            }
+
+            // Validate Difficulty Level
+            const difficultyLevel = document.getElementById('difficulty_level').value;
+            if (!difficultyLevel) {
+                markInvalid('difficulty_level', 'Please select a difficulty level');
+            }
+
+            // Validate Image Upload
+            const imageInput = document.getElementById('image');
+            if (!imageInput.files || imageInput.files.length === 0) {
+                markInvalid('image', 'Please upload a project image');
+            } else {
+                // Validate file type
+                const file = imageInput.files[0];
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!validTypes.includes(file.type)) {
+                    markInvalid('image', 'Please upload a valid image file (JPG, PNG, or GIF)');
+                }
+                // Validate file size (max 5MB)
+                else if (file.size > 5 * 1024 * 1024) {
+                    markInvalid('image', 'Image size must be less than 5MB');
+                }
+            }
+
+            // If validation failed, prevent submission and focus first invalid field
+            if (!isValid) {
+                e.preventDefault();
+                if (firstInvalidField) {
+                    firstInvalidField.focus();
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+
+        // Real-time validation - clear errors as user types
+        ['title', 'description', 'waste_type', 'difficulty_level', 'image'].forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', function() {
+                    this.style.border = '';
+                    this.style.background = '';
+                    const errorMsg = this.parentElement.querySelector('.error-message');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                });
+                
+                field.addEventListener('change', function() {
+                    this.style.border = '';
+                    this.style.background = '';
+                    const errorMsg = this.parentElement.querySelector('.error-message');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                });
+            }
+        });
+    }
 
     // Restore active section from localStorage on page load
     const savedSection = localStorage.getItem('ecoIdeasActiveSection') || 'discover';
@@ -1865,5 +2084,253 @@ footer {
             console.error('Error:', error);
         });
     }
+
+    // ========== AI TEAM REQUIREMENTS SUGGESTION ==========
+    const teamRequirementsField = document.getElementById('team_requirements');
+    const suggestTeamBtn = document.getElementById('suggestTeamBtn');
+
+    if (suggestTeamBtn) {
+        suggestTeamBtn.addEventListener('click', async function() {
+            // Get form values
+            const title = document.getElementById('title')?.value?.trim() || '';
+            const description = document.getElementById('description')?.value?.trim() || '';
+            const wasteType = document.getElementById('waste_type')?.value || '';
+            const difficultyLevel = document.getElementById('difficulty_level')?.value || '';
+            const teamSize = document.getElementById('team_size_needed')?.value || null;
+
+            // Validation - silent check
+            if (!title || title.length < 3) {
+                document.getElementById('title').style.border = '2px solid #ef4444';
+                document.getElementById('title').focus();
+                setTimeout(() => {
+                    document.getElementById('title').style.border = '';
+                }, 2000);
+                return;
+            }
+
+            if (!description || description.length < 10) {
+                document.getElementById('description').style.border = '2px solid #ef4444';
+                document.getElementById('description').focus();
+                setTimeout(() => {
+                    document.getElementById('description').style.border = '';
+                }, 2000);
+                return;
+            }
+
+            // Show loading state
+            suggestTeamBtn.disabled = true;
+            suggestTeamBtn.querySelector('.btn-text').style.display = 'none';
+            suggestTeamBtn.querySelector('.btn-loader').style.display = 'inline-block';
+
+            try {
+                const response = await fetch('/chatbot/suggest-team-requirements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        waste_type: wasteType,
+                        difficulty_level: difficultyLevel,
+                        team_size: teamSize
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Set suggested team requirements
+                    teamRequirementsField.value = data.suggested;
+
+                    // Visual feedback
+                    teamRequirementsField.style.background = '#ede9fe';
+                    setTimeout(() => {
+                        teamRequirementsField.style.background = '';
+                    }, 2000);
+                } else {
+                    // Log error silently
+                    console.error('AI Suggestion error:', data.message);
+                }
+            } catch (error) {
+                console.error('AI Suggestion error:', error);
+            } finally {
+                // Reset button state
+                suggestTeamBtn.disabled = false;
+                suggestTeamBtn.querySelector('.btn-text').style.display = 'inline-block';
+                suggestTeamBtn.querySelector('.btn-loader').style.display = 'none';
+            }
+        });
+    }
+
+    // ========== COPYRIGHT VERIFICATION SYSTEM ==========
+    let isVerified = false;
+    const verifyBtn = document.getElementById('verifyOriginality');
+    const submitBtn = document.getElementById('submitIdeaBtn');
+    const verificationResult = document.getElementById('verificationResult');
+
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', async function() {
+            const title = document.getElementById('title')?.value?.trim() || '';
+            const description = document.getElementById('description')?.value?.trim() || '';
+
+            // Validation
+            if (!title || title.length < 5) {
+                document.getElementById('title').style.border = '2px solid #ef4444';
+                document.getElementById('title').focus();
+                setTimeout(() => {
+                    document.getElementById('title').style.border = '';
+                }, 2000);
+                return;
+            }
+
+            if (!description || description.length < 20) {
+                document.getElementById('description').style.border = '2px solid #ef4444';
+                document.getElementById('description').focus();
+                setTimeout(() => {
+                    document.getElementById('description').style.border = '';
+                }, 2000);
+                return;
+            }
+
+            // Show loading state
+            verifyBtn.disabled = true;
+            verifyBtn.querySelector('.btn-text-verify').style.display = 'none';
+            verifyBtn.querySelector('.btn-loader-verify').style.display = 'inline-block';
+            verificationResult.style.display = 'none';
+
+            try {
+                const response = await fetch('/chatbot/check-idea-originality', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ title, description })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.is_original) {
+                    // PASSED - Original idea
+                    isVerified = true;
+                    verificationResult.innerHTML = `
+                        <div style="background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; padding: 12px;">
+                            <p style="margin: 0; color: #065f46; font-weight: 600; font-size: 13px;">
+                                <i class="fas fa-check-circle"></i> ✅ Originality Verified!
+                            </p>
+                            <p style="margin: 5px 0 0 0; color: #047857; font-size: 11px;">
+                                Similarity: ${data.similarity_percentage}% - Your idea is original enough to proceed.
+                            </p>
+                        </div>
+                    `;
+                    verificationResult.style.display = 'block';
+                    
+                    // Enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                    
+                    // Update verify button
+                    verifyBtn.querySelector('.btn-text-verify').innerHTML = '<i class="fas fa-check-double"></i> Verified ✓';
+                    verifyBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    
+                } else if (data.success && !data.is_original) {
+                    // FAILED - Too similar
+                    isVerified = false;
+                    const similarTitle = data.similar_idea_title || 'an existing project';
+                    verificationResult.innerHTML = `
+                        <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 12px;">
+                            <p style="margin: 0; color: #991b1b; font-weight: 600; font-size: 13px;">
+                                <i class="fas fa-times-circle"></i> ❌ Not Original
+                            </p>
+                            <p style="margin: 5px 0; color: #b91c1c; font-size: 11px;">
+                                Similarity: <strong>${data.similarity_percentage}%</strong> (threshold: 80%)
+                            </p>
+                            <p style="margin: 5px 0 0 0; color: #b91c1c; font-size: 11px;">
+                                Your idea is too similar to "<strong>${similarTitle}</strong>". Please create a unique project.
+                            </p>
+                            ${data.reasoning ? `<p style="margin: 5px 0 0 0; color: #991b1b; font-size: 10px; font-style: italic;">Reason: ${data.reasoning}</p>` : ''}
+                        </div>
+                    `;
+                    verificationResult.style.display = 'block';
+                    
+                    // Keep submit button disabled
+                    submitBtn.disabled = true;
+                } else {
+                    // Error
+                    verificationResult.innerHTML = `
+                        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 12px;">
+                            <p style="margin: 0; color: #92400e; font-size: 11px;">
+                                <i class="fas fa-exclamation-triangle"></i> ${data.message || 'Could not verify originality. Please try again.'}
+                            </p>
+                        </div>
+                    `;
+                    verificationResult.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Originality check error:', error);
+                verificationResult.innerHTML = `
+                    <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 12px;">
+                        <p style="margin: 0; color: #991b1b; font-size: 11px;">
+                            <i class="fas fa-exclamation-triangle"></i> Verification failed. Please try again.
+                        </p>
+                    </div>
+                `;
+                verificationResult.style.display = 'block';
+            } finally {
+                // Reset button state
+                verifyBtn.disabled = false;
+                verifyBtn.querySelector('.btn-text-verify').style.display = 'inline-block';
+                verifyBtn.querySelector('.btn-loader-verify').style.display = 'none';
+            }
+        });
+    }
+
+    // Prevent form submission if not verified
+    if (createForm) {
+        const originalSubmitHandler = createForm.onsubmit;
+        createForm.addEventListener('submit', function(e) {
+            if (!isVerified) {
+                e.preventDefault();
+                verificationResult.innerHTML = `
+                    <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 12px;">
+                        <p style="margin: 0; color: #991b1b; font-weight: 600; font-size: 12px;">
+                            <i class="fas fa-exclamation-circle"></i> You must verify originality before creating!
+                        </p>
+                    </div>
+                `;
+                verificationResult.style.display = 'block';
+                verifyBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+        });
+    }
+
+    // Reset verification when title or description changes
+    ['title', 'description'].forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', function() {
+                if (isVerified) {
+                    isVerified = false;
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                    submitBtn.style.cursor = 'not-allowed';
+                    verifyBtn.querySelector('.btn-text-verify').innerHTML = '<i class="fas fa-check-circle"></i> Verify Originality with AI';
+                    verifyBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                    verificationResult.innerHTML = `
+                        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 8px;">
+                            <p style="margin: 0; color: #92400e; font-size: 11px;">
+                                <i class="fas fa-info-circle"></i> Changes detected. Please re-verify originality.
+                            </p>
+                        </div>
+                    `;
+                    verificationResult.style.display = 'block';
+                }
+            });
+        }
+    });
 </script>
 @endpush
