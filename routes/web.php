@@ -353,6 +353,8 @@ Route::prefix('chatbot')->name('chatbot.')->group(function () {
     // AI Waste Helper Routes
     Route::post('/detect-waste-type', [\App\Http\Controllers\ChatbotController::class, 'detectWasteType'])->name('detect-waste-type');
     Route::post('/enhance-description', [\App\Http\Controllers\ChatbotController::class, 'enhanceDescription'])->name('enhance-description');
+    Route::post('/suggest-team-requirements', [\App\Http\Controllers\ChatbotController::class, 'suggestTeamRequirements'])->name('suggest-team-requirements');
+    Route::post('/check-idea-originality', [\App\Http\Controllers\ChatbotController::class, 'checkIdeaOriginality'])->name('check-idea-originality');
     
     // Debug route
     Route::get('/test', function() {
