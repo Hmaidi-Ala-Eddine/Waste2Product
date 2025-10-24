@@ -177,7 +177,7 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="addEventForm" method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data">
+      <form id="addEventForm" method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data" onsubmit="return validateEventForm(event)" novalidate>
         @csrf
         <div class="modal-body p-4">
           <div class="row">
@@ -187,12 +187,16 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Subject *</label>
-                <input type="text" class="form-control border" name="subject" required placeholder="Enter event subject" style="background-color: #f8f9fa;">
+                <input type="text" id="subject" class="form-control border" name="subject" 
+                       placeholder="Enter event subject" style="background-color: #f8f9fa;">
+                <div id="subjectError" class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Date & Time *</label>
-                <input type="datetime-local" class="form-control border" name="date_time" required style="background-color: #f8f9fa;">
+                <input type="datetime-local" id="date_time" class="form-control border" name="date_time" 
+                       style="background-color: #f8f9fa;">
+                <div id="dateTimeError" class="invalid-feedback"></div>
               </div>
               
               <!-- Author is automatically set to logged-in user -->
@@ -223,8 +227,11 @@
               </div>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Description</label>
-                <textarea class="form-control border" name="description" rows="7" placeholder="Enter event description, agenda, location details..." style="background-color: #f8f9fa;"></textarea>
+                <label class="form-label text-dark">Description *</label>
+                <textarea id="description" class="form-control border" name="description" rows="7" 
+                          placeholder="Enter event description, agenda, location details..." 
+                          style="background-color: #f8f9fa;"></textarea>
+                <div id="descriptionError" class="invalid-feedback"></div>
               </div>
             </div>
           </div>
@@ -233,7 +240,7 @@
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             <i class="material-symbols-rounded me-1">close</i>Cancel
           </button>
-          <button type="submit" class="btn bg-gradient-success">
+          <button type="submit" id="submitButton" class="btn bg-gradient-success">
             <i class="material-symbols-rounded me-1">add</i>Create Event
           </button>
         </div>
@@ -263,12 +270,14 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Subject *</label>
-                <input type="text" class="form-control border" name="subject" id="edit_subject" required placeholder="Enter event subject" style="background-color: #f8f9fa;">
+                <input type="text" class="form-control border" name="subject" id="edit_subject" 
+                       placeholder="Enter event subject" style="background-color: #f8f9fa;">
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Date & Time *</label>
-                <input type="datetime-local" class="form-control border" name="date_time" id="edit_date_time" required style="background-color: #f8f9fa;">
+                <input type="datetime-local" class="form-control border" name="date_time" id="edit_date_time" 
+                       style="background-color: #f8f9fa;">
               </div>
               
               <div class="mb-3">
@@ -298,8 +307,10 @@
               </div>
               
               <div class="mb-3">
-                <label class="form-label text-dark">Description</label>
-                <textarea class="form-control border" name="description" id="edit_description" rows="7" placeholder="Enter event description, agenda, location details..." style="background-color: #f8f9fa;"></textarea>
+                <label class="form-label text-dark">Description *</label>
+                <textarea class="form-control border" name="description" id="edit_description" rows="7" 
+                          placeholder="Enter event description, agenda, location details..." 
+                          style="background-color: #f8f9fa;"></textarea>
               </div>
             </div>
           </div>
@@ -330,13 +341,10 @@
         <p class="text-danger">This action cannot be undone.</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <form id="deleteEventForm" method="POST" style="display: inline;">
-          @csrf
-          @method('DELETE')
-          <button type="submit" class="btn btn-danger">Delete Event</button>
-        </form>
-      </div>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" id="submitButton" class="btn btn-success">Save Event</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -703,5 +711,163 @@ function showParticipants(eventId, eventTitle) {
             `;
         });
 }
+
+// Form validation functions
+function validateField(fieldId, errorId, errorMessage) {
+    const field = document.getElementById(fieldId);
+    const errorElement = document.getElementById(errorId);
+    
+    if (!field) {
+        console.error(`Field with ID '${fieldId}' not found`);
+        return false;
+    }
+    
+    if (field.value.trim() === '') {
+        field.classList.add('is-invalid');
+        field.classList.remove('is-valid');
+        if (errorElement) errorElement.textContent = errorMessage;
+        return false;
+    } else if (fieldId === 'description' && field.value.trim().length < 20) {
+        field.classList.add('is-invalid');
+        field.classList.remove('is-valid');
+        if (errorElement) errorElement.textContent = errorMessage;
+        return false;
+    } else {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+        if (errorElement) errorElement.textContent = '';
+        return true;
+    }
+}
+
+function validateDateTime() {
+    const dateTimeField = document.getElementById('date_time');
+    const errorElement = document.getElementById('dateTimeError');
+    
+    if (!dateTimeField) {
+        console.error('Date time field not found');
+        return false;
+    }
+    
+    const selectedDate = new Date(dateTimeField.value);
+    const now = new Date();
+    
+    if (!dateTimeField.value) {
+        dateTimeField.classList.add('is-invalid');
+        dateTimeField.classList.remove('is-valid');
+        if (errorElement) errorElement.textContent = 'Date and time are required';
+        return false;
+    } else if (selectedDate <= now) {
+        dateTimeField.classList.add('is-invalid');
+        dateTimeField.classList.remove('is-valid');
+        if (errorElement) errorElement.textContent = 'Event date must be in the future';
+        return false;
+    } else {
+        dateTimeField.classList.remove('is-invalid');
+        dateTimeField.classList.add('is-valid');
+        if (errorElement) errorElement.textContent = '';
+        return true;
+    }
+}
+
+function validateImage() {
+    const imageField = document.getElementById('event_image');
+    const errorElement = document.getElementById('imageError');
+    
+    if (!imageField) {
+        console.error('Image field not found');
+        return true; // Make image optional
+    }
+    
+    const file = imageField.files[0];
+    
+    // If no file is selected, it's optional
+    if (!file) {
+        return true;
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    
+    if (!allowedTypes.includes(file.type)) {
+        imageField.classList.add('is-invalid');
+        imageField.classList.remove('is-valid');
+        if (errorElement) errorElement.textContent = 'Only JPG, PNG, and GIF files are allowed';
+        return false;
+    }
+    
+    if (file.size > maxSize) {
+        imageField.classList.add('is-invalid');
+        imageField.classList.remove('is-valid');
+        if (errorElement) errorElement.textContent = 'Image size must be less than 2MB';
+        return false;
+    }
+    
+    imageField.classList.remove('is-invalid');
+    imageField.classList.add('is-valid');
+    if (errorElement) errorElement.textContent = '';
+    return true;
+}
+
+function validateEventForm(event) {
+    event.preventDefault();
+    
+    // Reset all error states
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    
+    // Validate all fields
+    const isSubjectValid = validateField('subject', 'subjectError', 'Subject is required');
+    const isDescriptionValid = validateField('description', 'descriptionError', 'Description must be at least 20 characters');
+    const isDateTimeValid = validateDateTime();
+    const isImageValid = validateImage();
+    
+    // Check if all validations passed
+    if (isSubjectValid && isDescriptionValid && isDateTimeValid && isImageValid) {
+        // Only submit if all validations pass
+        event.target.submit();
+    }
+    
+    // Don't submit if there are errors
+    return false;
+}
+
+// Add event listeners for real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Real-time validation for subject
+    const subjectField = document.getElementById('subject');
+    if (subjectField) {
+        subjectField.addEventListener('input', function() {
+            validateField('subject', 'subjectError', 'Subject is required');
+        });
+        subjectField.addEventListener('blur', function() {
+            validateField('subject', 'subjectError', 'Subject is required');
+        });
+    }
+    
+    // Real-time validation for description
+    const descriptionField = document.getElementById('description');
+    if (descriptionField) {
+        descriptionField.addEventListener('input', function() {
+            validateField('description', 'descriptionError', 'Description must be at least 20 characters');
+        });
+        descriptionField.addEventListener('blur', function() {
+            validateField('description', 'descriptionError', 'Description must be at least 20 characters');
+        });
+    }
+    
+    // Date/Time validation
+    const dateTimeField = document.getElementById('date_time');
+    if (dateTimeField) {
+        dateTimeField.addEventListener('change', validateDateTime);
+        dateTimeField.addEventListener('blur', validateDateTime);
+    }
+    
+    // Image validation (optional field)
+    const imageField = document.getElementById('event_image');
+    if (imageField) {
+        imageField.addEventListener('change', validateImage);
+    }
+});
 </script>
 @endpush

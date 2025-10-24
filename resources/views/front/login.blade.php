@@ -797,15 +797,57 @@
                 // Remove .jpg extension
                 extracted = extracted.replace(/\.jpg$/i, '');
                 
-                // Add @ before gmail/yahoo/hotmail/outlook etc
-                const emailProviders = ['gmail', 'yahoo', 'hotmail', 'outlook', 'live', 'icloud', 'protonmail'];
-                
-                for (const provider of emailProviders) {
-                    if (extracted.includes(provider)) {
-                        // Find where provider starts and add @ before it
-                        const regex = new RegExp(`(\\d+)${provider}`, 'i');
-                        extracted = extracted.replace(regex, `$1@${provider}`);
+                // Common email patterns to look for
+                const emailPatterns = [
+                    // For emails with dots in username and known domains (e.g., kalfat.mehdiesprit.tn -> kalfat.mehdi@esprit.tn)
+                    { pattern: /^([a-z0-9_.-]+?)(es[pb]rit|gmail|yahoo|hotmail|outlook|live|icloud|protonmail)(\.[a-z]{2,})?(\.(tn|com|net|org|fr))?$/i, 
+                      replace: (match, user, domain, subdomain, tld) => {
+                          // If there's a subdomain, include it in the domain part
+                          const domainPart = subdomain ? domain + subdomain : domain;
+                          return `${user}@${domainPart}${tld || ''}`;
+                      }
+                    },
+                    // For general domain patterns (e.g., example.com -> example@com)
+                    { pattern: /^([a-z0-9_.-]+?)(\.[a-z]{2,}){1,2}$/i, 
+                      replace: (match, user, domain) => {
+                          // Split the domain parts
+                          const parts = domain.split('.').filter(Boolean);
+                          // If we have multiple parts (e.g., .esprit.tn), join them with a dot
+                          if (parts.length > 1) {
+                              return `${user}@${parts.join('')}`;
+                          }
+                          // Otherwise, just add @ before the domain
+                          return `${user}@${parts[0]}`;
+                      }
+                    },
+                    // Fallback for other cases
+                    { pattern: /([a-z0-9_.-]+?)(gmail|yahoo|hotmail|outlook|live|icloud|protonmail)(\.[a-z]{2,})?/i, 
+                      replace: '$1@$2$3' 
+                    }
+                ];
+
+                // Try to fix the email by applying patterns
+                for (const { pattern, replace } of emailPatterns) {
+                    if (pattern.test(extracted)) {
+                        if (typeof replace === 'function') {
+                            extracted = extracted.replace(pattern, (...args) => replace(...args));
+                        } else {
+                            extracted = extracted.replace(pattern, replace);
+                        }
                         break;
+                    }
+                }
+
+                // If still no @ and contains common email providers, try to add @
+                if (!extracted.includes('@')) {
+                    const emailProviders = ['gmail', 'yahoo', 'hotmail', 'outlook', 'live', 'icloud', 'protonmail'];
+                    for (const provider of emailProviders) {
+                        if (extracted.includes(provider)) {
+                            // Find where provider starts and add @ before it
+                            const regex = new RegExp(`(\\w*)${provider}`, 'i');
+                            extracted = extracted.replace(regex, `$1@${provider}`);
+                            break;
+                        }
                     }
                 }
                 
@@ -817,13 +859,56 @@
             }
         }
 
+        // Format email by ensuring it has @ before common domains
+        function formatEmail(email) {
+            if (!email) return email;
+            
+            // If already has @, return as is
+            if (email.includes('@')) return email;
+            
+            // Common email domains to check
+            const domains = [
+                'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
+                'live.com', 'icloud.com', 'protonmail.com', 'gmail', 'yahoo', 
+                'hotmail', 'outlook', 'live', 'icloud', 'protonmail'
+            ];
+            
+            // Try to find and fix the domain
+            for (const domain of domains) {
+                const domainIndex = email.toLowerCase().indexOf(domain.toLowerCase());
+                if (domainIndex > 0) {
+                    // If we find a domain, insert @ before it
+                    return email.slice(0, domainIndex) + '@' + email.slice(domainIndex);
+                }
+            }
+            
+            // If no domain found but has dot com/net/org, add @ before it
+            const tldMatch = email.match(/(\.(com|net|org|io|co\.uk))$/i);
+            if (tldMatch) {
+                return email.replace(tldMatch[1], '@' + tldMatch[1]);
+            }
+            
+            return email; // Return as is if we can't determine
+        }
+
         // Direct login with Face ID (no password required)
         async function loginWithFaceID(email) {
             try {
+                // Format the email before using it
+                const formattedEmail = formatEmail(email);
+                
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(formattedEmail)) {
+                    throw new Error('Invalid email format');
+                }
+                
                 // Get CSRF token from meta tag if available
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
                 
-                console.log('Attempting Face ID login for:', email);
+                console.log('Original email:', email);
+                console.log('Formatted email:', formattedEmail);
+                console.log('Attempting Face ID login for:', formattedEmail);
                 console.log('CSRF Token:', csrfToken);
                 
                 const response = await fetch('{{ route("front.faceid-login") }}', {
@@ -833,7 +918,7 @@
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ email: email }),
+                    body: JSON.stringify({ email: formattedEmail }),
                     credentials: 'same-origin'
                 });
 

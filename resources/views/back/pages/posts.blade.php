@@ -268,7 +268,7 @@
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="addPostForm" method="POST" action="{{ route('admin.posts.store') }}" enctype="multipart/form-data">
+      <form id="addPostForm" method="POST" action="{{ route('admin.posts.store') }}" enctype="multipart/form-data" onsubmit="return validatePostForm(event, 'addPostForm')" novalidate>
         @csrf
         <div class="modal-body p-4">
           <div class="row">
@@ -287,14 +287,14 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Title *</label>
-                <input type="text" class="form-control" name="title" required placeholder="Enter post title">
+                <input type="text" class="form-control" id="title" name="title" placeholder="Enter post title">
                 <div class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Image</label>
                 <div class="input-group input-group-outline">
-                  <input type="file" class="form-control" name="image" accept="image/*" id="imageUpload">
+                  <input type="file" class="form-control" name="image" accept="image/*" id="imageUpload" onchange="validatePostImage(this)">
                 </div>
                 <small class="text-muted">Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB</small>
                 <div class="invalid-feedback"></div>
@@ -307,7 +307,7 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Description *</label>
-                <textarea class="form-control" name="description" rows="8" required placeholder="Enter post description"></textarea>
+                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter post description"></textarea>
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -508,6 +508,144 @@
 
 @push('scripts')
 <script>
+// Form Validation Functions for Posts
+function validatePostField(fieldId, fieldName, minLength = 1, isRequired = true) {
+    const field = document.getElementById(fieldId);
+    if (!field) return true; // Skip if field doesn't exist
+    
+    const value = field.value.trim();
+    const formGroup = field.closest('.mb-3') || field.closest('.form-group');
+    
+    if (isRequired && value === '') {
+        showPostError(field, `${fieldName} is required`);
+        return false;
+    } else if (value !== '' && value.length < minLength) {
+        showPostError(field, `${fieldName} must be at least ${minLength} characters`);
+        return false;
+    }
+    
+    showPostSuccess(field);
+    return true;
+}
+
+function showPostError(element, message) {
+    if (!element) return;
+    
+    const formGroup = element.closest('.mb-3') || element.closest('.form-group');
+    if (!formGroup) return;
+    
+    element.classList.add('is-invalid');
+    element.classList.remove('is-valid');
+    
+    let errorElement = formGroup.querySelector('.invalid-feedback');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'invalid-feedback';
+        formGroup.appendChild(errorElement);
+    }
+    errorElement.textContent = message;
+    return false;
+}
+
+function showPostSuccess(element) {
+    if (!element) return;
+    
+    const formGroup = element.closest('.mb-3') || element.closest('.form-group');
+    if (!formGroup) return;
+    
+    element.classList.remove('is-invalid');
+    element.classList.add('is-valid');
+    
+    const errorElement = formGroup.querySelector('.invalid-feedback');
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+    return true;
+}
+
+function validatePostImage(input) {
+    if (!input.files || input.files.length === 0) {
+        return true; // No file is selected, which is optional
+    }
+    
+    const file = input.files[0];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    
+    if (!allowedTypes.includes(file.type)) {
+        return showPostError(input, 'Only JPG, PNG, and GIF files are allowed');
+    }
+    
+    if (file.size > maxSize) {
+        return showPostError(input, 'Image size must be less than 2MB');
+    }
+    
+    return showPostSuccess(input);
+}
+
+function validatePostForm(event, formId) {
+    event.preventDefault();
+    
+    // Reset all validation states
+    const form = document.getElementById(formId);
+    if (!form) return false;
+    
+    // Remove all previous validation states
+    form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+        el.classList.remove('is-invalid', 'is-valid');
+    });
+    
+    // Validate all required fields
+    const isTitleValid = validatePostField('title', 'Title', 5, true);
+    const isDescriptionValid = validatePostField('description', 'Description', 20, true);
+    
+    // Validate image if file is selected
+    const imageInput = form.querySelector('input[type="file"]');
+    let isImageValid = true;
+    if (imageInput && imageInput.files.length > 0) {
+        isImageValid = validatePostImage(imageInput);
+    }
+    
+    // If all validations pass, submit the form
+    if (isTitleValid && isDescriptionValid && isImageValid) {
+        form.submit();
+    } else {
+        // Scroll to the first error
+        const firstError = form.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    }
+    
+    return false;
+}
+
+// Add event listeners for real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Title field
+    const titleField = document.getElementById('title');
+    if (titleField) {
+        titleField.addEventListener('input', () => validatePostField('title', 'Title', 5, true));
+        titleField.addEventListener('blur', () => validatePostField('title', 'Title', 5, true));
+    }
+    
+    // Description field
+    const descriptionField = document.getElementById('description');
+    if (descriptionField) {
+        descriptionField.addEventListener('input', () => validatePostField('description', 'Description', 20, true));
+        descriptionField.addEventListener('blur', () => validatePostField('description', 'Description', 20, true));
+    }
+    
+    // Image field
+    const imageInput = document.querySelector('input[type="file"]');
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            validatePostImage(this);
+        });
+    }
+});
+
 // Load users when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadUsers();

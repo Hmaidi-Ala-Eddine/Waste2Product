@@ -184,10 +184,13 @@ class CartController extends Controller
                         'gateway' => 'simulated_card',
                         'payment_processed_at' => now()
                     ]);
+                    
+                    // Marquer le produit comme vendu après paiement réussi
+                    $item->product->markAsSold();
+                } else {
+                    // Pour les autres méthodes de paiement, décrémenter le stock
+                    $item->product->decreaseStock($item->quantity);
                 }
-
-                // Decrease stock - will auto-update status to 'sold' if stock reaches 0
-                $item->product->decreaseStock($item->quantity);
             }
 
             // Clear cart

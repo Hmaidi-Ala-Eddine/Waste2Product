@@ -32,13 +32,34 @@ def encode_face(image_path):
 def load_known_faces():
     known_encodings = []
     known_names = []
+    email_map = {}
 
+    # First pass: build a mapping of safe filenames to original emails
     for filename in os.listdir(KNOWN_FACES_DIR):
+        if not filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            continue
+            
+        # Extract the base name without extension
+        base_name = os.path.splitext(filename)[0]
+        # Convert back to original email format for matching
+        original_email = base_name.replace('_at_', '@')
+        email_map[base_name] = original_email
+
+    # Second pass: process faces and use original emails
+    for filename in os.listdir(KNOWN_FACES_DIR):
+        if not filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            continue
+            
         path = os.path.join(KNOWN_FACES_DIR, filename)
         encoding = encode_face(path)
+        
         if encoding is not None:
+            base_name = os.path.splitext(filename)[0]
+            original_email = email_map.get(base_name, base_name)
+            
             known_encodings.append(encoding)
-            known_names.append(os.path.splitext(filename)[0])
+            known_names.append(original_email)
+            
     return known_encodings, known_names
 
 
@@ -58,8 +79,9 @@ def register():
             print("Uploaded file is not an image")
             return jsonify({"error": "Uploaded file is not an image"}), 400
 
-        # Save the file
-        filename = secure_filename(f"{email}.jpg")
+        # Save the file with email in filename (replace @ with _at_ for filesystem safety)
+        safe_email = email.replace('@', '_at_')
+        filename = secure_filename(f"{safe_email}.jpg")
         save_path = os.path.join(KNOWN_FACES_DIR, filename)
         file.save(save_path)
 
@@ -101,7 +123,9 @@ def login():
 
     if True in matches:
         index = matches.index(True)
-        return jsonify({"message": f"Welcome {known_names[index]}!"}), 200
+        # Ensure we're returning the email in the correct format
+        email = known_names[index]
+        return jsonify({"message": f"Welcome {email}!", "email": email}), 200
     else:
         return jsonify({"message": "Face not recognized"}), 401
 

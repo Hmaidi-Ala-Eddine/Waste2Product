@@ -163,9 +163,23 @@ class Product extends Model
     {
         $this->decrement('stock', $quantity);
         
+        // Refresh the model to get the updated stock value
+        $this->refresh();
+        
         if ($this->stock <= 0) {
             $this->update(['status' => 'sold', 'stock' => 0]);
         }
+    }
+
+    /**
+     * Mark product as sold and set stock to 0.
+     */
+    public function markAsSold(): void
+    {
+        $this->update([
+            'status' => 'sold',
+            'stock' => 0
+        ]);
     }
 
     /**

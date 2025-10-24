@@ -6,7 +6,7 @@
         <h5 class="modal-title text-white"><i class="material-symbols-rounded me-2">add</i>Add Eco Idea</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="addIdeaForm" method="POST" action="{{ route('admin.eco-ideas.store') }}" enctype="multipart/form-data">
+      <form id="addIdeaForm" method="POST" action="{{ route('admin.eco-ideas.store') }}" enctype="multipart/form-data" onsubmit="return validateIdeaForm(event, 'addIdeaForm')" novalidate>
         @csrf
         <div class="modal-body p-4">
           <div class="row">
@@ -14,23 +14,24 @@
             <div class="col-md-6">
               <h6 class="text-dark font-weight-bold mb-3">Basic Information</h6>
               
+              <!-- Hidden field for creator ID -->
+              <input type="hidden" name="creator_id" value="{{ auth()->id() }}">
+              
               <div class="mb-3">
-                <label class="form-label text-dark">Creator *</label>
-                <select class="form-control" name="creator_id" id="idea_creator_id" required>
-                  <option value="">Select Creator</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">Creator</label>
+                <input type="text" class="form-control" value="{{ auth()->user()->name }}" disabled>
+                <small class="text-muted">You are the creator of this idea</small>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Title *</label>
-                <input class="form-control" type="text" name="title" required placeholder="Enter idea title" />
+                <input class="form-control" type="text" name="title" id="title" placeholder="Enter idea title" />
                 <div class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Waste Type *</label>
-                <select class="form-control" name="waste_type" required>
+                <select class="form-control" name="waste_type" id="waste_type">
                   @foreach(['organic','plastic','metal','e-waste','paper','glass','textile','mixed'] as $type)
                     <option value="{{ $type }}">{{ ucfirst($type) }}</option>
                   @endforeach
@@ -40,7 +41,7 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Difficulty *</label>
-                <select class="form-control" name="difficulty_level" required>
+                <select class="form-control" name="difficulty_level" id="difficulty_level">
                   @foreach(['easy','medium','hard'] as $lvl)
                     <option value="{{ $lvl }}">{{ ucfirst($lvl) }}</option>
                   @endforeach
@@ -55,13 +56,13 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Team Size Needed</label>
-                <input class="form-control" type="number" name="team_size_needed" min="1" max="20" placeholder="How many team members needed?" />
+                <input class="form-control" type="number" id="team_size_needed" name="team_size_needed" min="1" max="20" placeholder="How many team members needed?" />
                 <div class="invalid-feedback"></div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label text-dark">Team Requirements</label>
-                <textarea class="form-control" name="team_requirements" rows="3" placeholder="Describe what skills/roles are needed (e.g., Engineers, Designers, AI Specialists)"></textarea>
+                <textarea class="form-control" id="team_requirements" name="team_requirements" rows="3" placeholder="Describe what skills/roles are needed (e.g., Engineers, Designers, AI Specialists)"></textarea>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -73,7 +74,8 @@
               
               <div class="mb-3">
                 <label class="form-label text-dark">Image</label>
-                <input type="file" class="form-control" name="image" accept="image/*" />
+                <input type="file" class="form-control" name="image" id="image" accept="image/*" onchange="validateImage(this)" />
+                <small class="text-muted">Accepted formats: JPG, PNG, GIF (Max: 2MB)</small>
                 <div class="invalid-feedback"></div>
               </div>
             </div>
@@ -82,7 +84,7 @@
             <div class="col-12">
               <div class="mb-3">
                 <label class="form-label text-dark">Description *</label>
-                <textarea class="form-control" name="description" rows="4" required placeholder="Enter detailed description of the eco idea"></textarea>
+                <textarea class="form-control" name="description" id="description" rows="4" placeholder="Enter detailed description of the eco idea"></textarea>
                 <div class="invalid-feedback"></div>
               </div>
               
@@ -154,12 +156,13 @@
             <div class="col-md-6">
               <h6 class="text-dark font-weight-bold mb-3">Basic Information</h6>
               
+              <!-- Hidden field for creator ID -->
+              <input type="hidden" name="creator_id" id="edit_idea_creator_id" value="{{ auth()->id() }}">
+              
               <div class="mb-3">
-                <label class="form-label text-dark">Creator *</label>
-                <select class="form-control" name="creator_id" id="edit_idea_creator_id" required>
-                  <option value="">Select Creator</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">Creator</label>
+                <input type="text" class="form-control" id="edit_creator_name" value="{{ auth()->user()->name }}" disabled>
+                <small class="text-muted">Original creator of this idea</small>
               </div>
               
               <div class="mb-3">
@@ -738,6 +741,172 @@ h6 {
 
 @push('scripts')
 <script>
+// Form Validation Functions
+function showError(element, message) {
+    const formGroup = element.closest('.mb-3') || element.closest('.form-group');
+    if (!formGroup) return;
+    
+    element.classList.add('is-invalid');
+    element.classList.remove('is-valid');
+    
+    let errorElement = formGroup.querySelector('.invalid-feedback');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'invalid-feedback';
+        formGroup.appendChild(errorElement);
+    }
+    errorElement.textContent = message;
+    return false;
+}
+
+function showSuccess(element) {
+    const formGroup = element.closest('.mb-3') || element.closest('.form-group');
+    if (!formGroup) return;
+    
+    element.classList.remove('is-invalid');
+    element.classList.add('is-valid');
+    
+    const errorElement = formGroup.querySelector('.invalid-feedback');
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+    return true;
+}
+
+function validateRequiredField(fieldId, fieldName) {
+    const field = document.getElementById(fieldId);
+    if (!field) return true; // Skip if field doesn't exist
+    
+    const value = field.value.trim();
+    if (value === '') {
+        return showError(field, `${fieldName} is required`);
+    }
+    return showSuccess(field);
+}
+
+function validateMinLength(fieldId, fieldName, minLength) {
+    const field = document.getElementById(fieldId);
+    if (!field) return true; // Skip if field doesn't exist
+    
+    const value = field.value.trim();
+    if (value !== '' && value.length < minLength) {
+        return showError(field, `${fieldName} must be at least ${minLength} characters`);
+    }
+    return true;
+}
+
+function validateImage(input) {
+    if (!input.files || input.files.length === 0) {
+        return true; // No file is selected, which is optional
+    }
+    
+    const file = input.files[0];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    
+    if (!allowedTypes.includes(file.type)) {
+        return showError(input, 'Only JPG, PNG, and GIF files are allowed');
+    }
+    
+    if (file.size > maxSize) {
+        return showError(input, 'Image size must be less than 2MB');
+    }
+    
+    return showSuccess(input);
+}
+
+function validateTeamSize() {
+    const teamSizeField = document.getElementById('team_size_needed');
+    if (!teamSizeField) return true; // Skip if field doesn't exist
+    
+    const value = teamSizeField.value.trim();
+    if (value === '') return true; // Optional field
+    
+    const size = parseInt(value, 10);
+    if (isNaN(size) || size < 1 || size > 20) {
+        return showError(teamSizeField, 'Team size must be between 1 and 20');
+    }
+    return showSuccess(teamSizeField);
+}
+
+function validateIdeaForm(event, formId) {
+    event.preventDefault();
+    
+    // Reset all validation states
+    const form = document.getElementById(formId);
+    if (!form) return false;
+    
+    // Remove all previous validation states
+    form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+        el.classList.remove('is-invalid', 'is-valid');
+    });
+    
+    // Validate all required fields
+    const isTitleValid = validateRequiredField('title', 'Title');
+    const isWasteTypeValid = validateRequiredField('waste_type', 'Waste type');
+    const isDifficultyValid = validateRequiredField('difficulty_level', 'Difficulty level');
+    const isDescriptionValid = validateRequiredField('description', 'Description') && 
+                              validateMinLength('description', 'Description', 20);
+    const isTeamSizeValid = validateTeamSize();
+    
+    // Validate image if file is selected
+    const imageInput = form.querySelector('input[type="file"]');
+    let isImageValid = true;
+    if (imageInput && imageInput.files.length > 0) {
+        isImageValid = validateImage(imageInput);
+    }
+    
+    // If all validations pass, submit the form
+    if (isTitleValid && isWasteTypeValid && isDifficultyValid && 
+        isDescriptionValid && isTeamSizeValid && isImageValid) {
+        form.submit();
+    } else {
+        // Scroll to the first error
+        const firstError = form.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    }
+    
+    return false;
+}
+
+// Add event listeners for real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Add input event listeners for real-time validation
+    const titleField = document.getElementById('title');
+    if (titleField) {
+        titleField.addEventListener('input', () => validateRequiredField('title', 'Title'));
+        titleField.addEventListener('blur', () => validateRequiredField('title', 'Title'));
+    }
+    
+    const descriptionField = document.getElementById('description');
+    if (descriptionField) {
+        descriptionField.addEventListener('input', () => {
+            validateRequiredField('description', 'Description');
+            validateMinLength('description', 'Description', 20);
+        });
+        descriptionField.addEventListener('blur', () => {
+            validateRequiredField('description', 'Description');
+            validateMinLength('description', 'Description', 20);
+        });
+    }
+    
+    const teamSizeField = document.getElementById('team_size_needed');
+    if (teamSizeField) {
+        teamSizeField.addEventListener('input', validateTeamSize);
+        teamSizeField.addEventListener('blur', validateTeamSize);
+    }
+    
+    const imageInput = document.querySelector('input[type="file"]');
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            validateImage(this);
+        });
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function(){
   loadUsers();
   
