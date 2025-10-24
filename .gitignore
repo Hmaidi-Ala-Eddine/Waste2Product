@@ -6,8 +6,8 @@
 /storage/*.key
 /storage/pail
 /vendor
-# .env
-# .env.*
+ .env
+ .env.*
 !.env.example
 .env.backup
 .env.production
