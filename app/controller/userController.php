@@ -290,6 +290,81 @@ class UserController extends BaseController
     }
 
     /**
+     * Face ID Login - Passwordless authentication
+     * User is authenticated via face recognition in Python backend
+     */
+    public function faceIdLogin(Request $request)
+    {
+        try {
+            \Log::info('Face ID login attempt', [
+                'email' => $request->input('email'),
+                'ip' => $request->ip()
+            ]);
+
+            $data = $request->validate([
+                'email' => 'required|email',
+            ]);
+
+            // Find user by email
+            $user = User::where('email', $data['email'])->first();
+
+            if (!$user) {
+                \Log::warning('Face ID login failed - user not found', ['email' => $data['email']]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found with this email address'
+                ], 404);
+            }
+
+            // Check if account is active
+            if (!isset($user->is_active) || !$user->is_active) {
+                \Log::warning('Face ID login failed - account not active', [
+                    'email' => $data['email'],
+                    'is_active' => $user->is_active ?? 'null'
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Account is not active. Please verify your email first.'
+                ], 200); // Changed to 200 to avoid CSRF confusion
+            }
+
+            // Log the user in (no password check - face was verified by Python backend)
+            Auth::login($user, true); // Remember the user
+            $request->session()->regenerate();
+
+            // Generate token
+            $token = hash('sha256', Str::random(80));
+            $user->jwt_token = $token;
+            $user->jwt_expires_at = Carbon::now()->addHours(8);
+            $user->last_login_at = Carbon::now();
+            $user->save();
+
+            \Log::info('Face ID login successful', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'redirect' => '/',
+                'token' => $token,
+                'user' => $user->only(['id', 'name', 'email', 'username', 'role'])
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Face ID login error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Login failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Verify email token and activate account.
      */
     public function verifyEmail(Request $request)

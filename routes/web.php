@@ -20,6 +20,9 @@ Route::post('admin/sign-in', [\App\controller\UserController::class, 'login'])->
 // front sign-in (public) - users and admins can sign in via the front page
 Route::post('/login', [\App\controller\UserController::class, 'login'])->name('front.sign-in.post');
 
+// Face ID login (passwordless authentication)
+Route::post('/faceid-login', [\App\controller\UserController::class, 'faceIdLogin'])->name('front.faceid-login');
+
 // front signup for public users (used by front login page)
 Route::post('/signup', [\App\controller\UserController::class, 'store'])->name('front.signup.post');
 
@@ -98,6 +101,7 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::post('/events', [\App\Http\Controllers\EventController::class, 'store'])->name('events.store');
     Route::get('/events/authors', [\App\Http\Controllers\EventController::class, 'getAuthors'])->name('events.authors');
     Route::get('/events/{id}/data', [\App\Http\Controllers\EventController::class, 'getData'])->name('events.data');
+    Route::get('/events/{id}/participants', [\App\Http\Controllers\EventController::class, 'getParticipants'])->name('events.participants');
     Route::put('/events/{id}', [\App\Http\Controllers\EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{id}', [\App\Http\Controllers\EventController::class, 'destroy'])->name('events.delete');
     
@@ -124,6 +128,8 @@ Route::prefix('admin')->name('admin.')->middleware([EnsureUserIsAdmin::class])->
     Route::post('/posts', [\App\Http\Controllers\PostController::class, 'store'])->name('posts.store');
     Route::get('/posts/users', [\App\Http\Controllers\PostController::class, 'getUsers'])->name('posts.users');
     Route::get('/posts/{post}/data', [\App\Http\Controllers\PostController::class, 'getData'])->name('posts.data');
+    Route::get('/posts/{post}/likes', [\App\Http\Controllers\PostController::class, 'getLikes'])->name('posts.likes');
+    Route::get('/posts/{post}/comments', [\App\Http\Controllers\PostController::class, 'getComments'])->name('posts.comments');
     Route::put('/posts/{post}', [\App\Http\Controllers\PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [\App\Http\Controllers\PostController::class, 'destroy'])->name('posts.delete');
     

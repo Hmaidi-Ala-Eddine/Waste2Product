@@ -47,4 +47,10 @@ return [
         'analysis_model' => env('GROQ_ANALYSIS_MODEL', 'llama-3.1-8b-instant'),
     ],
 
+    'twilio' => [
+        'account_sid' => env('TWILIO_ACCOUNT_SID'),
+        'auth_token' => env('TWILIO_AUTH_TOKEN'),
+        'from_number' => env('TWILIO_FROM_NUMBER'),
+    ],
+
 ];

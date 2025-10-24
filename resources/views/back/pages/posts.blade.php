@@ -141,9 +141,23 @@
                     @endif
                   </td>
                   <td class="align-middle text-center text-sm">
-                    <div class="d-flex flex-column justify-content-center align-items-center">
-                      <span class="text-xs font-weight-bold">{{ $post->likes }} Likes</span>
-                      <span class="text-xs text-secondary">{{ $post->comments->count() }} Comments</span>
+                    <div class="d-flex flex-column justify-content-center align-items-center gap-1">
+                      <a href="javascript:;" class="engagement-link-likes text-xs font-weight-bold" 
+                         onclick="showLikes({{ $post->id }}, '{{ addslashes($post->title) }}')"
+                         data-toggle="tooltip" 
+                         data-original-title="View likes"
+                         style="cursor: pointer; text-decoration: none; color: #e74c3c;">
+                        <i class="material-symbols-rounded" style="font-size: 14px; vertical-align: middle;">favorite</i>
+                        {{ $post->likes }} Likes
+                      </a>
+                      <a href="javascript:;" class="engagement-link-comments text-xs text-secondary" 
+                         onclick="showComments({{ $post->id }}, '{{ addslashes($post->title) }}')"
+                         data-toggle="tooltip" 
+                         data-original-title="View comments"
+                         style="cursor: pointer; text-decoration: none;">
+                        <i class="material-symbols-rounded" style="font-size: 14px; vertical-align: middle;">comment</i>
+                        {{ $post->comments->count() }} Comments
+                      </a>
                     </div>
                   </td>
                   <td class="align-middle text-center">
@@ -198,9 +212,19 @@
                     <h6 class="card-title mb-2">{{ Str::limit($post->title, 50) }}</h6>
                     <p class="card-text text-secondary mb-3">{{ Str::limit($post->description, 90) }}</p>
                     <div class="d-flex align-items-center justify-content-between">
-                      <div class="d-flex align-items-center gap-3">
-                        <span class="badge bg-light text-dark">{{ $post->likes }} Likes</span>
-                        <span class="badge bg-light text-dark">{{ $post->comments->count() }} Comments</span>
+                      <div class="d-flex align-items-center gap-2">
+                        <a href="javascript:;" class="badge bg-light text-dark engagement-badge" 
+                           onclick="showLikes({{ $post->id }}, '{{ addslashes($post->title) }}')"
+                           style="cursor: pointer; text-decoration: none;">
+                          <i class="material-symbols-rounded" style="font-size: 14px; vertical-align: middle; color: #e74c3c;">favorite</i>
+                          {{ $post->likes }}
+                        </a>
+                        <a href="javascript:;" class="badge bg-light text-dark engagement-badge" 
+                           onclick="showComments({{ $post->id }}, '{{ addslashes($post->title) }}')"
+                           style="cursor: pointer; text-decoration: none;">
+                          <i class="material-symbols-rounded" style="font-size: 14px; vertical-align: middle; color: #6c757d;">comment</i>
+                          {{ $post->comments->count() }}
+                        </a>
                       </div>
                       <div class="btn-group">
                         <a href="javascript:;" class="btn btn-sm btn-outline-dark" onclick="editPost({{ $post->id }})">Edit</a>
@@ -252,12 +276,13 @@
             <div class="col-md-6">
               <h6 class="text-dark font-weight-bold mb-3">Post Information</h6>
               
+              <!-- Author is automatically set to logged-in user -->
+              <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+              
               <div class="mb-3">
-                <label class="form-label text-dark">Author *</label>
-                <select class="form-control" name="user_id" id="author_id" required>
-                  <option value="">Select Author</option>
-                </select>
-                <div class="invalid-feedback"></div>
+                <label class="form-label text-dark">Author</label>
+                <input type="text" class="form-control" value="{{ auth()->user()->name }}" disabled style="background-color: #e9ecef;">
+                <small class="text-muted d-block mt-1">You will be set as the author of this post</small>
               </div>
               
               <div class="mb-3">
@@ -411,6 +436,76 @@
   </div>
 </div>
 
+<!-- Likes Modal -->
+<div class="modal fade" id="likesModal" tabindex="-1" aria-labelledby="likesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-danger">
+        <h5 class="modal-title text-white" id="likesModalLabel">
+          <i class="material-symbols-rounded me-2">favorite</i>Post Likes
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <h6 class="text-dark font-weight-bold mb-2">Post: <span id="likesPostTitle"></span></h6>
+          <p class="text-sm text-secondary mb-0">Total Likes: <span id="likesCount" class="font-weight-bold text-danger">0</span></p>
+        </div>
+        <hr>
+        <div id="likesList" class="mt-3">
+          <!-- Loading spinner -->
+          <div class="text-center py-4" id="likesLoading">
+            <div class="spinner-border text-danger" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2">Loading likes...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="material-symbols-rounded me-1">close</i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comments Modal -->
+<div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-info">
+        <h5 class="modal-title text-white" id="commentsModalLabel">
+          <i class="material-symbols-rounded me-2">comment</i>Post Comments
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <h6 class="text-dark font-weight-bold mb-2">Post: <span id="commentsPostTitle"></span></h6>
+          <p class="text-sm text-secondary mb-0">Total Comments: <span id="commentsCount" class="font-weight-bold text-info">0</span></p>
+        </div>
+        <hr>
+        <div id="commentsList" class="mt-3">
+          <!-- Loading spinner -->
+          <div class="text-center py-4" id="commentsLoading">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2">Loading comments...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="material-symbols-rounded me-1">close</i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @push('scripts')
 <script>
 // Load users when page loads
@@ -539,6 +634,134 @@ function initPostsViewToggle(){
       localStorage.setItem('postsView','list');
     }
   }
+}
+
+// Show Likes function
+function showLikes(postId, postTitle) {
+    document.getElementById('likesPostTitle').textContent = postTitle;
+    document.getElementById('likesList').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-danger" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted mt-2">Loading likes...</p></div>';
+    
+    const modalElement = document.getElementById('likesModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    
+    fetch(`{{ url('admin/posts') }}/${postId}/likes`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load likes');
+            return response.json();
+        })
+        .then(data => {
+            const likes = data.likes || [];
+            document.getElementById('likesCount').textContent = likes.length;
+            
+            const likesList = document.getElementById('likesList');
+            if (likes.length === 0) {
+                likesList.innerHTML = '<div class="text-center py-5"><i class="material-symbols-rounded text-secondary" style="font-size: 4rem;">heart_broken</i><p class="text-muted mt-3">No likes yet</p></div>';
+            } else {
+                let html = '<div class="row g-3">';
+                likes.forEach(like => {
+                    html += `
+                        <div class="col-12 col-md-6">
+                            <div class="like-card d-flex align-items-center p-3 border rounded-3 shadow-sm">
+                                <div class="me-3">
+                                    <img src="${like.profile_picture_url || '/default-avatar.png'}" 
+                                         class="rounded-circle" 
+                                         style="width: 50px; height: 50px; object-fit: cover;" 
+                                         alt="${like.name}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-dark font-weight-bold">${like.name}</h6>
+                                    <p class="mb-0 text-sm text-secondary">${like.email}</p>
+                                </div>
+                                ${like.liked_at ? `<div class="text-end"><small class="text-muted">${like.liked_at}</small></div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                likesList.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('likesList').innerHTML = '<div class="alert alert-danger text-center"><i class="material-symbols-rounded me-2">error</i>Failed to load likes</div>';
+        });
+}
+
+// Show Comments function
+function showComments(postId, postTitle) {
+    document.getElementById('commentsPostTitle').textContent = postTitle;
+    document.getElementById('commentsList').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted mt-2">Loading comments...</p></div>';
+    
+    const modalElement = document.getElementById('commentsModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    
+    fetch(`{{ url('admin/posts') }}/${postId}/comments`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load comments');
+            return response.json();
+        })
+        .then(data => {
+            const comments = data.comments || [];
+            document.getElementById('commentsCount').textContent = comments.length;
+            
+            const commentsList = document.getElementById('commentsList');
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<div class="text-center py-5"><i class="material-symbols-rounded text-secondary" style="font-size: 4rem;">comment_off</i><p class="text-muted mt-3">No comments yet</p></div>';
+            } else {
+                let html = '<div class="list-group">';
+                comments.forEach(comment => {
+                    html += `
+                        <div class="list-group-item comment-item mb-3 border rounded-3 shadow-sm">
+                            <div class="d-flex align-items-start">
+                                <div class="me-3">
+                                    <img src="${comment.user.profile_picture_url || '/default-avatar.png'}" 
+                                         class="rounded-circle" 
+                                         style="width: 45px; height: 45px; object-fit: cover;" 
+                                         alt="${comment.user.name}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-0 text-dark font-weight-bold">${comment.user.name}</h6>
+                                            <small class="text-muted">${comment.created_at}</small>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 text-dark">${comment.content}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                commentsList.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('commentsList').innerHTML = '<div class="alert alert-danger text-center"><i class="material-symbols-rounded me-2">error</i>Failed to load comments</div>';
+        });
+}
+
+// Reset modals when closed
+const likesModalEl = document.getElementById('likesModal');
+const commentsModalEl = document.getElementById('commentsModal');
+
+if (likesModalEl) {
+    likesModalEl.addEventListener('hidden.bs.modal', function () {
+        document.getElementById('likesPostTitle').textContent = '';
+        document.getElementById('likesCount').textContent = '0';
+        document.getElementById('likesList').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-danger" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted mt-2">Loading likes...</p></div>';
+    });
+}
+
+if (commentsModalEl) {
+    commentsModalEl.addEventListener('hidden.bs.modal', function () {
+        document.getElementById('commentsPostTitle').textContent = '';
+        document.getElementById('commentsCount').textContent = '0';
+        document.getElementById('commentsList').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted mt-2">Loading comments...</p></div>';
+    });
 }
 </script>
 @endpush
@@ -871,6 +1094,121 @@ function initPostsViewToggle(){
 .input-group-outline input[type="file"]::file-selector-button:hover {
     background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
     transform: translateY(-1px);
+}
+
+/* Engagement links styling */
+.engagement-link-likes,
+.engagement-link-comments {
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.engagement-link-likes:hover {
+    background-color: rgba(231, 76, 60, 0.1);
+    transform: translateY(-1px);
+    text-decoration: none !important;
+    color: #e74c3c !important;
+}
+
+.engagement-link-comments:hover {
+    background-color: rgba(108, 117, 125, 0.1);
+    transform: translateY(-1px);
+    text-decoration: none !important;
+    color: #495057 !important;
+}
+
+/* Grid view engagement badges */
+.engagement-badge {
+    transition: all 0.2s ease;
+}
+
+.engagement-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Like and Comment card styling */
+.like-card,
+.comment-item {
+    transition: all 0.2s ease;
+    background-color: #fff;
+    border: 1px solid #e9ecef !important;
+}
+
+.like-card:hover,
+.comment-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px);
+    border-color: #d2d6da !important;
+}
+
+/* Likes modal styling */
+#likesModal .modal-header.bg-gradient-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-bottom: none;
+}
+
+#likesList {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+#likesList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#likesList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#likesList::-webkit-scrollbar-thumb {
+    background: #e74c3c;
+    border-radius: 10px;
+}
+
+#likesList::-webkit-scrollbar-thumb:hover {
+    background: #c0392b;
+}
+
+/* Comments modal styling */
+#commentsModal .modal-header.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border-bottom: none;
+}
+
+#commentsList {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+#commentsList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#commentsList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#commentsList::-webkit-scrollbar-thumb {
+    background: #17a2b8;
+    border-radius: 10px;
+}
+
+#commentsList::-webkit-scrollbar-thumb:hover {
+    background: #138496;
+}
+
+.comment-item {
+    border: 1px solid #e9ecef;
+    background-color: #fff;
 }
 </style>
 @endpush

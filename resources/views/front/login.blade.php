@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Login | Waste2Product</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         :root {
             --primary-color: #4EA685;
@@ -90,6 +91,80 @@
         .signup-pic-btn * {
             user-select: none !important;
             cursor: pointer !important;
+        }
+        /* Face ID Modal Styles */
+        .faceid-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .faceid-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .faceid-modal video {
+            width: 100%;
+            max-width: 480px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 3px solid var(--primary-color);
+        }
+        .faceid-modal canvas {
+            display: none;
+        }
+        .faceid-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px;
+            transition: 0.3s;
+        }
+        .faceid-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        .faceid-btn.secondary {
+            background: #6c757d;
+        }
+        .faceid-btn.secondary:hover {
+            background: #5a6268;
+        }
+        .face-login-btn {
+            margin-top: 15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            transition: 0.3s;
+        }
+        .face-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 166, 133, 0.4);
         }
     </style>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -201,6 +276,10 @@
                                 <div class="error-message" id="login-password-error"></div>
                             </div>
                             <button type="button" onclick="showSigninRecaptcha()">Sign in</button>
+                            <button type="button" class="face-login-btn" onclick="openFaceLoginModal()">
+                                <i class='bx bx-face-mask'></i>
+                                Login with Face ID
+                            </button>
                             <p>
                                 <b>
                                     Forgot password?
@@ -249,6 +328,24 @@
             <!-- END SIGN UP CONTENT -->
         </div>
         <!-- END CONTENT SECTION -->
+    </div>
+
+    <!-- Face ID Login Modal -->
+    <div id="faceLoginModal" class="faceid-modal">
+        <div class="faceid-modal-content">
+            <h2 style="color: var(--primary-color); margin-bottom: 10px;">
+                <i class='bx bx-face-mask' style="font-size: 2rem;"></i>
+                Face ID Login
+            </h2>
+            <p style="color: #666; margin-bottom: 20px;">Position your face in the camera</p>
+            <video id="faceLoginVideo" autoplay playsinline></video>
+            <canvas id="faceLoginCanvas"></canvas>
+            <div id="faceLoginStatus" style="margin: 15px 0; color: #666; min-height: 24px;"></div>
+            <div>
+                <button class="faceid-btn" onclick="captureFaceLogin()">Capture & Login</button>
+                <button class="faceid-btn secondary" onclick="closeFaceLoginModal()">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- reCAPTCHA Modal -->
@@ -543,6 +640,225 @@
                 const formToSubmit = currentForm;
                 currentForm = null;
                 formToSubmit.submit();
+            }
+        }
+
+        // Face ID Registration - Send to Python backend after successful signup
+        async function registerFaceID(email, imageFile) {
+            try {
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('image', imageFile);
+
+                const response = await fetch('http://127.0.0.1:5000/register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('Face ID Registration:', result);
+                return response.ok;
+            } catch (error) {
+                console.error('Face ID registration error:', error);
+                return false;
+            }
+        }
+
+        // Override signup form submission to include Face ID registration
+        const originalSubmitAfterRecaptcha = submitAfterRecaptcha;
+        submitAfterRecaptcha = function() {
+            const isSignupForm = currentForm && currentForm.id === 'signupForm';
+            
+            if (isSignupForm) {
+                const email = document.getElementById('signup-email').value;
+                const profilePicInput = document.getElementById('signup-profile-picture');
+                const profilePicFile = profilePicInput.files[0];
+
+                if (profilePicFile && email) {
+                    // Register face in background (don't block form submission)
+                    registerFaceID(email, profilePicFile).then(success => {
+                        if (success) {
+                            console.log('✅ Face ID registered successfully');
+                        } else {
+                            console.warn('⚠️ Face ID registration failed, but account created');
+                        }
+                    });
+                }
+            }
+            
+            // Call original submit function
+            originalSubmitAfterRecaptcha();
+        };
+
+        // Face ID Login Modal
+        let faceLoginStream = null;
+
+        function openFaceLoginModal() {
+            const modal = document.getElementById('faceLoginModal');
+            const video = document.getElementById('faceLoginVideo');
+            const status = document.getElementById('faceLoginStatus');
+            
+            modal.style.display = 'flex';
+            status.textContent = 'Starting camera...';
+
+            navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+                .then(stream => {
+                    faceLoginStream = stream;
+                    video.srcObject = stream;
+                    status.textContent = 'Camera ready. Position your face and click Capture.';
+                })
+                .catch(error => {
+                    console.error('Camera error:', error);
+                    status.textContent = '❌ Camera access denied. Please enable camera permissions.';
+                    status.style.color = '#e74c3c';
+                });
+        }
+
+        function closeFaceLoginModal() {
+            const modal = document.getElementById('faceLoginModal');
+            const video = document.getElementById('faceLoginVideo');
+            const status = document.getElementById('faceLoginStatus');
+            
+            // Stop camera
+            if (faceLoginStream) {
+                faceLoginStream.getTracks().forEach(track => track.stop());
+                faceLoginStream = null;
+            }
+            video.srcObject = null;
+            
+            modal.style.display = 'none';
+            status.textContent = '';
+            status.style.color = '#666';
+        }
+
+        async function captureFaceLogin() {
+            const video = document.getElementById('faceLoginVideo');
+            const canvas = document.getElementById('faceLoginCanvas');
+            const status = document.getElementById('faceLoginStatus');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw video frame to canvas
+            ctx.drawImage(video, 0, 0);
+
+            // Convert canvas to blob
+            canvas.toBlob(async (blob) => {
+                status.textContent = '🔍 Verifying your face...';
+                status.style.color = '#4EA685';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', blob, 'face.jpg');
+
+                    const response = await fetch('http://127.0.0.1:5000/login', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.message) {
+                        // Extract email from message like "Welcome mehdikalfat1gmail.com.jpg!"
+                        const email = extractEmailFromMessage(result.message);
+                        
+                        if (email) {
+                            status.textContent = '✅ Face verified! Logging in...';
+                            status.style.color = '#27ae60';
+
+                            // Directly login with Face ID (no password required)
+                            loginWithFaceID(email);
+                        } else {
+                            status.textContent = '❌ Could not extract email from response';
+                            status.style.color = '#e74c3c';
+                        }
+                    } else {
+                        status.textContent = '❌ ' + (result.message || result.error || 'Face not recognized');
+                        status.style.color = '#e74c3c';
+                    }
+                } catch (error) {
+                    console.error('Face login error:', error);
+                    status.textContent = '❌ Connection error. Make sure Python backend is running on port 5000.';
+                    status.style.color = '#e74c3c';
+                }
+            }, 'image/jpeg', 0.95);
+        }
+
+        function extractEmailFromMessage(message) {
+            // Message format: "Welcome mehdikalfat1gmail.com.jpg!"
+            // Extract: mehdikalfat1@gmail.com
+            
+            try {
+                // Remove "Welcome " and "!"
+                let extracted = message.replace(/Welcome\s+/i, '').replace(/!/g, '').trim();
+                
+                // Remove .jpg extension
+                extracted = extracted.replace(/\.jpg$/i, '');
+                
+                // Add @ before gmail/yahoo/hotmail/outlook etc
+                const emailProviders = ['gmail', 'yahoo', 'hotmail', 'outlook', 'live', 'icloud', 'protonmail'];
+                
+                for (const provider of emailProviders) {
+                    if (extracted.includes(provider)) {
+                        // Find where provider starts and add @ before it
+                        const regex = new RegExp(`(\\d+)${provider}`, 'i');
+                        extracted = extracted.replace(regex, `$1@${provider}`);
+                        break;
+                    }
+                }
+                
+                console.log('Extracted email:', extracted);
+                return extracted;
+            } catch (error) {
+                console.error('Email extraction error:', error);
+                return null;
+            }
+        }
+
+        // Direct login with Face ID (no password required)
+        async function loginWithFaceID(email) {
+            try {
+                // Get CSRF token from meta tag if available
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+                
+                console.log('Attempting Face ID login for:', email);
+                console.log('CSRF Token:', csrfToken);
+                
+                const response = await fetch('{{ route("front.faceid-login") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email }),
+                    credentials: 'same-origin'
+                });
+
+                console.log('Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (response.ok && result.success) {
+                    // Login successful - redirect to home
+                    closeFaceLoginModal();
+                    window.location.href = result.redirect || '/';
+                } else {
+                    const status = document.getElementById('faceLoginStatus');
+                    status.textContent = '❌ ' + (result.message || result.error || 'Login failed');
+                    status.style.color = '#e74c3c';
+                    
+                    // Log detailed error
+                    console.error('Login failed:', result);
+                }
+            } catch (error) {
+                console.error('Face ID login error:', error);
+                const status = document.getElementById('faceLoginStatus');
+                status.textContent = '❌ Login failed. Please try again.';
+                status.style.color = '#e74c3c';
             }
         }
 

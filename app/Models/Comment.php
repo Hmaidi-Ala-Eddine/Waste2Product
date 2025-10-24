@@ -47,4 +47,30 @@ class Comment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the moderated (censored) version of the comment
+     *
+     * @return string
+     */
+    public function getModeratedCommentAttribute(): string
+    {
+        $groqService = app(\App\Services\GroqService::class);
+        $moderation = $groqService->moderateComment($this->comment);
+        
+        return $moderation['censored_text'] ?? $this->comment;
+    }
+
+    /**
+     * Check if comment contains inappropriate content
+     *
+     * @return bool
+     */
+    public function hasInappropriateContent(): bool
+    {
+        $groqService = app(\App\Services\GroqService::class);
+        $moderation = $groqService->moderateComment($this->comment);
+        
+        return !($moderation['is_appropriate'] ?? true);
+    }
 }

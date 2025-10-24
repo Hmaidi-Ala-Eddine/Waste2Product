@@ -91,7 +91,7 @@ services:
       PMA_PASSWORD: secret
       UPLOAD_LIMIT: 100M
     ports:
-      - "8080:80"
+      - "8081:80"  #phpMyAdmin port 8080:80
     depends_on:
       - mysql
     networks:
@@ -128,6 +128,24 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - waste2product_network
+
+  # Face Recognition API
+  faceid:
+    build:
+      context: ./faceid
+      dockerfile: Dockerfile
+    container_name: waste2product_faceid
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./faceid/known_faces:/app/known_faces
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
     networks:
       - waste2product_network
 

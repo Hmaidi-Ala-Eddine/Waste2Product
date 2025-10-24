@@ -61,9 +61,63 @@ class CommentController extends Controller
             $comment->save();
 
             if ($request->expectsJson()) {
+                // Initialize variables BEFORE try-catch
+                $isModerated = false;
+                $moderatedText = $comment->comment;
+                
+                // Moderate the comment once and reuse the result
+                try {
+                    $groqService = app(\App\Services\GroqService::class);
+                    $moderation = $groqService->moderateComment($comment->comment);
+                    
+                    $isModerated = !($moderation['is_appropriate'] ?? true);
+                    $moderatedText = $moderation['censored_text'] ?? $comment->comment;
+                    
+                    // Ensure we actually have censored text
+                    if (empty($moderatedText) || $moderatedText === 'null') {
+                        $moderatedText = $comment->comment;
+                        $isModerated = false;
+                    }
+                    
+                    \Log::info('Comment moderation result', [
+                        'comment_id' => $comment->id,
+                        'original' => $comment->comment,
+                        'is_appropriate' => $moderation['is_appropriate'] ?? true,
+                        'is_moderated' => $isModerated,
+                        'censored' => $moderatedText,
+                        'violations' => $moderation['violations'] ?? [],
+                    ]);
+                    
+                } catch (\Exception $e) {
+                    \Log::error('Comment moderation failed', [
+                        'error' => $e->getMessage(),
+                        'comment_id' => $comment->id
+                    ]);
+                    
+                    // Variables already initialized above
+                    $isModerated = false;
+                    $moderatedText = $comment->comment;
+                }
+                
+                // Force log before returning
+                \Log::info('Returning comment response', [
+                    'moderated_text' => $moderatedText,
+                    'is_moderated' => $isModerated,
+                    'original' => $comment->comment
+                ]);
+                
                 return response()->json([
                     'success' => true,
                     'message' => 'Comment added successfully!',
+                    'comment' => [
+                        'id' => $comment->id,
+                        'user_name' => $comment->user_name,
+                        'user_avatar' => $comment->user->profile_picture_url ?? asset('images/default-avatar.png'),
+                        'comment' => $comment->comment,
+                        'moderated_comment' => $moderatedText,
+                        'is_moderated' => $isModerated,
+                        'created_at' => $comment->created_at->diffForHumans(),
+                    ],
                     'data' => $comment->load('user'),
                 ], 201);
             }

@@ -109,7 +109,14 @@
                     @endif
                   </td>
                   <td class="align-middle text-center">
-                    <span class="text-secondary text-xs font-weight-bold">{{ $event->engagement }}</span>
+                    <a href="javascript:;" class="text-primary text-xs font-weight-bold engagement-link" 
+                       onclick="showParticipants({{ $event->id }}, '{{ $event->subject }}')"
+                       data-toggle="tooltip" 
+                       data-original-title="View participants"
+                       style="cursor: pointer; text-decoration: none;">
+                      <i class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">group</i>
+                      {{ $event->engagement }}
+                    </a>
                   </td>
                   <td class="align-middle text-center">
                     <span class="text-secondary text-xs font-weight-bold">
@@ -188,11 +195,13 @@
                 <input type="datetime-local" class="form-control border" name="date_time" required style="background-color: #f8f9fa;">
               </div>
               
+              <!-- Author is automatically set to logged-in user -->
+              <input type="hidden" name="author_id" value="{{ auth()->id() }}">
+              
               <div class="mb-3">
-                <label class="form-label text-dark">Author *</label>
-                <select class="form-control border" name="author_id" id="author_id" required style="background-color: #f8f9fa;">
-                  <option value="">Select Author</option>
-                </select>
+                <label class="form-label text-dark">Author</label>
+                <input type="text" class="form-control border" value="{{ auth()->user()->name }}" disabled style="background-color: #e9ecef;">
+                <small class="text-muted d-block mt-1">You will be set as the author of this event</small>
               </div>
             </div>
             
@@ -332,6 +341,42 @@
   </div>
 </div>
 
+<!-- Participants Modal -->
+<div class="modal fade" id="participantsModal" tabindex="-1" aria-labelledby="participantsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-primary">
+        <h5 class="modal-title text-white" id="participantsModalLabel">
+          <i class="material-symbols-rounded me-2">group</i>Event Participants
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <h6 class="text-dark font-weight-bold mb-2">Event: <span id="participantsEventTitle"></span></h6>
+          <p class="text-sm text-secondary mb-0">Total Participants: <span id="participantsCount" class="font-weight-bold text-primary">0</span></p>
+        </div>
+        <hr>
+        <div id="participantsList" class="mt-3">
+          <!-- Loading spinner -->
+          <div class="text-center py-4" id="participantsLoading">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2">Loading participants...</p>
+          </div>
+          <!-- Participants will be loaded here -->
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="material-symbols-rounded me-1">close</i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -434,6 +479,65 @@
   color: #dc3545 !important;
   text-decoration: none;
 }
+
+/* Engagement link styling */
+.engagement-link {
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.engagement-link:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+  transform: translateY(-1px);
+  text-decoration: none !important;
+}
+
+/* Participant card styling */
+.participant-card {
+  transition: all 0.2s ease;
+  background-color: #fff;
+  border: 1px solid #e9ecef !important;
+}
+
+.participant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+  border-color: #d2d6da !important;
+}
+
+/* Participants modal styling */
+#participantsModal .modal-header.bg-gradient-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  border-bottom: none;
+}
+
+#participantsList {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+#participantsList::-webkit-scrollbar {
+  width: 8px;
+}
+
+#participantsList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#participantsList::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+#participantsList::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 </style>
 @endpush
 
@@ -507,6 +611,97 @@ function displayFileName(input, displayId) {
     } else {
         display.textContent = '';
     }
+}
+
+// Reset modal when closed
+document.addEventListener('DOMContentLoaded', function() {
+    const participantsModal = document.getElementById('participantsModal');
+    if (participantsModal) {
+        participantsModal.addEventListener('hidden.bs.modal', function () {
+            // Reset modal content
+            document.getElementById('participantsEventTitle').textContent = '';
+            document.getElementById('participantsCount').textContent = '0';
+            document.getElementById('participantsList').innerHTML = '<div class="text-center py-4" id="participantsLoading"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted mt-2">Loading participants...</p></div>';
+        });
+    }
+});
+
+// Show participants function
+function showParticipants(eventId, eventTitle) {
+    // Set event title
+    document.getElementById('participantsEventTitle').textContent = eventTitle;
+    
+    // Show loading state
+    document.getElementById('participantsLoading').style.display = 'block';
+    document.getElementById('participantsList').innerHTML = '<div class="text-center py-4" id="participantsLoading"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="text-muted mt-2">Loading participants...</p></div>';
+    
+    // Open modal
+    const modalElement = document.getElementById('participantsModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    
+    // Fetch participants data
+    fetch(`/admin/events/${eventId}/participants`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load participants');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const participants = data.participants || [];
+            const count = participants.length;
+            
+            // Update count
+            document.getElementById('participantsCount').textContent = count;
+            
+            // Clear loading and display participants
+            const participantsList = document.getElementById('participantsList');
+            
+            if (count === 0) {
+                participantsList.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="material-symbols-rounded text-secondary" style="font-size: 4rem;">group_off</i>
+                        <p class="text-muted mt-3">No participants yet</p>
+                    </div>
+                `;
+            } else {
+                let participantsHTML = '<div class="row g-3">';
+                
+                participants.forEach(participant => {
+                    participantsHTML += `
+                        <div class="col-12 col-md-6">
+                            <div class="participant-card d-flex align-items-center p-3 border rounded-3 shadow-sm">
+                                <div class="me-3">
+                                    <img src="${participant.profile_picture_url || '/default-avatar.png'}" 
+                                         class="rounded-circle" 
+                                         style="width: 50px; height: 50px; object-fit: cover;" 
+                                         alt="${participant.name}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-dark font-weight-bold">${participant.name}</h6>
+                                    <p class="mb-0 text-sm text-secondary">${participant.email}</p>
+                                    ${participant.phone ? `<p class="mb-0 text-xs text-muted"><i class="material-symbols-rounded" style="font-size: 14px; vertical-align: middle;">phone</i> ${participant.phone}</p>` : ''}
+                                </div>
+                                ${participant.registered_at ? `<div class="text-end"><small class="text-muted">Joined: ${participant.registered_at}</small></div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                participantsHTML += '</div>';
+                participantsList.innerHTML = participantsHTML;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading participants:', error);
+            document.getElementById('participantsList').innerHTML = `
+                <div class="alert alert-danger text-center" role="alert">
+                    <i class="material-symbols-rounded me-2">error</i>
+                    Failed to load participants. Please try again.
+                </div>
+            `;
+        });
 }
 </script>
 @endpush
