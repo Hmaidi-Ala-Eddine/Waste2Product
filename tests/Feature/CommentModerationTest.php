@@ -21,37 +21,32 @@ class CommentModerationTest extends TestCase
     {
         $mock = Mockery::mock(GroqService::class);
         
-        // Mock for clean comments - return the original text unchanged
+        // Mock all moderateComment calls and return appropriate response based on content
         $mock->shouldReceive('moderateComment')
-            ->with(Mockery::on(function ($comment) {
-                // Match clean comments (no bad words)
-                return !preg_match('/\b(stupid|idiot|dumb|damn|shit|fuck|bitch)\b/i', $comment);
-            }))
             ->andReturnUsing(function ($comment) {
-                return [
-                    'success' => true,
-                    'is_appropriate' => true,
-                    'original_text' => $comment,
-                    'censored_text' => $comment,
-                    'violations' => []
-                ];
-            });
-        
-        // Mock for inappropriate comments - return censored version
-        $mock->shouldReceive('moderateComment')
-            ->with(Mockery::on(function ($comment) {
-                // Match inappropriate comments (contains bad words)
-                return preg_match('/\b(stupid|idiot|dumb|damn|shit|fuck|bitch)\b/i', $comment);
-            }))
-            ->andReturnUsing(function ($comment) {
-                $censored = preg_replace('/\b(stupid|idiot|dumb|damn|shit|fuck|bitch)\b/i', '***', $comment);
-                return [
-                    'success' => true,
-                    'is_appropriate' => false,
-                    'original_text' => $comment,
-                    'censored_text' => $censored,
-                    'violations' => ['profanity']
-                ];
+                // Check if comment contains bad words
+                $hasBadWords = preg_match('/\b(stupid|idiot|dumb|damn|shit|fuck|bitch)\b/i', $comment);
+                
+                if ($hasBadWords) {
+                    // Return censored version for inappropriate comments
+                    $censored = preg_replace('/\b(stupid|idiot|dumb|damn|shit|fuck|bitch)\b/i', '***', $comment);
+                    return [
+                        'success' => true,
+                        'is_appropriate' => false,
+                        'original_text' => $comment,
+                        'censored_text' => $censored,
+                        'violations' => ['profanity']
+                    ];
+                } else {
+                    // Return original text for clean comments
+                    return [
+                        'success' => true,
+                        'is_appropriate' => true,
+                        'original_text' => $comment,
+                        'censored_text' => $comment,
+                        'violations' => []
+                    ];
+                }
             });
         
         $this->app->instance(GroqService::class, $mock);
@@ -142,6 +137,7 @@ class CommentModerationTest extends TestCase
         $this->actingAs($user);
         
         $response = $this->postJson("/posts/{$post->id}/comments", [
+            'user_name' => $user->name,
             'comment' => 'This is a test comment'
         ]);
 
