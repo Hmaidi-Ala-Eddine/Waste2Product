@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventParticipation;
 use App\Models\User;
+use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -137,6 +138,34 @@ class EventController extends Controller
     }
 
     /**
+     * Get participants for an event
+     */
+    public function getParticipants($id)
+    {
+        $event = Event::findOrFail($id);
+        
+        // Get all participants through the EventParticipation pivot table
+        $participants = EventParticipation::where('event_id', $id)
+            ->with('user')
+            ->get()
+            ->map(function($participation) {
+                $user = $participation->user;
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone ?? null,
+                    'profile_picture_url' => $user->profile_picture_url ?? asset('default-avatar.png'),
+                    'registered_at' => $participation->created_at ? $participation->created_at->format('d/m/Y H:i') : null,
+                ];
+            });
+        
+        return response()->json([
+            'participants' => $participants
+        ]);
+    }
+
+    /**
      * Display events for frontend (Public viewing)
      */
     public function frontendIndex(Request $request)
@@ -167,6 +196,7 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
         $userId = Auth::id();
+        $user = Auth::user();
         
         // Check if user already participated
         $participation = EventParticipation::where('user_id', $userId)
@@ -188,6 +218,15 @@ class EventController extends Controller
             ]);
             $event->increment('engagement');
             $message = 'Successfully registered for the event!';
+            
+            // Send SMS confirmation
+            try {
+                $smsService = new SmsService();
+                $smsService->sendEventParticipationConfirmation($user, $event);
+            } catch (\Exception $e) {
+                // Log error but don't fail the participation
+                \Log::error('Failed to send SMS confirmation: ' . $e->getMessage());
+            }
         }
         
         return response()->json([

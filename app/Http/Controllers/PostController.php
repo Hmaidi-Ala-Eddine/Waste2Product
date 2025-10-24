@@ -433,4 +433,56 @@ class PostController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Get all likes for a post (Admin)
+     */
+    public function getLikes(Post $post): JsonResponse
+    {
+        $likes = \App\Models\PostLike::where('post_id', $post->id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($like) {
+                return [
+                    'id' => $like->user->id,
+                    'name' => $like->user->name,
+                    'email' => $like->user->email,
+                    'profile_picture_url' => $like->user->profile_picture_url ?? asset('default-avatar.png'),
+                    'liked_at' => $like->created_at ? $like->created_at->format('d/m/Y H:i') : null,
+                ];
+            });
+
+        return response()->json([
+            'likes' => $likes
+        ]);
+    }
+
+    /**
+     * Get all comments for a post (Admin)
+     */
+    public function getComments(Post $post): JsonResponse
+    {
+        $comments = Comment::where('post_id', $post->id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($comment) {
+                return [
+                    'id' => $comment->id,
+                    'content' => $comment->comment,
+                    'created_at' => $comment->created_at ? $comment->created_at->format('d/m/Y H:i') : null,
+                    'user' => [
+                        'id' => $comment->user->id,
+                        'name' => $comment->user->name,
+                        'email' => $comment->user->email,
+                        'profile_picture_url' => $comment->user->profile_picture_url ?? asset('default-avatar.png'),
+                    ],
+                ];
+            });
+
+        return response()->json([
+            'comments' => $comments
+        ]);
+    }
 }
