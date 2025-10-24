@@ -467,6 +467,49 @@
         margin-left: 14px;
     }
 
+    .moderated-content {
+        border-left: 3px solid #ffc107;
+        background: #fff9e6 !important;
+    }
+
+    .moderation-notice {
+        margin-top: 6px;
+        padding: 4px 8px;
+        background: rgba(255, 193, 7, 0.15);
+        border-radius: 8px;
+        font-size: 11px;
+        color: #f57c00;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 600;
+    }
+
+    .moderation-notice i {
+        font-size: 10px;
+    }
+
+    .comment-loading {
+        padding: 15px;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        color: #667eea;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .comment-loading i {
+        margin-right: 8px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
     .comment-form {
         display: flex;
         align-items: center;
@@ -762,9 +805,14 @@
                                 <div class="comment-item">
                                     <img src="{{ $comment->user->profile_picture_url ?? auth()->user()->profile_picture_url }}" alt="{{ $comment->user_name }}" class="comment-avatar">
                                     <div class="comment-content">
-                                        <div class="comment-bubble">
+                                        <div class="comment-bubble {{ $comment->hasInappropriateContent() ? 'moderated-content' : '' }}">
                                             <div class="comment-author">{{ $comment->user_name }}</div>
-                                            <div class="comment-text">{{ $comment->comment }}</div>
+                                            <div class="comment-text">{{ $comment->moderated_comment }}</div>
+                                            @if($comment->hasInappropriateContent())
+                                                <div class="moderation-notice">
+                                                    <i class="fas fa-shield-alt"></i> Content moderated by AI
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="comment-time">{{ $comment->created_at->diffForHumans() }}</div>
                                     </div>
@@ -964,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Comment form submission
     document.querySelectorAll('.comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const postId = this.dataset.postId;
@@ -972,57 +1020,105 @@ document.addEventListener('DOMContentLoaded', function() {
             const userName = this.querySelector('input[name="user_name"]').value;
             const comment = commentInput.value;
             const submitBtn = this.querySelector('.comment-submit');
+            const commentsList = this.closest('.comments-section').querySelector('.comments-list');
             
             if (!comment.trim()) return;
             
+            // Show loading state
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Posting...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
             
-            fetch(`/posts/${postId}/comments`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    user_name: userName,
-                    comment: comment
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
+            // Add temporary loading indicator in comments list
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.className = 'comment-loading';
+            loadingIndicator.innerHTML = '<i class="fas fa-shield-alt"></i> AI is checking your comment for inappropriate content...';
+            commentsList.insertBefore(loadingIndicator, commentsList.firstChild);
+            
+            try {
+                // Start timer for minimum 2-second delay
+                const startTime = Date.now();
+                
+                // Make the API call and WAIT for AI moderation to complete
+                const response = await fetch(`/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        user_name: userName,
+                        comment: comment
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                // Ensure MINIMUM 2 seconds have passed
+                const elapsedTime = Date.now() - startTime;
+                const remainingTime = Math.max(0, 2000 - elapsedTime); // 2000ms = 2 seconds
+                
+                if (remainingTime > 0) {
+                    console.log(`⏱️ Waiting ${remainingTime}ms more to ensure AI completed...`);
+                    await new Promise(resolve => setTimeout(resolve, remainingTime));
+                }
+                
+                // CRITICAL: Log the FULL response (stringify to see everything)
+                console.log('=== FULL AI RESPONSE (RAW) ===');
+                console.log(JSON.stringify(data, null, 2));
+                console.log('================================');
+                
+                console.log('Success:', data.success);
+                console.log('✅ Comment posted successfully, reloading page to show censored version...');
+                
+                // Remove loading indicator
+                loadingIndicator.remove();
+                
                 if (data.success) {
-                    const commentsList = this.closest('.comments-section').querySelector('.comments-list');
-                    const newComment = document.createElement('div');
-                    newComment.className = 'comment-item';
-                    newComment.innerHTML = `
-                        <img src="${data.comment.user_avatar}" alt="${data.comment.user_name}" class="comment-avatar">
-                        <div class="comment-content">
-                            <div class="comment-bubble">
-                                <div class="comment-author">${data.comment.user_name}</div>
-                                <div class="comment-text">${data.comment.comment}</div>
-                            </div>
-                            <div class="comment-time">Just now</div>
-                        </div>
-                    `;
-                    commentsList.insertBefore(newComment, commentsList.firstChild);
-                    
                     // Clear input
                     commentInput.value = '';
                     submitBtn.disabled = true;
                     submitBtn.textContent = 'Post';
                     
+                    // Show success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'comment-loading';
+                    successMsg.style.background = '#d4edda';
+                    successMsg.style.color = '#155724';
+                    successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Comment posted! Reloading comments...';
+                    commentsList.insertBefore(successMsg, commentsList.firstChild);
+                    
                     // Update comment count
                     const card = this.closest('.post-card');
                     const commentBtn = card.querySelector('.comment-toggle-btn .count');
-                    commentBtn.textContent = parseInt(commentBtn.textContent) + 1;
+                    if (commentBtn) {
+                        commentBtn.textContent = parseInt(commentBtn.textContent) + 1;
+                    }
+                    
+                    // Reload the entire page after 800ms to show properly censored comment
+                    setTimeout(() => {
+                        console.log('🔄 Reloading page now...');
+                        // Force hard reload - multiple methods to ensure it works
+                        window.location.href = window.location.href.split('#')[0] + '?t=' + Date.now();
+                    }, 800);
+                } else {
+                    throw new Error('Invalid response format');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+            } catch (error) {
+                console.error('❌ Error posting comment:', error);
+                
+                // Remove loading indicator on error
+                if (loadingIndicator && loadingIndicator.parentNode) {
+                    loadingIndicator.remove();
+                }
+                
+                alert('Failed to post comment. Please try again.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Post';
-            });
+            }
         });
     });
 });

@@ -20,6 +20,9 @@ Route::post('admin/sign-in', [\App\controller\UserController::class, 'login'])->
 // front sign-in (public) - users and admins can sign in via the front page
 Route::post('/login', [\App\controller\UserController::class, 'login'])->name('front.sign-in.post');
 
+// Face ID login (passwordless authentication)
+Route::post('/faceid-login', [\App\controller\UserController::class, 'faceIdLogin'])->name('front.faceid-login');
+
 // front signup for public users (used by front login page)
 Route::post('/signup', [\App\controller\UserController::class, 'store'])->name('front.signup.post');
 

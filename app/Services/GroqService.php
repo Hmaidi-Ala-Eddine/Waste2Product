@@ -795,6 +795,159 @@ Make it PROFESSIONAL yet VISUALLY ENGAGING! Celebrate top performers!"
     }
 
     /**
+     * Moderate comment content - detect and censor inappropriate language
+     *
+     * @param string $comment
+     * @return array
+     */
+    public function moderateComment(string $comment): array
+    {
+        // Cache the result for 1 hour to avoid re-processing same comment
+        $cacheKey = 'moderated_comment_' . md5($comment);
+        
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => "You are a strict content moderation AI. Your job is to CENSOR inappropriate words.
+
+BAD WORDS TO CENSOR (replace with ***):
+- Profanity: fuck, shit, damn, bitch, ass, bastard, hell, dick, cock, pussy, etc.
+- Slurs and hate speech
+- Sexual/explicit terms
+- Threats or violent language
+- Personal attacks: stupid, idiot, fool, dumb, etc.
+
+RULES:
+1. If comment is CLEAN → Return: {\"is_appropriate\": true, \"censored_text\": \"<exact original text>\"}
+2. If comment has BAD WORDS → Replace EACH bad word with *** → Return: {\"is_appropriate\": false, \"censored_text\": \"<censored version>\", \"violations\": [\"profanity\"]}
+
+EXAMPLES:
+Input: \"This is great\"
+Output: {\"is_appropriate\": true, \"censored_text\": \"This is great\"}
+
+Input: \"fuck this\"
+Output: {\"is_appropriate\": false, \"censored_text\": \"*** this\", \"violations\": [\"profanity\"]}
+
+Input: \"you are stupid and a bitch\"
+Output: {\"is_appropriate\": false, \"censored_text\": \"you are *** and a ***\", \"violations\": [\"profanity\", \"insult\"]}
+
+CRITICAL: 
+- ALWAYS replace bad words with ***
+- NEVER leave bad words uncensored
+- Return ONLY valid JSON"
+            ],
+            [
+                'role' => 'user',
+                'content' => "Moderate and censor this comment:\n\n\"{$comment}\"\n\nReturn JSON with censored_text field."
+            ]
+        ];
+
+        try {
+            $response = $this->chat($messages, $this->analysisModel);
+
+            if ($response && isset($response['choices'][0]['message']['content'])) {
+                $aiResponse = trim($response['choices'][0]['message']['content']);
+                
+                // Extract JSON from response
+                if (preg_match('/\{[\s\S]*\}/', $aiResponse, $matches)) {
+                    $jsonData = json_decode($matches[0], true);
+                    
+                    if ($jsonData && isset($jsonData['is_appropriate'])) {
+                        // Ensure censored_text is never null or empty
+                        $censoredText = $jsonData['censored_text'] ?? null;
+                        if (empty($censoredText) || $censoredText === 'null') {
+                            $censoredText = $comment; // Use original if AI returned null/empty
+                        }
+                        
+                        $isAppropriate = $jsonData['is_appropriate'];
+                        
+                        // SAFETY CHECK: If AI says inappropriate but censored text = original, manually censor
+                        if (!$isAppropriate && $censoredText === $comment) {
+                            Log::warning('AI detected inappropriate but did not censor, applying manual censoring', [
+                                'original' => $comment
+                            ]);
+                            $censoredText = $this->manualCensor($comment);
+                        }
+                        
+                        $result = [
+                            'success' => true,
+                            'is_appropriate' => $isAppropriate,
+                            'original_text' => $comment,
+                            'censored_text' => $censoredText,
+                            'violations' => $jsonData['violations'] ?? []
+                        ];
+
+                        // Cache the result
+                        Cache::put($cacheKey, $result, 3600); // 1 hour
+                        
+                        return $result;
+                    }
+                }
+
+                // Fallback: if JSON parsing fails, return original
+                Log::warning('Comment moderation JSON parsing failed', ['response' => $aiResponse]);
+                return [
+                    'success' => false,
+                    'is_appropriate' => true,
+                    'original_text' => $comment,
+                    'censored_text' => $comment,
+                    'message' => 'Could not parse moderation response'
+                ];
+            }
+
+            return [
+                'success' => false,
+                'is_appropriate' => true,
+                'original_text' => $comment,
+                'censored_text' => $comment,
+                'message' => 'Moderation service unavailable'
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Comment moderation failed', [
+                'error' => $e->getMessage(),
+                'comment' => substr($comment, 0, 100)
+            ]);
+            
+            return [
+                'success' => false,
+                'is_appropriate' => true,
+                'original_text' => $comment,
+                'censored_text' => $comment,
+                'message' => 'Moderation service error'
+            ];
+        }
+    }
+
+    /**
+     * Manual fallback censoring using regex
+     *
+     * @param string $text
+     * @return string
+     */
+    private function manualCensor(string $text): string
+    {
+        // Common bad words to censor (case-insensitive)
+        $badWords = [
+            'fuck', 'shit', 'damn', 'bitch', 'ass', 'bastard', 'hell', 'dick', 
+            'cock', 'pussy', 'cunt', 'whore', 'slut', 'fag', 'nigger', 'nigga',
+            'stupid', 'idiot', 'fool', 'dumb', 'moron', 'retard', 'loser'
+        ];
+        
+        foreach ($badWords as $word) {
+            // Replace with *** (preserving word boundaries)
+            $pattern = '/\b' . preg_quote($word, '/') . '\b/i';
+            $text = preg_replace($pattern, '***', $text);
+        }
+        
+        return $text;
+    }
+
+    /**
      * Check API health
      *
      * @return bool
