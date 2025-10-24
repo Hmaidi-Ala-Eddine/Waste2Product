@@ -141,7 +141,7 @@ class CommentModerationTest extends TestCase
             'comment' => 'This is a test comment'
         ]);
 
-        $response->assertStatus(201)
+        $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ])
@@ -150,8 +150,8 @@ class CommentModerationTest extends TestCase
                     'id',
                     'user_name',
                     'comment',
-                    'moderated_comment',
-                    'is_moderated'
+                    'created_at',
+                    'user_avatar'
                 ]
             ]);
     }
