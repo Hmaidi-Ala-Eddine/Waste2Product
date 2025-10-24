@@ -1090,7 +1090,9 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                         <div class="project-card" 
                              data-status="{{ $idea->project_status }}"
                              data-waste="{{ $idea->waste_type }}"
+                             data-difficulty="{{ $idea->difficulty_level }}"
                              data-title="{{ strtolower($idea->title) }}"
+                             data-created="{{ $idea->created_at->timestamp }}"
                              onclick="window.location.href='{{ route('front.eco-ideas.show', $idea) }}'">
                             @if($idea->image_path)
                                 <img src="{{ asset('storage/' . $idea->image_path) }}" alt="{{ $idea->title }}" class="project-image">
@@ -1102,7 +1104,20 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                                 <div class="project-header">
                                     <div>
                                         <h3 class="project-title">{{ Str::limit($idea->title, 45) }}</h3>
-                                        <p class="project-author">By {{ $idea->creator->name }}</p>
+                                        <p class="project-author">
+                                            By {{ $idea->creator->name }}
+                                            @auth
+                                                @if($idea->creator_id === auth()->id())
+                                                    <span style="display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700;">
+                                                        <i class="fas fa-crown" style="font-size: 9px;"></i> Owner
+                                                    </span>
+                                                @elseif($idea->team()->where('user_id', auth()->id())->exists())
+                                                    <span style="display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700;">
+                                                        <i class="fas fa-user-check" style="font-size: 9px;"></i> Joined
+                                                    </span>
+                                                @endif
+                                            @endauth
+                                        </p>
                                     </div>
                                     <span class="status-badge status-{{ $idea->project_status }}">
                                         {{ str_replace('_', ' ', $idea->project_status) }}
@@ -1112,11 +1127,11 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                                 <p class="project-desc">{{ Str::limit($idea->description, 100) }}</p>
                                 
                                 <div class="project-meta">
-                                    <div class="meta-item">
+                                    <div class="meta-item" data-likes="{{ $idea->upvotes ?? 0 }}">
                                         <i class="fas fa-heart" style="color: #ef4444;"></i>
                                         {{ $idea->upvotes ?? 0 }}
                                     </div>
-                                    <div class="meta-item">
+                                    <div class="meta-item" data-team-size="{{ $idea->team()->count() + 1 }}">
                                         <i class="fas fa-users" style="color: #10b981;"></i>
                                         {{ $idea->team()->count() + 1 }}/{{ $idea->team_size_needed ?? 0 }}
                                     </div>
@@ -1155,10 +1170,55 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                 </h2>
             </div>
 
+            <!-- Filters for My Projects -->
+            <div class="filters-bar" style="display: grid; grid-template-columns: 2fr repeat(4, 1fr) auto; gap: 12px; align-items: center; margin-bottom: 20px;">
+                <input type="text" id="searchInputMyProjects" class="search-input" placeholder="Search my projects..." style="width: 100%;">
+                <select id="statusFilterMyProjects" class="filter-select">
+                    <option value="">📊 All Statuses</option>
+                    <option value="recruiting">🔵 Recruiting</option>
+                    <option value="in_progress">🟢 In Progress</option>
+                    <option value="completed">🟡 Completed</option>
+                    <option value="verified">✅ Verified</option>
+                </select>
+                <select id="wasteFilterMyProjects" class="filter-select">
+                    <option value="">♻️ All Types</option>
+                    <option value="organic">🌱 Organic</option>
+                    <option value="plastic">🧴 Plastic</option>
+                    <option value="metal">🔩 Metal</option>
+                    <option value="e-waste">💻 E-Waste</option>
+                    <option value="paper">📄 Paper</option>
+                    <option value="glass">🥃 Glass</option>
+                    <option value="textile">👕 Textile</option>
+                    <option value="mixed">📦 Mixed</option>
+                </select>
+                <select id="difficultyFilterMyProjects" class="filter-select">
+                    <option value="">⚡ Difficulty</option>
+                    <option value="easy">🟢 Easy</option>
+                    <option value="medium">🟡 Medium</option>
+                    <option value="hard">🔴 Hard</option>
+                </select>
+                <select id="sortFilterMyProjects" class="filter-select">
+                    <option value="latest">🆕 Latest</option>
+                    <option value="oldest">📅 Oldest</option>
+                    <option value="popular">❤️ Most Liked</option>
+                    <option value="team_size">👥 Team Size</option>
+                </select>
+                <button id="resetFiltersMyProjects" class="filter-select" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                    <i class="fas fa-redo" style="font-size: 12px;"></i> Reset
+                </button>
+            </div>
+            <div id="activeFiltersMyProjects" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 24px;"></div>
+
             @if($myProjects->count() > 0)
-                <div class="projects-grid">
+                <div class="projects-grid" id="myProjectsGrid">
                     @foreach($myProjects as $project)
-                        <div class="project-card" onclick="window.location.href='{{ route('front.eco-ideas.dashboard.manage', $project) }}'">
+                        <div class="project-card" 
+                             data-status="{{ $project->project_status }}"
+                             data-waste="{{ $project->waste_type }}"
+                             data-difficulty="{{ $project->difficulty_level }}"
+                             data-title="{{ strtolower($project->title) }}"
+                             data-created="{{ $project->created_at->timestamp }}"
+                             onclick="window.location.href='{{ route('front.eco-ideas.dashboard.manage', $project) }}'">
                             @if($project->image_path)
                                 <img src="{{ asset('storage/' . $project->image_path) }}" alt="{{ $project->title }}" class="project-image">
                             @else
@@ -1194,6 +1254,10 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                                         </div>
                                     @endif
                                 </div>
+                                
+                                <a href="{{ route('front.eco-ideas.dashboard.manage', $project) }}" style="display: block; margin-top: 12px; padding: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 700; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.2)'">
+                                    <i class="fas fa-tachometer-alt"></i> Open Dashboard
+                                </a>
                             </div>
                         </div>
                     @endforeach
@@ -1216,10 +1280,55 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                 </h2>
             </div>
 
+            <!-- Filters for Joined Projects -->
+            <div class="filters-bar" style="display: grid; grid-template-columns: 2fr repeat(4, 1fr) auto; gap: 12px; align-items: center; margin-bottom: 20px;">
+                <input type="text" id="searchInputJoined" class="search-input" placeholder="Search joined projects..." style="width: 100%;">
+                <select id="statusFilterJoined" class="filter-select">
+                    <option value="">📊 All Statuses</option>
+                    <option value="recruiting">🔵 Recruiting</option>
+                    <option value="in_progress">🟢 In Progress</option>
+                    <option value="completed">🟡 Completed</option>
+                    <option value="verified">✅ Verified</option>
+                </select>
+                <select id="wasteFilterJoined" class="filter-select">
+                    <option value="">♻️ All Types</option>
+                    <option value="organic">🌱 Organic</option>
+                    <option value="plastic">🧴 Plastic</option>
+                    <option value="metal">🔩 Metal</option>
+                    <option value="e-waste">💻 E-Waste</option>
+                    <option value="paper">📄 Paper</option>
+                    <option value="glass">🥃 Glass</option>
+                    <option value="textile">👕 Textile</option>
+                    <option value="mixed">📦 Mixed</option>
+                </select>
+                <select id="difficultyFilterJoined" class="filter-select">
+                    <option value="">⚡ Difficulty</option>
+                    <option value="easy">🟢 Easy</option>
+                    <option value="medium">🟡 Medium</option>
+                    <option value="hard">🔴 Hard</option>
+                </select>
+                <select id="sortFilterJoined" class="filter-select">
+                    <option value="latest">🆕 Latest</option>
+                    <option value="oldest">📅 Oldest</option>
+                    <option value="popular">❤️ Most Liked</option>
+                    <option value="team_size">👥 Team Size</option>
+                </select>
+                <button id="resetFiltersJoined" class="filter-select" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
+                    <i class="fas fa-redo" style="font-size: 12px;"></i> Reset
+                </button>
+            </div>
+            <div id="activeFiltersJoined" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 24px;"></div>
+
             @if($joinedProjects->count() > 0)
-                <div class="projects-grid">
+                <div class="projects-grid" id="joinedProjectsGrid">
                     @foreach($joinedProjects as $project)
-                        <div class="project-card" style="border: 2px solid #3b82f6;" onclick="window.location.href='{{ route('front.eco-ideas.dashboard.manage', $project) }}'">
+                        <div class="project-card" 
+                             data-status="{{ $project->project_status }}"
+                             data-waste="{{ $project->waste_type }}"
+                             data-difficulty="{{ $project->difficulty_level }}"
+                             data-title="{{ strtolower($project->title) }}"
+                             data-created="{{ $project->created_at->timestamp }}"
+                             style="border: 2px solid #3b82f6;">
                             @if($project->image_path)
                                 <img src="{{ asset('storage/' . $project->image_path) }}" alt="{{ $project->title }}" class="project-image">
                             @else
@@ -1251,6 +1360,10 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
                                         My tasks: {{ $project->tasks()->where('assigned_to', auth()->id())->where('status', 'completed')->count() }}/{{ $project->tasks()->where('assigned_to', auth()->id())->count() }}
                                     </div>
                                 </div>
+                                
+                                <a href="{{ route('front.eco-ideas.dashboard.manage', $project) }}" style="display: block; margin-top: 12px; padding: 10px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 700; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.2)'" onclick="event.stopPropagation();">
+                                    <i class="fas fa-tachometer-alt"></i> Open Dashboard
+                                </a>
                             </div>
                         </div>
                     @endforeach
@@ -1868,8 +1981,7 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
             const title = card.getAttribute('data-title');
             const status = card.getAttribute('data-status');
             const waste = card.getAttribute('data-waste');
-            
-            const difficulty = card.getAttribute('data-difficulty') || card.querySelector('[data-difficulty]')?.textContent.toLowerCase();
+            const difficulty = card.getAttribute('data-difficulty');
             
             const matchesSearch = title.includes(searchTerm);
             const matchesStatus = !statusValue || status === statusValue;
@@ -1888,19 +2000,29 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
         const grid = document.getElementById('projectsGrid');
         
         if (sortValue === 'latest') {
-            // Default order - no change needed
+            // Sort by creation date descending (newest first)
+            visibleCards.sort((a, b) => {
+                const dateA = parseInt(a.getAttribute('data-created') || 0);
+                const dateB = parseInt(b.getAttribute('data-created') || 0);
+                return dateB - dateA;
+            });
         } else if (sortValue === 'oldest') {
-            visibleCards.reverse();
+            // Sort by creation date ascending (oldest first)
+            visibleCards.sort((a, b) => {
+                const dateA = parseInt(a.getAttribute('data-created') || 0);
+                const dateB = parseInt(b.getAttribute('data-created') || 0);
+                return dateA - dateB;
+            });
         } else if (sortValue === 'popular') {
             visibleCards.sort((a, b) => {
-                const likesA = parseInt(a.querySelector('[data-likes]')?.textContent || 0);
-                const likesB = parseInt(b.querySelector('[data-likes]')?.textContent || 0);
+                const likesA = parseInt(a.querySelector('[data-likes]')?.getAttribute('data-likes') || 0);
+                const likesB = parseInt(b.querySelector('[data-likes]')?.getAttribute('data-likes') || 0);
                 return likesB - likesA;
             });
         } else if (sortValue === 'team_size') {
             visibleCards.sort((a, b) => {
-                const teamA = parseInt(a.querySelector('[data-team-size]')?.textContent || 0);
-                const teamB = parseInt(b.querySelector('[data-team-size]')?.textContent || 0);
+                const teamA = parseInt(a.querySelector('[data-team-size]')?.getAttribute('data-team-size') || 0);
+                const teamB = parseInt(b.querySelector('[data-team-size]')?.getAttribute('data-team-size') || 0);
                 return teamB - teamA;
             });
         }
@@ -1927,6 +2049,152 @@ input[type="number"]#team_size_needed::-webkit-outer-spin-button {
             difficultyFilter.value = '';
             sortFilter.value = 'latest';
             filterProjects();
+        });
+    }
+
+    // ========== MY PROJECTS FILTERS ==========
+    const searchInputMyProjects = document.getElementById('searchInputMyProjects');
+    const statusFilterMyProjects = document.getElementById('statusFilterMyProjects');
+    const wasteFilterMyProjects = document.getElementById('wasteFilterMyProjects');
+    const difficultyFilterMyProjects = document.getElementById('difficultyFilterMyProjects');
+    const sortFilterMyProjects = document.getElementById('sortFilterMyProjects');
+    const resetBtnMyProjects = document.getElementById('resetFiltersMyProjects');
+    const activeFiltersDivMyProjects = document.getElementById('activeFiltersMyProjects');
+    
+    function filterMyProjects() {
+        const searchTerm = searchInputMyProjects?.value.toLowerCase() || '';
+        const statusValue = statusFilterMyProjects?.value || '';
+        const wasteValue = wasteFilterMyProjects?.value || '';
+        const difficultyValue = difficultyFilterMyProjects?.value || '';
+        const sortValue = sortFilterMyProjects?.value || 'latest';
+        
+        let cards = Array.from(document.querySelectorAll('#myProjectsGrid .project-card'));
+        
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title');
+            const status = card.getAttribute('data-status');
+            const waste = card.getAttribute('data-waste');
+            const difficulty = card.getAttribute('data-difficulty');
+            
+            const matchesSearch = title?.includes(searchTerm);
+            const matchesStatus = !statusValue || status === statusValue;
+            const matchesWaste = !wasteValue || waste === wasteValue;
+            const matchesDifficulty = !difficultyValue || difficulty === difficultyValue;
+            
+            if (matchesSearch && matchesStatus && matchesWaste && matchesDifficulty) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        const visibleCards = cards.filter(card => card.style.display !== 'none');
+        const grid = document.getElementById('myProjectsGrid');
+        
+        if (sortValue === 'latest') {
+            visibleCards.sort((a, b) => {
+                const dateA = parseInt(a.getAttribute('data-created') || 0);
+                const dateB = parseInt(b.getAttribute('data-created') || 0);
+                return dateB - dateA;
+            });
+        } else if (sortValue === 'oldest') {
+            visibleCards.sort((a, b) => {
+                const dateA = parseInt(a.getAttribute('data-created') || 0);
+                const dateB = parseInt(b.getAttribute('data-created') || 0);
+                return dateA - dateB;
+            });
+        }
+        
+        visibleCards.forEach(card => grid?.appendChild(card));
+    }
+    
+    if (searchInputMyProjects) searchInputMyProjects.addEventListener('input', filterMyProjects);
+    if (statusFilterMyProjects) statusFilterMyProjects.addEventListener('change', filterMyProjects);
+    if (wasteFilterMyProjects) wasteFilterMyProjects.addEventListener('change', filterMyProjects);
+    if (difficultyFilterMyProjects) difficultyFilterMyProjects.addEventListener('change', filterMyProjects);
+    if (sortFilterMyProjects) sortFilterMyProjects.addEventListener('change', filterMyProjects);
+    
+    if (resetBtnMyProjects) {
+        resetBtnMyProjects.addEventListener('click', function() {
+            searchInputMyProjects.value = '';
+            statusFilterMyProjects.value = '';
+            wasteFilterMyProjects.value = '';
+            difficultyFilterMyProjects.value = '';
+            sortFilterMyProjects.value = 'latest';
+            filterMyProjects();
+        });
+    }
+
+    // ========== JOINED PROJECTS FILTERS ==========
+    const searchInputJoined = document.getElementById('searchInputJoined');
+    const statusFilterJoined = document.getElementById('statusFilterJoined');
+    const wasteFilterJoined = document.getElementById('wasteFilterJoined');
+    const difficultyFilterJoined = document.getElementById('difficultyFilterJoined');
+    const sortFilterJoined = document.getElementById('sortFilterJoined');
+    const resetBtnJoined = document.getElementById('resetFiltersJoined');
+    const activeFiltersDivJoined = document.getElementById('activeFiltersJoined');
+    
+    function filterJoinedProjects() {
+        const searchTerm = searchInputJoined?.value.toLowerCase() || '';
+        const statusValue = statusFilterJoined?.value || '';
+        const wasteValue = wasteFilterJoined?.value || '';
+        const difficultyValue = difficultyFilterJoined?.value || '';
+        const sortValue = sortFilterJoined?.value || 'latest';
+        
+        let cards = Array.from(document.querySelectorAll('#joinedProjectsGrid .project-card'));
+        
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title');
+            const status = card.getAttribute('data-status');
+            const waste = card.getAttribute('data-waste');
+            const difficulty = card.getAttribute('data-difficulty');
+            
+            const matchesSearch = title?.includes(searchTerm);
+            const matchesStatus = !statusValue || status === statusValue;
+            const matchesWaste = !wasteValue || waste === wasteValue;
+            const matchesDifficulty = !difficultyValue || difficulty === difficultyValue;
+            
+            if (matchesSearch && matchesStatus && matchesWaste && matchesDifficulty) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        const visibleCards = cards.filter(card => card.style.display !== 'none');
+        const grid = document.getElementById('joinedProjectsGrid');
+        
+        if (sortValue === 'latest') {
+            visibleCards.sort((a, b) => {
+                const dateA = parseInt(a.getAttribute('data-created') || 0);
+                const dateB = parseInt(b.getAttribute('data-created') || 0);
+                return dateB - dateA;
+            });
+        } else if (sortValue === 'oldest') {
+            visibleCards.sort((a, b) => {
+                const dateA = parseInt(a.getAttribute('data-created') || 0);
+                const dateB = parseInt(b.getAttribute('data-created') || 0);
+                return dateA - dateB;
+            });
+        }
+        
+        visibleCards.forEach(card => grid?.appendChild(card));
+    }
+    
+    if (searchInputJoined) searchInputJoined.addEventListener('input', filterJoinedProjects);
+    if (statusFilterJoined) statusFilterJoined.addEventListener('change', filterJoinedProjects);
+    if (wasteFilterJoined) wasteFilterJoined.addEventListener('change', filterJoinedProjects);
+    if (difficultyFilterJoined) difficultyFilterJoined.addEventListener('change', filterJoinedProjects);
+    if (sortFilterJoined) sortFilterJoined.addEventListener('change', filterJoinedProjects);
+    
+    if (resetBtnJoined) {
+        resetBtnJoined.addEventListener('click', function() {
+            searchInputJoined.value = '';
+            statusFilterJoined.value = '';
+            wasteFilterJoined.value = '';
+            difficultyFilterJoined.value = '';
+            sortFilterJoined.value = 'latest';
+            filterJoinedProjects();
         });
     }
 

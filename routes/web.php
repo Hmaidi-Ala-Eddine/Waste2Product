@@ -369,6 +369,20 @@ Route::prefix('chatbot')->name('chatbot.')->group(function () {
     })->name('test');
 });
 
+// API endpoint to get user profile data
+Route::get('/api/user/{id}/profile', function ($id) {
+    $user = App\Models\User::find($id);
+    if (!$user) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'profile_picture' => $user->profile_picture,
+    ]);
+})->name('api.user.profile');
+
 // Fallback 404 for unknown routes
 Route::fallback(function () {
     return response()->view('front.pages.404', [], 404);

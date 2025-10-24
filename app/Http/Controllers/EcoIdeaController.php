@@ -1130,19 +1130,22 @@ class EcoIdeaController extends Controller
             'user_id' => auth()->id(),
             'message' => $data['message'],
         ]);
-
         return response()->json($message->load('user'));
     }
 
     /**
-     * Automatically update project status based on team size and task completion
-     * Status Logic:
-     * - recruiting: Team is not full (current team < team_size_needed)
+     * Auto-update project status based on team size ONLY
+     * - recruiting: Team not full yet
      * - in_progress: Team is full but not all tasks are completed
-     * - completed: Team is full AND all tasks are completed
+     * - completed: ONLY set manually by owner via markAsCompleted()
      */
     private function updateProjectStatus(EcoIdea $ecoIdea)
     {
+        // Don't auto-update if project is already completed or verified
+        if (in_array($ecoIdea->project_status, ['completed', 'verified', 'donated'])) {
+            return;
+        }
+        
         // Count current team members (including owner)
         $currentTeamCount = $ecoIdea->team()->count() + 1; // +1 for owner
         $teamSizeNeeded = $ecoIdea->team_size_needed ?? 1;
@@ -1150,31 +1153,16 @@ class EcoIdeaController extends Controller
         // Check if team is full
         $teamIsFull = $currentTeamCount >= $teamSizeNeeded;
         
-        // Count tasks
-        $totalTasks = $ecoIdea->tasks()->count();
-        $completedTasks = $ecoIdea->tasks()->where('status', 'completed')->count();
-        $allTasksCompleted = $totalTasks > 0 && $completedTasks === $totalTasks;
-        
-        // Determine new status
-        $newStatus = 'recruiting'; // Default
-        
-        if (!$teamIsFull) {
-            // Team not full - recruiting
-            $newStatus = 'recruiting';
-        } elseif ($teamIsFull && $allTasksCompleted) {
-            // Team full AND all tasks completed - completed
-            $newStatus = 'completed';
-        } elseif ($teamIsFull) {
-            // Team full but tasks not all completed - in progress
-            $newStatus = 'in_progress';
-        }
+        // Determine new status based on team size ONLY
+        // Never auto-complete - owner must manually confirm completion
+        $newStatus = $teamIsFull ? 'in_progress' : 'recruiting';
         
         // Only update if status has changed (to avoid unnecessary database writes)
         if ($ecoIdea->project_status !== $newStatus) {
             $ecoIdea->update(['project_status' => $newStatus]);
         }
     }
-
+    
     /**
      * Download completion certificate for verified/completed projects
      */

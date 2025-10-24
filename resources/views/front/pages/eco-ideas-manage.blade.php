@@ -122,6 +122,8 @@
         </div>
         <div style="padding: 20px 0;">
             <a href="#" class="nav-item active" data-section="overview"><i class="fas fa-chart-line"></i><span>Overview</span></a>
+            <a href="#" class="nav-item" data-section="tasks"><i class="fas fa-tasks"></i><span>Task Board</span></a>
+            <a href="#" class="nav-item" data-section="team"><i class="fas fa-users"></i><span>Team Members</span></a>
             @if($isCreator)
                 <a href="#" class="nav-item" data-section="applications"><i class="fas fa-user-clock"></i><span>Applications</span>
                     @if($ecoIdea->applications->where('status', 'pending')->count() > 0)
@@ -129,8 +131,6 @@
                     @endif
                 </a>
             @endif
-            <a href="#" class="nav-item" data-section="team"><i class="fas fa-users"></i><span>Team Members</span></a>
-            <a href="#" class="nav-item" data-section="tasks"><i class="fas fa-tasks"></i><span>Task Board</span></a>
             <a href="#" class="nav-item" data-section="chat"><i class="fas fa-comments"></i><span>Chat Room</span></a>
             
             @if($ecoIdea->project_status === 'verified')
@@ -675,7 +675,9 @@
                             <i class="fas fa-crown"></i> OWNER
                         </div>
                         <div class="member-header" style="position: relative; z-index: 1;">
-                            <div class="applicant-avatar" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 56px; height: 56px; font-size: 24px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">{{ strtoupper(substr($ecoIdea->creator->name, 0, 1)) }}</div>
+                            <div class="applicant-avatar" style="width: 56px; height: 56px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); overflow: hidden;">
+                                <img src="{{ $ecoIdea->creator->profile_picture_url }}" alt="{{ $ecoIdea->creator->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
                             <div style="flex: 1;">
                                 <h4 style="margin:0; font-size: 16px; font-weight: 700; color: #1f2937;">{{ $ecoIdea->creator->name }}</h4>
                                 <span style="font-size:13px; color:#10b981; font-weight:600; display: inline-block; margin-top: 4px;">
@@ -690,7 +692,7 @@
                             </p>
                         </div>
                         @if($isCreator)
-                            <button onclick="viewMemberDetails('{{ $ecoIdea->creator->id }}', '{{ $ecoIdea->creator->name }}', '{{ $ecoIdea->creator->email }}', 'Owner', 'Project Creator', null)" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2); font-size: 13px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.2)'">
+                            <button onclick="viewMemberDetails('{{ $ecoIdea->creator->id }}', '{{ $ecoIdea->creator->name }}', '{{ $ecoIdea->creator->email }}', 'Owner', 'Project Creator', null, '{{ $ecoIdea->creator->profile_picture_url }}')" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2); font-size: 13px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.2)'">
                                 <i class="fas fa-eye"></i> View Details
                             </button>
                         @endif
@@ -700,7 +702,9 @@
                     @foreach($ecoIdea->team as $member)
                         <div class="team-member-card" style="position: relative;">
                             <div class="member-header">
-                                <div class="applicant-avatar" style="width: 56px; height: 56px; font-size: 24px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">{{ strtoupper(substr($member->user->name, 0, 1)) }}</div>
+                                <div class="applicant-avatar" style="width: 56px; height: 56px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); overflow: hidden;">
+                                    <img src="{{ $member->user->profile_picture_url }}" alt="{{ $member->user->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
                                 <div style="flex: 1;">
                                     <h4 style="margin:0; font-size: 16px; font-weight: 700; color: #1f2937;">{{ $member->user->name }}</h4>
                                     <span style="font-size:13px; color:#3b82f6; font-weight:600; display: inline-block; margin-top: 4px;">
@@ -716,15 +720,17 @@
                             </div>
                             @if($isCreator)
                                 <div style="display: flex; gap: 10px;">
-                                    <button onclick="viewMemberDetails('{{ $member->user->id }}', '{{ $member->user->name }}', '{{ $member->user->email }}', '{{ ucfirst($member->role ?? 'Member') }}', '{{ $member->joined_at ? $member->joined_at->diffForHumans() : 'recently' }}', '{{ $member->application->resume_path ?? '' }}')" style="flex: 1; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2); font-size: 13px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.2)'">
+                                    <button onclick="viewMemberDetails('{{ $member->user->id }}', '{{ $member->user->name }}', '{{ $member->user->email }}', '{{ ucfirst($member->role ?? 'Member') }}', '{{ $member->joined_at ? $member->joined_at->diffForHumans() : 'recently' }}', '{{ $member->application->resume_path ?? '' }}', '{{ $member->user->profile_picture_url }}')" style="flex: 1; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2); font-size: 13px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.2)'">
                                         <i class="fas fa-eye"></i> View
                                     </button>
+                                    @if(!in_array($ecoIdea->project_status, ['completed', 'verified', 'donated']))
                                     <form id="remove-member-form-{{ $member->id }}" action="{{ route('front.eco-ideas.dashboard.team.remove', $member) }}" method="POST" style="flex: 1;">
                                         @csrf @method('DELETE')
                                         <button type="button" onclick="confirmRemoveMember('{{ $member->id }}', '{{ $member->user->name }}')" style="width: 100%; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2); font-size: 13px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(239, 68, 68, 0.2)'">
                                             <i class="fas fa-user-minus"></i> Remove
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             @endif
                         </div>
@@ -843,14 +849,16 @@
                                             <span><i class="fas fa-calendar"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}</span>
                                         @endif
                                     </div>
+                                    @if(!in_array($ecoIdea->project_status, ['completed', 'verified', 'donated']))
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
-                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
-                                        @else
-                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
-                                        @endif
+                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
                                     </div>
+                                    @else
+                                    <div style="padding: 8px; background: #f3f4f6; border-radius: 6px; text-align: center; font-size: 11px; color: #6b7280;">
+                                        <i class="fas fa-lock"></i> Locked
+                                    </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -875,14 +883,16 @@
                                             <span><i class="fas fa-calendar"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}</span>
                                         @endif
                                     </div>
+                                    @if(!in_array($ecoIdea->project_status, ['completed', 'verified', 'donated']))
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
-                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
-                                        @else
-                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
-                                        @endif
+                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
                                     </div>
+                                    @else
+                                    <div style="padding: 8px; background: #f3f4f6; border-radius: 6px; text-align: center; font-size: 11px; color: #6b7280;">
+                                        <i class="fas fa-lock"></i> Locked
+                                    </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -907,14 +917,16 @@
                                             <span><i class="fas fa-calendar"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}</span>
                                         @endif
                                     </div>
+                                    @if(!in_array($ecoIdea->project_status, ['completed', 'verified', 'donated']))
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
-                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
-                                        @else
-                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
-                                        @endif
+                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
                                     </div>
+                                    @else
+                                    <div style="padding: 8px; background: #f3f4f6; border-radius: 6px; text-align: center; font-size: 11px; color: #6b7280;">
+                                        <i class="fas fa-lock"></i> Locked
+                                    </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -939,14 +951,16 @@
                                             <span><i class="fas fa-calendar"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}</span>
                                         @endif
                                     </div>
+                                    @if(!in_array($ecoIdea->project_status, ['completed', 'verified', 'donated']))
                                     <div style="display: flex; gap: 5px;">
                                         <button onclick="event.stopPropagation(); openViewTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                                        @if($ecoIdea->project_status !== 'verified' && $ecoIdea->project_status !== 'completed')
-                                            <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
-                                        @else
-                                            <button disabled style="flex: 1; padding: 6px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-lock"></i> Locked</button>
-                                        @endif
+                                        <button onclick="event.stopPropagation(); openEditTaskModal({{ $task->id }})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
                                     </div>
+                                    @else
+                                    <div style="padding: 8px; background: #f3f4f6; border-radius: 6px; text-align: center; font-size: 11px; color: #6b7280;">
+                                        <i class="fas fa-lock"></i> Locked
+                                    </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -1525,13 +1539,10 @@
                                 </div>
                                 
                                 <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                                    <form action="{{ route('front.eco-ideas.dashboard.mark-completed', $ecoIdea) }}" method="POST" style="display: inline;">
-                                        @csrf
-                                        <button type="submit" style="padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 10px;">
-                                            <i class="fas fa-check-double"></i>
-                                            <span>Yes, Mark as Completed</span>
-                                        </button>
-                                    </form>
+                                    <button onclick="showCompletionModal()" style="padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-check-double"></i>
+                                        <span>Yes, Mark as Completed</span>
+                                    </button>
                                     
                                     <button onclick="switchSection('tasks')" style="padding: 16px 40px; background: #f3f4f6; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;">
                                         <i class="fas fa-times"></i>
@@ -2688,7 +2699,10 @@ function updateTaskBoardDOM(tasks) {
             taskCard.setAttribute('data-task-title', task.title.toLowerCase());
             taskCard.setAttribute('data-task-assignee', task.assigned_to || 'unassigned');
             taskCard.setAttribute('data-task-priority', task.priority);
-            taskCard.setAttribute('draggable', 'true');
+            const projectStatus = '{{ $ecoIdea->project_status }}';
+            const isLocked = ['completed', 'verified', 'donated'].includes(projectStatus);
+            
+            taskCard.setAttribute('draggable', isLocked ? 'false' : 'true');
             taskCard.innerHTML = `
                 <div style="font-size:14px; font-weight:700; margin-bottom:8px;">${task.title}</div>
                 <div style="font-size:12px; color:#6b7280; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
@@ -2696,10 +2710,16 @@ function updateTaskBoardDOM(tasks) {
                     <span style="${task.assigned_to ? '' : 'color: #9ca3af;'}"><i class="fas fa-${task.assigned_to ? 'user' : 'user-slash'}"></i> ${assignedName}</span>
                     ${dueDate ? `<span><i class="fas fa-calendar"></i> ${dueDate}</span>` : ''}
                 </div>
-                <div style="display: flex; gap: 5px;">
-                    <button onclick="event.stopPropagation(); openViewTaskModal(${task.id})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
-                    <button onclick="event.stopPropagation(); openEditTaskModal(${task.id})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
-                </div>
+                ${isLocked ? `
+                    <div style="padding: 8px; background: #f3f4f6; border-radius: 6px; text-align: center; font-size: 11px; color: #6b7280;">
+                        <i class="fas fa-lock"></i> Locked
+                    </div>
+                ` : `
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="event.stopPropagation(); openViewTaskModal(${task.id})" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-eye"></i> View</button>
+                        <button onclick="event.stopPropagation(); openEditTaskModal(${task.id})" style="flex: 1; padding: 6px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                    </div>
+                `}
             `;
             
             list.appendChild(taskCard);
@@ -2752,6 +2772,19 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Task board not found!');
         return;
     }
+    
+    // Check on page load if all tasks are completed and show modal for owner
+    @if($isCreator && $ecoIdea->project_status === 'in_progress')
+    setTimeout(() => {
+        const totalTasks = allTasksData.length;
+        const completedTasks = allTasksData.filter(t => t.status === 'completed').length;
+        
+        if (totalTasks > 0 && completedTasks === totalTasks) {
+            console.log('🎉 All tasks completed on page load! Showing completion modal...');
+            showCompletionModal();
+        }
+    }, 1000); // Delay to ensure page is fully loaded
+    @endif
     
     // Drag start - on the board container
     taskBoard.addEventListener('dragstart', function(e) {
@@ -2856,74 +2889,70 @@ document.getElementById('viewTaskModal').addEventListener('click', function(e) {
 });
 
 // Member Details Modal Functions
-function viewMemberDetails(userId, name, email, role, joined, resumePath) {
-    const roleColor = role === 'Owner' ? '#10b981' : '#667eea';
+function viewMemberDetails(userId, name, email, role, joined, resumePath, profilePictureUrl = null) {
+    const roleColor = role === 'Owner' ? '#10b981' : '#3b82f6';
+    
+    // Use the profile picture URL passed from backend (includes fallback to UI Avatars)
+    const profileImg = `<img src="${profilePictureUrl}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    
     const content = `
-        <!-- Profile Card -->
-        <div style="text-align: center; margin-bottom: 24px;">
-            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, ${roleColor} 0%, ${role === 'Owner' ? '#059669' : '#764ba2'} 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 42px; font-weight: 900; color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); position: relative;">
-                ${name.charAt(0).toUpperCase()}
-                <div style="position: absolute; bottom: 3px; right: 3px; width: 24px; height: 24px; background: ${role === 'Owner' ? '#10b981' : '#667eea'}; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas ${role === 'Owner' ? 'fa-crown' : 'fa-check'}" style="font-size: 10px; color: white;"></i>
-                </div>
-            </div>
-            <h4 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800; color: #1f2937;">${name}</h4>
-            <span style="display: inline-block; padding: 6px 16px; background: linear-gradient(135deg, ${roleColor}15 0%, ${roleColor}25 100%); color: ${roleColor}; border-radius: 20px; font-size: 13px; font-weight: 700; border: 2px solid ${roleColor}30;">
-                <i class="fas ${role === 'Owner' ? 'fa-crown' : 'fa-user-check'}"></i> ${role}
-            </span>
-        </div>
-        
-        <!-- Info Cards -->
-        <div style="display: grid; gap: 12px; margin-bottom: 20px;">
-            <!-- Email Card -->
-            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 14px; padding: 16px; border: 1px solid #bae6fd; transition: all 0.3s ease;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);">
-                        <i class="fas fa-envelope" style="color: white; font-size: 18px;"></i>
+                <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px;">
+                    <div style="position: relative; flex-shrink: 0;">
+                        <div style="width: 70px; height: 70px; background: linear-gradient(135deg, ${roleColor} 0%, ${role === 'Owner' ? '#059669' : '#2563eb'} 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden;">
+                            ${profileImg}
+                        </div>
+                        <div style="position: absolute; bottom: -2px; right: -2px; width: 22px; height: 22px; background: ${roleColor}; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas ${role === 'Owner' ? 'fa-crown' : 'fa-check'}" style="font-size: 9px; color: white;"></i>
+                        </div>
                     </div>
-                    <div style="flex: 1; overflow: hidden;">
-                        <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #0369a1; text-transform: uppercase; letter-spacing: 0.5px;">Email Address</p>
-                        <p style="margin: 0; color: #0c4a6e; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${email}</p>
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #1f2937;">${name}</h4>
+                        <span style="display: inline-block; padding: 4px 12px; background: ${roleColor}15; color: ${roleColor}; border-radius: 12px; font-size: 12px; font-weight: 700; border: 1px solid ${roleColor}30;">
+                            <i class="fas ${role === 'Owner' ? 'fa-crown' : 'fa-user-check'}"></i> ${role}
+                        </span>
                     </div>
                 </div>
-            </div>
-            
-            ${role !== 'Owner' ? `
-            <!-- Joined Date Card -->
-            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 14px; padding: 16px; border: 1px solid #fcd34d; transition: all 0.3s ease;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
-                        <i class="fas fa-calendar-check" style="color: white; font-size: 18px;"></i>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                    <div style="background: #f8fafc; border-radius: 10px; padding: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-envelope" style="color: #0ea5e9; font-size: 16px;"></i>
+                            <div style="flex: 1; min-width: 0;">
+                                <p style="margin: 0; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Email</p>
+                                <p style="margin: 0; color: #1e293b; font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${email}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div style="flex: 1;">
-                        <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;">Member Since</p>
-                        <p style="margin: 0; color: #78350f; font-weight: 600; font-size: 14px;">${joined}</p>
+                    
+                    ${role !== 'Owner' ? `
+                    <div style="background: #fffbeb; border-radius: 10px; padding: 12px; border: 1px solid #fde68a;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-calendar-check" style="color: #f59e0b; font-size: 16px;"></i>
+                            <div style="flex: 1;">
+                                <p style="margin: 0; font-size: 11px; color: #92400e; font-weight: 600; text-transform: uppercase;">Joined</p>
+                                <p style="margin: 0; color: #78350f; font-weight: 600; font-size: 13px;">${joined}</p>
+                            </div>
+                        </div>
                     </div>
+                    ` : ''}
                 </div>
-            </div>
-            ` : ''}
-        </div>
-        
-        <!-- Resume Section -->
-        ${resumePath && resumePath.trim() !== '' ? `
-        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 14px; padding: 20px; border: 2px solid #86efac; text-align: center;">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);">
-                <i class="fas fa-file-pdf" style="color: white; font-size: 24px;"></i>
-            </div>
-            <p style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: #065f46;">Resume Document Available</p>
-            <a href="/storage/${resumePath}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
-                <i class="fas fa-download"></i> Download Resume
-            </a>
-        </div>
-        ` : role !== 'Owner' ? `
-        <div style="background: #f9fafb; border-radius: 14px; padding: 24px; text-align: center; border: 2px dashed #d1d5db;">
-            <div style="width: 56px; height: 56px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
-                <i class="fas fa-file-slash" style="font-size: 24px; color: #9ca3af;"></i>
-            </div>
-            <p style="margin: 0; font-size: 14px; color: #6b7280; font-weight: 600;">No resume uploaded</p>
-        </div>
-        ` : ''}
-    `;
+                
+                ${resumePath && resumePath.trim() !== '' ? `
+                <div style="background: #f0fdf4; border-radius: 10px; padding: 14px; border: 1px solid #86efac; text-align: center;">
+                    <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 600; color: #065f46;">
+                        <i class="fas fa-file-pdf" style="color: #10b981; margin-right: 6px;"></i> Resume Available
+                    </p>
+                    <a href="/storage/${resumePath}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 13px; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.3)'">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+                ` : role !== 'Owner' ? `
+                <div style="background: #f9fafb; border-radius: 10px; padding: 16px; text-align: center; border: 1px dashed #d1d5db;">
+                    <i class="fas fa-file-slash" style="font-size: 20px; color: #9ca3af; margin-bottom: 6px;"></i>
+                    <p style="margin: 0; font-size: 12px; color: #6b7280; font-weight: 600;">No resume uploaded</p>
+                </div>
+                ` : ''}
+            `;
     
     document.getElementById('memberDetailsContent').innerHTML = content;
     document.getElementById('memberDetailsModal').style.display = 'flex';
@@ -2938,18 +2967,30 @@ document.getElementById('memberDetailsModal').addEventListener('click', function
 });
 
 // ========== PROJECT COMPLETION CONFIRMATION ==========
+let completionModalShown = false; // Prevent showing modal multiple times
+
 function showCompletionModal() {
+    // Only show once per page load
+    if (completionModalShown) {
+        console.log('Completion modal already shown, skipping...');
+        return;
+    }
+    
+    completionModalShown = true;
     document.getElementById('completionConfirmationModal').style.display = 'flex';
 }
 
 function closeCompletionModal() {
     document.getElementById('completionConfirmationModal').style.display = 'none';
+    // Don't reset flag - if owner closes modal, don't show again until they refresh
 }
 
 function confirmProjectCompletion() {
     const button = event.target;
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    console.log('Marking project as completed...', ecoIdeaId);
     
     fetch(`/eco-ideas-dashboard/${ecoIdeaId}/mark-completed`, {
         method: 'POST',
@@ -2958,10 +2999,15 @@ function confirmProjectCompletion() {
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log('Response status:', res.status);
+        return res.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             showToast('🎉 Project marked as completed! Redirecting...', 'success');
+            closeCompletionModal();
             setTimeout(() => {
                 window.location.reload();
             }, 1500);
@@ -2972,6 +3018,7 @@ function confirmProjectCompletion() {
         }
     })
     .catch(err => {
+        console.error('Completion error:', err);
         showToast('❌ Error: ' + err.message, 'error');
         button.disabled = false;
         button.innerHTML = '<i class="fas fa-check-circle"></i> Yes, Complete Project!';
